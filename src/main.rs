@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+mod environment;
 mod input;
 mod network;
 mod player;
@@ -15,10 +16,15 @@ fn main() {
                 .with_input_system(input::input)
                 .register_rollback_component::<Transform>(),
         )
-        .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_systems(
             Startup,
-            (setup, player::spawn_players, network::start_matchbox_socket),
+            (
+                setup,
+                player::spawn_players,
+                network::start_matchbox_socket,
+                environment::spawn_background,
+            ),
         )
         .add_systems(Update, network::wait_for_players)
         .add_systems(
@@ -35,6 +41,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    let camera_bundle = Camera2dBundle::default();
-    commands.spawn(camera_bundle);
+    let mut camera_bundle = Camera2dBundle::default();
+    camera_bundle.projection.scale = 0.7;
+    commands.spawn((camera_bundle,));
 }

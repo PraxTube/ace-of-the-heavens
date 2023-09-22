@@ -11,6 +11,8 @@ const DELTA_SPEED: f32 = 75.0;
 const DELTA_STEERING: f32 = 3.5;
 // Shooting
 //const RELOAD_TIME: f32 = 0.1;
+// Misc
+const PLAYER_SCALE: f32 = 1.75;
 
 #[derive(Component, Default)]
 pub struct Player {
@@ -19,6 +21,9 @@ pub struct Player {
     current_speed: f32,
     //shoot_timer: f32,
 }
+
+#[derive(Resource)]
+pub struct LocalPlayerHandle(pub usize);
 
 impl Player {
     fn new(handle: usize) -> Player {
@@ -90,7 +95,7 @@ pub fn spawn_players(
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_scale(Vec3::splat(5.0))
+                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
                     .with_translation(Vec3::new(-200.0, 0.0, 0.0)),
                 ..default()
             },
@@ -108,7 +113,7 @@ pub fn spawn_players(
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_scale(Vec3::splat(5.0))
+                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
                     .with_translation(Vec3::new(200.0, 0.0, 0.0)),
                 ..default()
             },

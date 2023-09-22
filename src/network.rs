@@ -1,6 +1,8 @@
 use bevy::prelude::*;
-use bevy_ggrs::*;
+use bevy_ggrs::{ggrs::PlayerType, *};
 use bevy_matchbox::prelude::*;
+
+use crate::player::LocalPlayerHandle;
 
 pub struct GgrsConfig;
 
@@ -36,6 +38,9 @@ pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<MatchboxSocke
         .with_input_delay(2);
 
     for (i, player) in players.into_iter().enumerate() {
+        if player == PlayerType::Local {
+            commands.insert_resource(LocalPlayerHandle(i))
+        }
         session_builder = session_builder
             .add_player(player, i)
             .expect("failed to add player");
