@@ -1,20 +1,14 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
-use bevy_matchbox::prelude::*;
 
 mod input;
+mod network;
+
+use network::GgrsConfig;
 
 #[derive(Component)]
 struct Player {
     handle: usize,
-}
-
-struct GgrsConfig;
-
-impl ggrs::Config for GgrsConfig {
-    type Input = u8;
-    type State = u8;
-    type Address = PeerId;
 }
 
 fn main() {
@@ -26,8 +20,11 @@ fn main() {
                 .register_rollback_component::<Transform>(),
         )
         .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
-        .add_systems(Startup, (setup, spawn_players, start_matchbox_socket))
-        .add_systems(Update, wait_for_players)
+        .add_systems(
+            Startup,
+            (setup, spawn_players, network::start_matchbox_socket),
+        )
+        .add_systems(Update, network::wait_for_players)
         .add_systems(GgrsSchedule, move_players)
         .run();
 }
@@ -51,46 +48,6 @@ fn move_players(
 
         transform.translation += direction * speed * time.delta_seconds();
     }
-}
-
-fn wait_for_players(mut commands: Commands, mut socket: ResMut<MatchboxSocket<SingleChannel>>) {
-    if socket.get_channel(0).is_err() {
-        return;
-    }
-
-    socket.update_peers();
-    let players = socket.players();
-
-    let num_players = 2;
-    if players.len() < num_players {
-        return;
-    }
-
-    info!("all peers have joined, going in-game");
-
-    let mut session_builder = ggrs::SessionBuilder::<GgrsConfig>::new()
-        .with_num_players(num_players)
-        .with_input_delay(2);
-
-    for (i, player) in players.into_iter().enumerate() {
-        session_builder = session_builder
-            .add_player(player, i)
-            .expect("failed to add player");
-    }
-
-    let channel = socket.take_channel(0).unwrap();
-
-    let ggrs_session = session_builder
-        .start_p2p_session(channel)
-        .expect("failed to start session");
-
-    commands.insert_resource(bevy_ggrs::Session::P2P(ggrs_session));
-}
-
-fn start_matchbox_socket(mut commands: Commands) {
-    let room_url = "ws://localhost:3536/";
-    info!("connection to matchbox server: {}", room_url);
-    commands.insert_resource(MatchboxSocket::new_ggrs(room_url));
 }
 
 fn spawn_players(
