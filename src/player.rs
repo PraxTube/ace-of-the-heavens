@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_ggrs::*;
 
+use crate::bullet;
 use crate::input;
 use crate::network::GgrsConfig;
 
@@ -13,6 +14,7 @@ const DELTA_STEERING: f32 = 3.5;
 //const RELOAD_TIME: f32 = 0.1;
 // Misc
 const PLAYER_SCALE: f32 = 1.75;
+const PLAYER_RADIUS: f32 = 20.0;
 
 #[derive(Component, Default)]
 pub struct Player {
@@ -94,6 +96,28 @@ pub fn reload_bullets(
     }
 }
 
+pub fn kill_players(
+    mut commands: Commands,
+    players: Query<(Entity, &Transform, &Player), Without<bullet::Bullet>>,
+    bullets: Query<(&Transform, &bullet::Bullet)>,
+) {
+    for (player_entity, player_transform, player) in &players {
+        for (bullet_tranform, bullet) in &bullets {
+            if bullet.handle == player.handle {
+                continue;
+            }
+
+            let distance = Vec2::distance(
+                player_transform.translation.xy(),
+                bullet_tranform.translation.xy(),
+            );
+            if distance < PLAYER_RADIUS + bullet::BULLET_RADIUS {
+                commands.entity(player_entity).despawn_recursive();
+            }
+        }
+    }
+}
+
 pub fn spawn_players(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -131,7 +155,8 @@ pub fn spawn_players(
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
                 transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(Vec3::new(200.0, 0.0, 0.0)),
+                    .with_translation(Vec3::new(200.0, 0.0, 0.0))
+                    .with_rotation(Quat::from_rotation_z(std::f32::consts::PI)),
                 ..default()
             },
         ))

@@ -7,16 +7,19 @@ use crate::player;
 use crate::ImageAssets;
 
 const MOVE_SPEED: f32 = 300.0;
+pub const BULLET_RADIUS: f32 = 1.0;
 
 #[derive(Component)]
 pub struct Bullet {
     current_speed: f32,
+    pub handle: usize,
 }
 
 impl Bullet {
-    fn new(extra_speed: f32) -> Bullet {
+    fn new(extra_speed: f32, handle: usize) -> Bullet {
         Bullet {
             current_speed: MOVE_SPEED + extra_speed,
+            handle,
         }
     }
 }
@@ -35,7 +38,7 @@ pub fn fire_bullets(
 
         commands
             .spawn((
-                Bullet::new(player.current_speed),
+                Bullet::new(player.current_speed, player.handle),
                 SpriteBundle {
                     transform: Transform::from_translation(transform.translation)
                         .with_rotation(transform.rotation),
