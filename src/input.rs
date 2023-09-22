@@ -50,3 +50,7 @@ pub fn accelerate_direction(input: u8) -> f32 {
     }
     accelerate_direction
 }
+
+pub fn fire(input: u8) -> bool {
+    input & INPUT_FIRE != 0
+}

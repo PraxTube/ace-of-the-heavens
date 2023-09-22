@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_ggrs::*;
 
+mod bullet;
 mod environment;
 mod input;
 mod network;
@@ -18,7 +19,7 @@ pub enum GameState {
 }
 
 #[derive(AssetCollection, Resource)]
-struct ImageAssets {
+pub struct ImageAssets {
     #[asset(path = "bullet.png")]
     bullet: Handle<Image>,
 }
@@ -34,7 +35,8 @@ fn main() {
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
-                .register_rollback_component::<Transform>(),
+                .register_rollback_component::<Transform>()
+                .register_rollback_component::<player::BulletReady>(),
         )
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(
@@ -53,12 +55,14 @@ fn main() {
         .add_systems(
             GgrsSchedule,
             (
-                player::accelerate_players
-                    .before(player::move_players)
-                    .before(player::steer_players),
-                player::steer_players.before(player::move_players),
+                player::accelerate_players,
+                player::steer_players,
                 player::move_players,
-            ),
+                player::reload_bullets,
+                bullet::fire_bullets,
+                bullet::move_bullets,
+            )
+                .chain(),
         )
         .run();
 }

@@ -16,11 +16,14 @@ const PLAYER_SCALE: f32 = 1.75;
 
 #[derive(Component, Default)]
 pub struct Player {
-    handle: usize,
+    pub handle: usize,
 
-    current_speed: f32,
+    pub current_speed: f32,
     //shoot_timer: f32,
 }
+
+#[derive(Component, Reflect, Default)]
+pub struct BulletReady(pub bool);
 
 #[derive(Resource)]
 pub struct LocalPlayerHandle(pub usize);
@@ -79,6 +82,18 @@ pub fn move_players(time: Res<Time>, mut players: Query<(&mut Transform, &Player
     }
 }
 
+pub fn reload_bullets(
+    inputs: Res<PlayerInputs<GgrsConfig>>,
+    mut players: Query<(&mut BulletReady, &Player)>,
+) {
+    for (mut bullet_ready, player) in &mut players {
+        let (input, _) = inputs[player.handle];
+        if !input::fire(input) {
+            bullet_ready.0 = true;
+        }
+    }
+}
+
 pub fn spawn_players(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -92,6 +107,7 @@ pub fn spawn_players(
     commands
         .spawn((
             Player::new(0),
+            BulletReady(true),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
@@ -110,6 +126,7 @@ pub fn spawn_players(
     commands
         .spawn((
             Player::new(1),
+            BulletReady(true),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
