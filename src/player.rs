@@ -1,0 +1,117 @@
+use bevy::prelude::*;
+use bevy_ggrs::*;
+
+use crate::input;
+use crate::network::GgrsConfig;
+
+// Movement
+const MAX_SPEED: f32 = 400.0;
+const MIN_SPEED: f32 = 200.0;
+const DELTA_SPEED: f32 = 75.0;
+const DELTA_STEERING: f32 = 3.5;
+// Shooting
+//const RELOAD_TIME: f32 = 0.1;
+
+#[derive(Component, Default)]
+pub struct Player {
+    handle: usize,
+
+    current_speed: f32,
+    //shoot_timer: f32,
+}
+
+impl Player {
+    fn new(handle: usize) -> Player {
+        Player {
+            handle,
+            current_speed: MIN_SPEED,
+        }
+    }
+}
+
+pub fn steer_players(
+    time: Res<Time>,
+    inputs: Res<PlayerInputs<GgrsConfig>>,
+    mut players: Query<(&mut Transform, &Player)>,
+) {
+    for (mut transform, player) in &mut players {
+        let (input, _) = inputs[player.handle];
+
+        let steer_direction = input::steer_direction(input);
+
+        if steer_direction == 0.0 {
+            continue;
+        }
+
+        let rotation = DELTA_STEERING * steer_direction * time.delta_seconds();
+        transform.rotate_z(rotation);
+    }
+}
+
+pub fn accelerate_players(
+    time: Res<Time>,
+    inputs: Res<PlayerInputs<GgrsConfig>>,
+    mut players: Query<&mut Player>,
+) {
+    for mut player in &mut players {
+        let (input, _) = inputs[player.handle];
+
+        let accelerate_direction = input::accelerate_direction(input);
+
+        if accelerate_direction == 0.0 {
+            continue;
+        }
+
+        player.current_speed += DELTA_SPEED * accelerate_direction * time.delta_seconds();
+        player.current_speed = player.current_speed.clamp(MIN_SPEED, MAX_SPEED);
+    }
+}
+
+pub fn move_players(time: Res<Time>, mut players: Query<(&mut Transform, &Player)>) {
+    for (mut transform, player) in &mut players {
+        let direction = transform.local_x();
+        transform.translation += direction * player.current_speed * time.delta_seconds();
+    }
+}
+
+pub fn spawn_players(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let texture_handle = asset_server.load("plane1.png");
+    let texture_atlas =
+        TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    commands
+        .spawn((
+            Player::new(0),
+            SpriteSheetBundle {
+                texture_atlas: texture_atlas_handle,
+                sprite: TextureAtlasSprite::new(0),
+                transform: Transform::from_scale(Vec3::splat(5.0))
+                    .with_translation(Vec3::new(-200.0, 0.0, 0.0)),
+                ..default()
+            },
+        ))
+        .add_rollback();
+
+    let texture_handle = asset_server.load("plane2.png");
+    let texture_atlas =
+        TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    commands
+        .spawn((
+            Player::new(1),
+            SpriteSheetBundle {
+                texture_atlas: texture_atlas_handle,
+                sprite: TextureAtlasSprite::new(0),
+                transform: Transform::from_scale(Vec3::splat(5.0))
+                    .with_translation(Vec3::new(200.0, 0.0, 0.0)),
+                ..default()
+            },
+        ))
+        .add_rollback();
+}

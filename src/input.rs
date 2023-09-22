@@ -29,20 +29,24 @@ pub fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
     input
 }
 
-pub fn direction(input: u8) -> Vec2 {
-    let mut direction = Vec2::ZERO;
-
-    if input & INPUT_FORWARD != 0 {
-        direction.x += 1.0;
-    }
-    if input & INPUT_BACKWARD != 0 {
-        direction.x -= 1.0;
-    }
+pub fn steer_direction(input: u8) -> f32 {
+    let mut steer_direction: f32 = 0.0;
     if input & INPUT_LEFT != 0 {
-        direction.y += 1.0;
+        steer_direction += 1.0;
     }
     if input & INPUT_RIGHT != 0 {
-        direction.y -= 1.0;
+        steer_direction -= 1.0;
     }
-    direction.normalize_or_zero()
+    steer_direction
+}
+
+pub fn accelerate_direction(input: u8) -> f32 {
+    let mut accelerate_direction: f32 = 0.0;
+    if input & INPUT_FORWARD != 0 {
+        accelerate_direction += 1.0;
+    }
+    if input & INPUT_BACKWARD != 0 {
+        accelerate_direction -= 1.0;
+    }
+    accelerate_direction
 }
