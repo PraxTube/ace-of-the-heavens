@@ -2,11 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 use bevy_matchbox::prelude::*;
 
-const INPUT_FORWARD: u8 = 1 << 0;
-const INPUT_BACKWARD: u8 = 1 << 1;
-const INPUT_LEFT: u8 = 1 << 2;
-const INPUT_RIGHT: u8 = 1 << 3;
-const INPUT_FIRE: u8 = 1 << 4;
+mod input;
 
 #[derive(Component)]
 struct Player {
@@ -26,7 +22,7 @@ fn main() {
         .add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()),))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
-                .with_input_system(input)
+                .with_input_system(input::input)
                 .register_rollback_component::<Transform>(),
         )
         .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
@@ -36,49 +32,16 @@ fn main() {
         .run();
 }
 
-fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
-    let mut input = 0u8;
-
-    if keys.any_pressed([KeyCode::Up, KeyCode::W, KeyCode::K]) {
-        input |= INPUT_FORWARD;
-    }
-    if keys.any_pressed([KeyCode::Down, KeyCode::S, KeyCode::J]) {
-        input |= INPUT_BACKWARD;
-    }
-    if keys.any_pressed([KeyCode::Left, KeyCode::A]) {
-        input |= INPUT_LEFT;
-    }
-    if keys.any_pressed([KeyCode::Right, KeyCode::D, KeyCode::F]) {
-        input |= INPUT_RIGHT;
-    }
-    if keys.any_pressed([KeyCode::Space, KeyCode::Return]) {
-        input |= INPUT_FIRE;
-    }
-
-    input
-}
-
 fn move_players(
     time: Res<Time>,
     inputs: Res<PlayerInputs<GgrsConfig>>,
     mut players: Query<(&mut Transform, &Player)>,
 ) {
     for (mut transform, player) in &mut players {
-        let mut direction = Vec2::ZERO;
         let (input, _) = inputs[player.handle];
 
-        if input & INPUT_FORWARD != 0 {
-            direction.x += 1.0;
-        }
-        if input & INPUT_BACKWARD != 0 {
-            direction.x -= 1.0;
-        }
-        if input & INPUT_LEFT != 0 {
-            direction.y += 1.0;
-        }
-        if input & INPUT_RIGHT != 0 {
-            direction.y -= 1.0;
-        }
+        let direction = input::direction(input);
+
         if direction == Vec2::ZERO {
             continue;
         }
