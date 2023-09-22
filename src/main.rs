@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use bevy_ggrs::*;
 
 mod environment;
@@ -8,8 +9,27 @@ mod player;
 
 use network::GgrsConfig;
 
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
+pub enum GameState {
+    #[default]
+    AssetLoading,
+    Matchmaking,
+    InGame,
+}
+
+#[derive(AssetCollection, Resource)]
+struct ImageAssets {
+    #[asset(path = "bullet.png")]
+    bullet: Handle<Image>,
+}
+
 fn main() {
     App::new()
+        .add_state::<GameState>()
+        .add_loading_state(
+            LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
+        )
+        .add_collection_to_loading_state::<_, ImageAssets>(GameState::AssetLoading)
         .add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()),))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
@@ -18,15 +38,18 @@ fn main() {
         )
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(
-            Startup,
+            OnEnter(GameState::Matchmaking),
             (
                 setup,
-                player::spawn_players,
                 network::start_matchbox_socket,
                 environment::spawn_background,
             ),
         )
-        .add_systems(Update, network::wait_for_players)
+        .add_systems(OnEnter(GameState::InGame), player::spawn_players)
+        .add_systems(
+            Update,
+            network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+        )
         .add_systems(
             GgrsSchedule,
             (

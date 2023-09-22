@@ -3,6 +3,7 @@ use bevy_ggrs::{ggrs::PlayerType, *};
 use bevy_matchbox::prelude::*;
 
 use crate::player::LocalPlayerHandle;
+use crate::GameState;
 
 pub struct GgrsConfig;
 
@@ -18,7 +19,11 @@ pub fn start_matchbox_socket(mut commands: Commands) {
     commands.insert_resource(MatchboxSocket::new_ggrs(room_url));
 }
 
-pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<MatchboxSocket<SingleChannel>>) {
+pub fn wait_for_players(
+    mut commands: Commands,
+    mut socket: ResMut<MatchboxSocket<SingleChannel>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
     if socket.get_channel(0).is_err() {
         return;
     }
@@ -53,4 +58,6 @@ pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<MatchboxSocke
         .expect("failed to start session");
 
     commands.insert_resource(bevy_ggrs::Session::P2P(ggrs_session));
+
+    next_state.set(GameState::InGame)
 }
