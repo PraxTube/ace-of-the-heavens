@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_ggrs::*;
 
@@ -70,6 +70,6 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.projection.scale = 0.7;
+    camera_bundle.projection.scaling_mode = ScalingMode::FixedVertical(1000.0);
     commands.spawn((camera_bundle,));
 }
