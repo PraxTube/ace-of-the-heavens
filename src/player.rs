@@ -12,15 +12,18 @@ const DELTA_SPEED: f32 = 75.0;
 const DELTA_STEERING: f32 = 3.5;
 // Shooting
 //const RELOAD_TIME: f32 = 0.1;
+const MAX_HEALTH: f32 = 3.0;
 // Misc
 const PLAYER_SCALE: f32 = 1.75;
 const PLAYER_RADIUS: f32 = 20.0;
+const DISTANCE_FROM_SPAWN: f32 = 800.0;
 
 #[derive(Component, Default)]
 pub struct Player {
     pub handle: usize,
 
     pub current_speed: f32,
+    health: f32,
     //shoot_timer: f32,
 }
 
@@ -35,6 +38,7 @@ impl Player {
         Player {
             handle,
             current_speed: MIN_SPEED,
+            health: MAX_HEALTH,
         }
     }
 }
@@ -96,14 +100,16 @@ pub fn reload_bullets(
     }
 }
 
-pub fn kill_players(
-    mut commands: Commands,
-    players: Query<(Entity, &Transform, &Player), Without<bullet::Bullet>>,
-    bullets: Query<(&Transform, &bullet::Bullet)>,
+pub fn damage_players(
+    mut players: Query<(&Transform, &mut Player), Without<bullet::Bullet>>,
+    mut bullets: Query<(&Transform, &mut bullet::Bullet)>,
 ) {
-    for (player_entity, player_transform, player) in &players {
-        for (bullet_tranform, bullet) in &bullets {
+    for (player_transform, mut player) in &mut players {
+        for (bullet_tranform, mut bullet) in &mut bullets {
             if bullet.handle == player.handle {
+                continue;
+            }
+            if bullet.disabled {
                 continue;
             }
 
@@ -112,8 +118,20 @@ pub fn kill_players(
                 bullet_tranform.translation.xy(),
             );
             if distance < PLAYER_RADIUS + bullet::BULLET_RADIUS {
-                commands.entity(player_entity).despawn_recursive();
+                player.health -= bullet.damage;
+                bullet.disabled = true;
             }
+        }
+    }
+}
+
+pub fn destroy_players(
+    mut commands: Commands,
+    players: Query<(Entity, &Player), Without<bullet::Bullet>>,
+) {
+    for (player_entity, player) in &players {
+        if player.health <= 0.0 {
+            commands.entity(player_entity).despawn_recursive();
         }
     }
 }
@@ -136,7 +154,7 @@ pub fn spawn_players(
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
                 transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(Vec3::new(-200.0, 0.0, 0.0)),
+                    .with_translation(Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0)),
                 ..default()
             },
         ))
@@ -155,7 +173,7 @@ pub fn spawn_players(
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
                 transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(Vec3::new(200.0, 0.0, 0.0))
+                    .with_translation(Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0))
                     .with_rotation(Quat::from_rotation_z(std::f32::consts::PI)),
                 ..default()
             },

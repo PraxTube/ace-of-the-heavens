@@ -61,7 +61,9 @@ fn main() {
                 player::reload_bullets,
                 bullet::fire_bullets,
                 bullet::move_bullets,
-                player::kill_players,
+                player::damage_players,
+                player::destroy_players,
+                bullet::destroy_bullets,
             )
                 .chain(),
         )

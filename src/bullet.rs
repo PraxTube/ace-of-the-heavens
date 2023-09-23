@@ -7,19 +7,24 @@ use crate::player;
 use crate::ImageAssets;
 
 const MOVE_SPEED: f32 = 300.0;
+const DAMAGE: f32 = 1.0;
 pub const BULLET_RADIUS: f32 = 1.0;
 
 #[derive(Component)]
 pub struct Bullet {
     current_speed: f32,
+    pub damage: f32,
     pub handle: usize,
+    pub disabled: bool,
 }
 
 impl Bullet {
     fn new(extra_speed: f32, handle: usize) -> Bullet {
         Bullet {
             current_speed: MOVE_SPEED + extra_speed,
+            damage: DAMAGE,
             handle,
+            disabled: false,
         }
     }
 }
@@ -59,5 +64,13 @@ pub fn move_bullets(time: Res<Time>, mut bullets: Query<(&mut Transform, &Bullet
     for (mut transform, bullet) in &mut bullets {
         let direction = transform.local_x();
         transform.translation += direction * bullet.current_speed * time.delta_seconds();
+    }
+}
+
+pub fn destroy_bullets(mut commands: Commands, bullets: Query<(Entity, &Bullet)>) {
+    for (entity, bullet) in &bullets {
+        if bullet.disabled {
+            commands.entity(entity).despawn_recursive();
+        }
     }
 }
