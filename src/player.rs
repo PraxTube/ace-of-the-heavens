@@ -136,6 +136,29 @@ pub fn destroy_players(
     }
 }
 
+fn spawn_player(
+    commands: &mut Commands,
+    texture_atlas_handle: Handle<TextureAtlas>,
+    player_handle: usize,
+    spawn_position: Vec3,
+    spawn_rotation: Quat,
+) {
+    commands
+        .spawn((
+            Player::new(player_handle),
+            BulletReady(true),
+            SpriteSheetBundle {
+                texture_atlas: texture_atlas_handle,
+                sprite: TextureAtlasSprite::new(0),
+                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
+                    .with_translation(spawn_position)
+                    .with_rotation(spawn_rotation),
+                ..default()
+            },
+        ))
+        .add_rollback();
+}
+
 pub fn spawn_players(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -146,37 +169,24 @@ pub fn spawn_players(
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands
-        .spawn((
-            Player::new(0),
-            BulletReady(true),
-            SpriteSheetBundle {
-                texture_atlas: texture_atlas_handle,
-                sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0)),
-                ..default()
-            },
-        ))
-        .add_rollback();
+    spawn_player(
+        &mut commands,
+        texture_atlas_handle,
+        0,
+        Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0),
+        Quat::from_rotation_z(0.0),
+    );
 
     let texture_handle = asset_server.load("plane2.png");
     let texture_atlas =
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands
-        .spawn((
-            Player::new(1),
-            BulletReady(true),
-            SpriteSheetBundle {
-                texture_atlas: texture_atlas_handle,
-                sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0))
-                    .with_rotation(Quat::from_rotation_z(std::f32::consts::PI)),
-                ..default()
-            },
-        ))
-        .add_rollback();
+    spawn_player(
+        &mut commands,
+        texture_atlas_handle,
+        1,
+        Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0),
+        Quat::from_rotation_z(std::f32::consts::PI),
+    );
 }
