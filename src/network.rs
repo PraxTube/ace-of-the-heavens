@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::{ggrs::PlayerType, *};
 use bevy_matchbox::prelude::*;
 
-use crate::player::LocalPlayerHandle;
+use crate::player::player::LocalPlayerHandle;
 use crate::GameState;
 
 pub struct GgrsConfig;

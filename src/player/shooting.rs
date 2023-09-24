@@ -3,7 +3,7 @@ use bevy_ggrs::*;
 
 use crate::input;
 use crate::network::GgrsConfig;
-use crate::player;
+use crate::player::player::Player;
 use crate::ImageAssets;
 
 const MOVE_SPEED: f32 = 300.0;
@@ -18,6 +18,9 @@ pub struct Bullet {
     pub disabled: bool,
 }
 
+#[derive(Component, Reflect, Default)]
+pub struct BulletReady(pub bool);
+
 impl Bullet {
     fn new(extra_speed: f32, handle: usize) -> Bullet {
         Bullet {
@@ -29,11 +32,23 @@ impl Bullet {
     }
 }
 
+pub fn reload_bullets(
+    inputs: Res<PlayerInputs<GgrsConfig>>,
+    mut players: Query<(&mut BulletReady, &Player)>,
+) {
+    for (mut bullet_ready, player) in &mut players {
+        let (input, _) = inputs[player.handle];
+        if !input::fire(input) {
+            bullet_ready.0 = true;
+        }
+    }
+}
+
 pub fn fire_bullets(
     mut commands: Commands,
     inputs: Res<PlayerInputs<GgrsConfig>>,
     images: Res<ImageAssets>,
-    mut players: Query<(&Transform, &player::Player, &mut player::BulletReady)>,
+    mut players: Query<(&Transform, &Player, &mut BulletReady)>,
 ) {
     for (transform, player, mut bullet_ready) in &mut players {
         let (input, _) = inputs[player.handle];

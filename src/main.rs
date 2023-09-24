@@ -2,7 +2,6 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_ggrs::*;
 
-mod bullet;
 mod environment;
 mod input;
 mod network;
@@ -36,7 +35,7 @@ fn main() {
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_rollback_component::<Transform>()
-                .register_rollback_component::<player::BulletReady>(),
+                .register_rollback_component::<player::shooting::BulletReady>(),
         )
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(
@@ -47,7 +46,7 @@ fn main() {
                 environment::spawn_background,
             ),
         )
-        .add_systems(OnEnter(GameState::InGame), player::spawn_players)
+        .add_systems(OnEnter(GameState::InGame), player::player::spawn_players)
         .add_systems(
             Update,
             network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
@@ -58,13 +57,13 @@ fn main() {
                 player::accelerate_players,
                 player::steer_players,
                 player::move_players,
-                player::reload_bullets,
-                bullet::fire_bullets,
-                bullet::move_bullets,
+                player::shooting::reload_bullets,
+                player::shooting::fire_bullets,
+                player::shooting::move_bullets,
                 player::damage_players,
-                player::destroy_players,
+                player::player::destroy_players,
                 player::update_health_bars,
-                bullet::destroy_bullets,
+                player::shooting::destroy_bullets,
             )
                 .chain(),
         )
