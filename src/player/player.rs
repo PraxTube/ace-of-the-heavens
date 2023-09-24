@@ -3,7 +3,7 @@ use bevy_ggrs::*;
 
 use crate::player::health::spawn_health_bar;
 use crate::player::shooting::Bullet;
-use crate::player::shooting::BulletReady;
+use crate::player::shooting::BulletTimer;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0;
@@ -57,7 +57,7 @@ fn spawn_player(
     commands
         .spawn((
             Player::new(handle),
-            BulletReady(true),
+            BulletTimer::default(),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
