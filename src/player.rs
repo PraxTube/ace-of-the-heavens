@@ -148,7 +148,7 @@ pub fn destroy_players(
 
 pub fn update_health_bars(
     mut health_bars: Query<
-        (&mut Transform, &HealthBar, &Children),
+        (&mut Transform, &HealthBar, &Children, &mut Visibility),
         (Without<Player>, Without<HealthBarFill>),
     >,
     mut health_bar_fills: Query<
@@ -158,7 +158,9 @@ pub fn update_health_bars(
     players: Query<(&Transform, &Player), Without<HealthBar>>,
 ) {
     for (player_transform, player) in &players {
-        for (mut health_bar_transform, health_bar, children) in &mut health_bars {
+        for (mut health_bar_transform, health_bar, children, mut health_bar_visibility) in
+            &mut health_bars
+        {
             if player.handle != health_bar.handle {
                 continue;
             }
@@ -168,7 +170,13 @@ pub fn update_health_bars(
             for &child in children {
                 let health_bar_fill = health_bar_fills.get_mut(child);
                 match health_bar_fill {
-                    Ok(mut fill) => fill.0.scale -= Vec3::new(0.002, 0.0, 0.0),
+                    Ok(mut fill) => {
+                        let x_fill = (player.health / MAX_HEALTH).clamp(0.0, 1.0);
+                        fill.0.scale = Vec3::new(x_fill, fill.0.scale.y, fill.0.scale.z);
+                        if x_fill == 0.0 {
+                            *health_bar_visibility = Visibility::Hidden;
+                        }
+                    }
                     Err(_) => {}
                 }
             }
