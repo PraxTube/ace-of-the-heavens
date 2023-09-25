@@ -52,6 +52,8 @@ fn main() {
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_rollback_component::<Transform>()
+                .register_rollback_component::<player::player::Player>()
+                .register_rollback_component::<player::shooting::Bullet>()
                 .register_rollback_component::<player::shooting::BulletTimer>(),
         )
         .insert_resource(ClearColor(Color::BLACK))

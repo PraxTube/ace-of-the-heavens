@@ -15,7 +15,7 @@ const RELOAD_TIME: f32 = 0.1;
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
 pub struct Bullet {
     current_speed: f32,
     pub damage: f32,

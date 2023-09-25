@@ -19,7 +19,7 @@ pub const MAX_HEALTH: f32 = 20.0;
 const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;
 
-#[derive(Component, Default)]
+#[derive(Component, Reflect, Default)]
 pub struct Player {
     pub handle: usize,
 

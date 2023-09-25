@@ -1,4 +1,5 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting;
@@ -113,6 +114,7 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
             )),
             ..default()
         },))
+        .add_rollback()
         .id();
     commands.entity(outer).push_children(&[inner]);
     commands.entity(main).push_children(&[outer, background]);
