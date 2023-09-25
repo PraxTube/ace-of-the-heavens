@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::environment::outside_of_borders;
 use crate::input;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
@@ -118,9 +119,9 @@ pub fn move_bullets(time: Res<Time>, mut bullets: Query<(&mut Transform, &Bullet
     }
 }
 
-pub fn destroy_bullets(mut commands: Commands, bullets: Query<(Entity, &Bullet)>) {
-    for (entity, bullet) in &bullets {
-        if bullet.disabled {
+pub fn destroy_bullets(mut commands: Commands, bullets: Query<(Entity, &Bullet, &Transform)>) {
+    for (entity, bullet, transform) in &bullets {
+        if bullet.disabled || outside_of_borders(transform.translation) {
             commands.entity(entity).despawn_recursive();
         }
     }

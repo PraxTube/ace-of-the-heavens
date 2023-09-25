@@ -1,5 +1,10 @@
 use bevy::prelude::*;
 
+const BORDER_MIN_X: f32 = -800.0;
+const BORDER_MAX_X: f32 = 800.0;
+const BORDER_MIN_Y: f32 = -448.0;
+const BORDER_MAX_Y: f32 = 448.0;
+
 pub fn spawn_background(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -15,4 +20,13 @@ pub fn spawn_background(
         transform: Transform::from_translation(Vec3::new(0.0, 0.0, -1000.0)),
         ..default()
     });
+}
+
+pub fn outside_of_borders(target_position: Vec3) -> bool {
+    if target_position.x < BORDER_MIN_X || target_position.x > BORDER_MAX_X {
+        return true;
+    } else if target_position.y < BORDER_MIN_Y || target_position.y > BORDER_MAX_Y {
+        return true;
+    }
+    false
 }

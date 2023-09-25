@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::environment::outside_of_borders;
 use crate::player::health::spawn_health_bar;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
@@ -39,9 +40,13 @@ impl Player {
 #[derive(Resource)]
 pub struct LocalPlayerHandle(pub usize);
 
-pub fn destroy_players(mut commands: Commands, players: Query<(Entity, &Player), Without<Bullet>>) {
-    for (player_entity, player) in &players {
-        if player.health <= 0.0 {
+pub fn destroy_players(
+    mut commands: Commands,
+    mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
+) {
+    for (player_entity, mut player, transform) in &mut players {
+        if player.health <= 0.0 || outside_of_borders(transform.translation) {
+            player.health = 0.0;
             commands.entity(player_entity).despawn_recursive();
         }
     }
