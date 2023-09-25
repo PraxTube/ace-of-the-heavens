@@ -14,6 +14,9 @@ const RELOAD_TIME: f32 = 0.1;
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
 
+const PLAYER_ONE_BULLET_COLOR: Color = Color::rgb(0.8745, 0.4431, 0.1490);
+const PLAYER_TWO_BULLET_COLOR: Color = Color::rgb(0.1255, 0.5569, 0.8509);
+
 #[derive(Component)]
 pub struct Bullet {
     current_speed: f32,
@@ -61,6 +64,11 @@ fn spawn_bullet(
     images: &Res<ImageAssets>,
     spawn_offset: Vec3,
 ) {
+    let bullet_color = if player.handle == 0 {
+        PLAYER_ONE_BULLET_COLOR
+    } else {
+        PLAYER_TWO_BULLET_COLOR
+    };
     commands
         .spawn((
             Bullet::new(player.current_speed, player.handle),
@@ -72,6 +80,7 @@ fn spawn_bullet(
                 texture: images.bullet.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(10.0, 3.0)),
+                    color: bullet_color,
                     ..default()
                 },
                 ..default()
