@@ -37,7 +37,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        present_mode: PresentMode::Immediate,
+                        present_mode: PresentMode::Fifo,
                         ..default()
                     }),
                     ..default()

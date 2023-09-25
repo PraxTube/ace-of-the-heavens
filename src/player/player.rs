@@ -9,7 +9,7 @@ use crate::player::shooting::BulletTimer;
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
 pub const MIN_SPEED: f32 = 200.0 / 60.0;
-pub const DELTA_SPEED: f32 = 75.0 / 60.0;
+pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 20.0;
@@ -43,12 +43,18 @@ pub struct LocalPlayerHandle(pub usize);
 pub fn destroy_players(
     mut commands: Commands,
     mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
+    asset_server: Res<AssetServer>,
+    texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     for (player_entity, mut player, transform) in &mut players {
         if player.health <= 0.0 || outside_of_borders(transform.translation) {
             player.health = 0.0;
             commands.entity(player_entity).despawn_recursive();
         }
+    }
+
+    if players.iter().count() == 0 {
+        spawn_players(commands, asset_server, texture_atlases);
     }
 }
 
