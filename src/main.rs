@@ -1,5 +1,6 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
+use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 
 mod environment;
@@ -30,7 +31,10 @@ fn main() {
             LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
         )
         .add_collection_to_loading_state::<_, ImageAssets>(GameState::AssetLoading)
-        .add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()),))
+        .add_plugins((DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .build()
+            .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
