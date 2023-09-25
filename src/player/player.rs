@@ -7,14 +7,14 @@ use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
 // Movement
-pub const MAX_SPEED: f32 = 400.0;
-pub const MIN_SPEED: f32 = 200.0;
-pub const DELTA_SPEED: f32 = 75.0;
-pub const DELTA_STEERING: f32 = 3.5;
+pub const MAX_SPEED: f32 = 400.0 / 60.0;
+pub const MIN_SPEED: f32 = 200.0 / 60.0;
+pub const DELTA_SPEED: f32 = 75.0 / 60.0;
+pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 20.0;
 // Health
-pub const MAX_HEALTH: f32 = 3.0;
+pub const MAX_HEALTH: f32 = 20.0;
 // Spawning
 const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;

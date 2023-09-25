@@ -7,7 +7,7 @@ use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::ImageAssets;
 
-const MOVE_SPEED: f32 = 350.0;
+const MOVE_SPEED: f32 = 350.0 / 60.0;
 const DAMAGE: f32 = 1.0;
 pub const BULLET_RADIUS: f32 = 1.0;
 const RELOAD_TIME: f32 = 0.1;
@@ -112,10 +112,10 @@ pub fn fire_bullets(
     }
 }
 
-pub fn move_bullets(time: Res<Time>, mut bullets: Query<(&mut Transform, &Bullet)>) {
+pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet)>) {
     for (mut transform, bullet) in &mut bullets {
         let direction = transform.local_x();
-        transform.translation += direction * bullet.current_speed * time.delta_seconds();
+        transform.translation += direction * bullet.current_speed;
     }
 }
 

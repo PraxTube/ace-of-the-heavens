@@ -14,7 +14,8 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = { version = "0.11.2" }
+#bevy = { version = "0.11.2"}
+bevy = { version = "0.11.2", features = ["dynamic_linking"] }
 bevy_asset_loader = "0.17.0"
 bevy_ggrs = { version = "0.13" }
 bevy_matchbox = { version = "0.7", features = ["ggrs"] }

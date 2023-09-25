@@ -1,3 +1,5 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::window::{PresentMode, Window};
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
@@ -31,10 +33,21 @@ fn main() {
             LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
         )
         .add_collection_to_loading_state::<_, ImageAssets>(GameState::AssetLoading)
-        .add_plugins((DefaultPlugins
-            .set(ImagePlugin::default_nearest())
-            .build()
-            .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),))
+        .add_plugins((
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::Immediate,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest())
+                .build()
+                .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
+            LogDiagnosticsPlugin::default(),
+            FrameTimeDiagnosticsPlugin::default(),
+        ))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
@@ -53,7 +66,10 @@ fn main() {
         .add_systems(OnEnter(GameState::InGame), player::player::spawn_players)
         .add_systems(
             Update,
-            network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+            (
+                network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+                player::shooting::reload_bullets,
+            ),
         )
         .add_systems(
             GgrsSchedule,
@@ -61,7 +77,6 @@ fn main() {
                 player::accelerate_players,
                 player::steer_players,
                 player::move_players,
-                player::shooting::reload_bullets,
                 player::shooting::fire_bullets,
                 player::shooting::move_bullets,
                 player::damage_players,
