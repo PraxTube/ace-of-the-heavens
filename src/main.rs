@@ -59,20 +59,12 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(
             OnEnter(GameState::Matchmaking),
-            (
-                setup,
-                network::start_matchbox_socket,
-                environment::spawn_background,
-            ),
+            (setup, environment::spawn_background),
         )
         .add_systems(OnEnter(GameState::InGame), player::player::spawn_players)
         .add_systems(
             Update,
-            (
-                network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
-                network::print_events_system.run_if(in_state(GameState::InGame)),
-                player::shooting::reload_bullets,
-            ),
+            (network::wait_for_players.run_if(in_state(GameState::Matchmaking)),),
         )
         .add_systems(
             GgrsSchedule,
@@ -80,6 +72,7 @@ fn main() {
                 player::accelerate_players,
                 player::steer_players,
                 player::move_players,
+                player::shooting::reload_bullets,
                 player::shooting::fire_bullets,
                 player::shooting::move_bullets,
                 player::damage_players,

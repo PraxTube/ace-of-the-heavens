@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use bevy_ggrs::{ggrs::PlayerType, *};
+use bevy_ggrs::*;
 use bevy_matchbox::prelude::*;
-use ggrs::GGRSEvent as GgrsEvent;
+use ggrs::{PlayerType, SessionBuilder};
 
-use crate::player::player::LocalPlayerHandle;
 use crate::GameState;
 
 #[derive(Debug)]
@@ -15,72 +14,25 @@ impl ggrs::Config for GgrsConfig {
     type Address = PeerId;
 }
 
-pub fn start_matchbox_socket(mut commands: Commands) {
-    // Change this to IP address (e.g. 192.168.420.69:3536/)
-    // You can optain your IP address on Linux using
-    // ip addr show | grep inet
-    let room_url = "ws://localhost:3536/";
-    info!("connection to matchbox server: {}", room_url);
-    commands.insert_resource(MatchboxSocket::new_ggrs(room_url));
-}
-
-pub fn wait_for_players(
-    mut commands: Commands,
-    mut socket: ResMut<MatchboxSocket<SingleChannel>>,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
-    if socket.get_channel(0).is_err() {
-        return;
-    }
-
-    socket.update_peers();
-    let players = socket.players();
-
+pub fn wait_for_players(mut commands: Commands, mut next_state: ResMut<NextState<GameState>>) {
     let num_players = 2;
-    if players.len() < num_players {
-        return;
-    }
-
-    info!("all peers have joined, going in-game");
-
-    let mut session_builder = ggrs::SessionBuilder::<GgrsConfig>::new()
+    let mut sess_build = SessionBuilder::<GgrsConfig>::new()
         .with_num_players(num_players)
-        .with_desync_detection_mode(ggrs::DesyncDetection::On { interval: 100 })
+        .with_check_distance(7)
         .with_input_delay(2);
 
-    for (i, player) in players.into_iter().enumerate() {
-        if player == PlayerType::Local {
-            commands.insert_resource(LocalPlayerHandle(i))
-        }
-        session_builder = session_builder
-            .add_player(player, i)
+    for i in 0..num_players {
+        sess_build = sess_build
+            .add_player(PlayerType::Local, i)
             .expect("failed to add player");
     }
 
-    let channel = socket.take_channel(0).unwrap();
-
-    let ggrs_session = session_builder
-        .start_p2p_session(channel)
+    // start the GGRS session
+    let sess = sess_build
+        .start_synctest_session()
         .expect("failed to start session");
 
-    commands.insert_resource(bevy_ggrs::Session::P2P(ggrs_session));
+    commands.insert_resource(bevy_ggrs::Session::SyncTest(sess));
 
     next_state.set(GameState::InGame)
-}
-
-pub fn print_events_system(mut session: ResMut<Session<GgrsConfig>>) {
-    match session.as_mut() {
-        Session::P2P(s) => {
-            for event in s.events() {
-                match event {
-                    GgrsEvent::Disconnected { .. } | GgrsEvent::NetworkInterrupted { .. } => {
-                        warn!("GGRS event: {event:?}")
-                    }
-                    GgrsEvent::DesyncDetected { .. } => error!("GGRS event: {event:?}"),
-                    _ => info!("GGRS event: {event:?}"),
-                }
-            }
-        }
-        _ => panic!("This example focuses on p2p."),
-    }
 }

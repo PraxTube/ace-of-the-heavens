@@ -81,6 +81,7 @@ pub fn update_health_bars(
 pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
     let main = commands
         .spawn((HealthBar { handle }, SpatialBundle::default()))
+        .add_rollback()
         .id();
     let background = commands
         .spawn((SpriteBundle {
@@ -96,9 +97,11 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
             )),
             ..default()
         },))
+        .add_rollback()
         .id();
     let outer = commands
         .spawn((HealthBarFill, SpatialBundle::default()))
+        .add_rollback()
         .id();
     let inner = commands
         .spawn((SpriteBundle {
@@ -116,6 +119,6 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
         },))
         .add_rollback()
         .id();
-    commands.entity(outer).push_children(&[inner]);
     commands.entity(main).push_children(&[outer, background]);
+    commands.entity(outer).push_children(&[inner]);
 }
