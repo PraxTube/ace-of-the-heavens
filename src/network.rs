@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use bevy_ggrs::{ggrs::PlayerType, *};
 use bevy_matchbox::prelude::*;
+use ggrs::GGRSEvent as GgrsEvent;
 
 use crate::player::player::LocalPlayerHandle;
 use crate::GameState;
 
+#[derive(Debug)]
 pub struct GgrsConfig;
 
 impl ggrs::Config for GgrsConfig {
@@ -43,6 +45,7 @@ pub fn wait_for_players(
 
     let mut session_builder = ggrs::SessionBuilder::<GgrsConfig>::new()
         .with_num_players(num_players)
+        .with_desync_detection_mode(ggrs::DesyncDetection::On { interval: 100 })
         .with_input_delay(2);
 
     for (i, player) in players.into_iter().enumerate() {
@@ -63,4 +66,21 @@ pub fn wait_for_players(
     commands.insert_resource(bevy_ggrs::Session::P2P(ggrs_session));
 
     next_state.set(GameState::InGame)
+}
+
+pub fn print_events_system(mut session: ResMut<Session<GgrsConfig>>) {
+    match session.as_mut() {
+        Session::P2P(s) => {
+            for event in s.events() {
+                match event {
+                    GgrsEvent::Disconnected { .. } | GgrsEvent::NetworkInterrupted { .. } => {
+                        warn!("GGRS event: {event:?}")
+                    }
+                    GgrsEvent::DesyncDetected { .. } => error!("GGRS event: {event:?}"),
+                    _ => info!("GGRS event: {event:?}"),
+                }
+            }
+        }
+        _ => panic!("This example focuses on p2p."),
+    }
 }
