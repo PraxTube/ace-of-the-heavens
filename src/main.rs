@@ -1,4 +1,4 @@
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+//use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{PresentMode, Window};
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
@@ -45,8 +45,8 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .build()
                 .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
-            LogDiagnosticsPlugin::default(),
-            FrameTimeDiagnosticsPlugin::default(),
+            //LogDiagnosticsPlugin::default(),
+            //FrameTimeDiagnosticsPlugin::default(),
         ))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
@@ -68,6 +68,7 @@ fn main() {
             Update,
             (
                 network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+                network::print_events_system.run_if(in_state(GameState::InGame)),
                 player::shooting::reload_bullets,
             ),
         )
