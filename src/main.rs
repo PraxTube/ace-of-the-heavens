@@ -71,7 +71,6 @@ fn main() {
             (
                 network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
                 network::print_events_system.run_if(in_state(GameState::InGame)),
-                player::shooting::reload_bullets,
             ),
         )
         .add_systems(
@@ -80,6 +79,7 @@ fn main() {
                 player::accelerate_players,
                 player::steer_players,
                 player::move_players,
+                player::shooting::reload_bullets,
                 player::shooting::fire_bullets,
                 player::shooting::move_bullets,
                 player::damage_players,
