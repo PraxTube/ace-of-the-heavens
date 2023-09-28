@@ -5,6 +5,7 @@ use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 
+mod debug;
 mod environment;
 mod input;
 mod network;
@@ -52,6 +53,7 @@ fn main() {
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_rollback_component::<Transform>()
+                .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
                 .register_rollback_component::<player::shooting::Bullet>()
                 .register_rollback_component::<player::shooting::BulletTimer>(),

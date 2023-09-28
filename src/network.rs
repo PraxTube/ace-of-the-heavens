@@ -45,7 +45,7 @@ pub fn wait_for_players(
 
     let mut session_builder = ggrs::SessionBuilder::<GgrsConfig>::new()
         .with_num_players(num_players)
-        .with_desync_detection_mode(ggrs::DesyncDetection::On { interval: 100 })
+        .with_desync_detection_mode(ggrs::DesyncDetection::On { interval: 10 })
         .with_input_delay(2);
 
     for (i, player) in players.into_iter().enumerate() {

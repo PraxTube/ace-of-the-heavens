@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::debug::DebugTransform;
 use crate::environment::outside_of_borders;
 use crate::player::health::spawn_health_bar;
 use crate::player::shooting::Bullet;
@@ -65,16 +66,18 @@ fn spawn_player(
     spawn_position: Vec3,
     spawn_rotation: Quat,
 ) {
+    let transform = Transform::from_scale(Vec3::splat(PLAYER_SCALE))
+        .with_translation(spawn_position)
+        .with_rotation(spawn_rotation);
     commands
         .spawn((
             Player::new(handle),
             BulletTimer::default(),
+            DebugTransform::new(&transform),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
                 sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-                    .with_translation(spawn_position)
-                    .with_rotation(spawn_rotation),
+                transform,
                 ..default()
             },
         ))

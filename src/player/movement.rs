@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::debug::DebugTransform;
 use crate::input;
 use crate::network::GgrsConfig;
 use crate::player::player::{Player, DELTA_SPEED, DELTA_STEERING, MAX_SPEED, MIN_SPEED};
 
 pub fn steer_players(
     inputs: Res<PlayerInputs<GgrsConfig>>,
-    mut players: Query<(&mut Transform, &Player)>,
+    mut players: Query<(&mut Transform, &Player, &mut DebugTransform)>,
 ) {
-    for (mut transform, player) in &mut players {
+    for (mut transform, player, mut debug_transform) in &mut players {
         let (input, _) = inputs[player.handle];
 
         let steer_direction = input::steer_direction(input);
@@ -20,6 +21,7 @@ pub fn steer_players(
 
         let rotation = DELTA_STEERING * steer_direction;
         transform.rotate_z(rotation);
+        debug_transform.update(&transform);
     }
 }
 
@@ -38,9 +40,10 @@ pub fn accelerate_players(inputs: Res<PlayerInputs<GgrsConfig>>, mut players: Qu
     }
 }
 
-pub fn move_players(mut players: Query<(&mut Transform, &Player)>) {
-    for (mut transform, player) in &mut players {
+pub fn move_players(mut players: Query<(&mut Transform, &Player, &mut DebugTransform)>) {
+    for (mut transform, player, mut debug_transform) in &mut players {
         let direction = transform.local_x();
         transform.translation += direction * player.current_speed;
+        debug_transform.update(&transform);
     }
 }

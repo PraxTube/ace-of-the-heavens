@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::debug::DebugTransform;
 use crate::environment::outside_of_borders;
 use crate::input;
 use crate::network::GgrsConfig;
@@ -62,14 +63,16 @@ fn spawn_bullet(
     images: &Res<ImageAssets>,
     spawn_offset: Vec3,
 ) {
+    let transform = Transform::from_translation(
+        player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
+    )
+    .with_rotation(player_transform.rotation);
     commands
         .spawn((
             Bullet::new(player.current_speed, player.handle),
+            DebugTransform::new(&transform),
             SpriteBundle {
-                transform: Transform::from_translation(
-                    player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
-                )
-                .with_rotation(player_transform.rotation),
+                transform,
                 texture: images.bullet.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(10.0, 3.0)),
@@ -112,10 +115,11 @@ pub fn fire_bullets(
     }
 }
 
-pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet)>) {
-    for (mut transform, bullet) in &mut bullets {
+pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet, &mut DebugTransform)>) {
+    for (mut transform, bullet, mut debug_transform) in &mut bullets {
         let direction = transform.local_x();
         transform.translation += direction * bullet.current_speed;
+        debug_transform.update(&transform);
     }
 }
 
