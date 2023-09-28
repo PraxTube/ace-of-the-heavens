@@ -9,7 +9,7 @@ pub struct DebugVec3(Vec3);
 pub struct DebugQuat(Quat);
 
 impl Hash for DebugVec3 {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.x.to_bits().hash(state);
         self.0.y.to_bits().hash(state);
         self.0.z.to_bits().hash(state);

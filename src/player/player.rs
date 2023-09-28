@@ -1,3 +1,5 @@
+use std::hash::{Hash, Hasher};
+
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
@@ -21,6 +23,7 @@ const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;
 
 #[derive(Component, Reflect, Default)]
+#[reflect(Hash)]
 pub struct Player {
     pub handle: usize,
 
@@ -35,6 +38,13 @@ impl Player {
             current_speed: MIN_SPEED,
             health: MAX_HEALTH,
         }
+    }
+}
+
+impl Hash for Player {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.current_speed.to_bits().hash(state);
+        self.health.to_bits().hash(state);
     }
 }
 

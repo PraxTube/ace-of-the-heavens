@@ -1,3 +1,5 @@
+use std::hash::{Hash, Hasher};
+
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
@@ -17,6 +19,7 @@ const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
 
 #[derive(Component, Reflect, Default)]
+#[reflect(Hash)]
 pub struct Bullet {
     current_speed: f32,
     pub damage: f32,
@@ -35,7 +38,14 @@ impl Bullet {
     }
 }
 
+impl Hash for Bullet {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.damage.to_bits().hash(state);
+    }
+}
+
 #[derive(Component, Reflect, Default)]
+#[reflect(Hash)]
 pub struct BulletTimer {
     timer: Timer,
 }
@@ -48,11 +58,18 @@ impl BulletTimer {
     }
 }
 
+impl Hash for BulletTimer {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.timer.duration().as_secs_f32().to_bits().hash(state);
+    }
+}
+
 pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     for mut bullet_timer in &mut players {
         if !bullet_timer.timer.finished() {
             bullet_timer
                 .timer
+                // TODO use gloabal FPS from GGRSSchedule
                 .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
         }
     }
