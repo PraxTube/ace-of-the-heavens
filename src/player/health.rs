@@ -1,6 +1,7 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_ggrs::AddRollbackCommandExtension;
 
+use crate::debug::DebugTransform;
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting;
 
@@ -42,24 +43,36 @@ pub fn damage_players(
 
 pub fn update_health_bars(
     mut health_bars: Query<
-        (&mut Transform, &HealthBar, &Children, &mut Visibility),
+        (
+            &mut Transform,
+            &HealthBar,
+            &Children,
+            &mut Visibility,
+            &mut DebugTransform,
+        ),
         (Without<Player>, Without<HealthBarFill>),
     >,
     mut health_bar_fills: Query<
-        (&mut Transform, &HealthBarFill),
+        (&mut Transform, &HealthBarFill, &mut DebugTransform),
         (Without<Player>, Without<HealthBar>),
     >,
     players: Query<(&Transform, &Player), Without<HealthBar>>,
 ) {
     for (player_transform, player) in &players {
-        for (mut health_bar_transform, health_bar, children, mut health_bar_visibility) in
-            &mut health_bars
+        for (
+            mut health_bar_transform,
+            health_bar,
+            children,
+            mut health_bar_visibility,
+            mut health_bar_debug_transform,
+        ) in &mut health_bars
         {
             if player.handle != health_bar.handle {
                 continue;
             }
 
             health_bar_transform.translation = player_transform.translation + HEALTH_BAR_OFFSET;
+            health_bar_debug_transform.update(&health_bar_transform);
 
             for &child in children {
                 let health_bar_fill = health_bar_fills.get_mut(child);
@@ -70,6 +83,7 @@ pub fn update_health_bars(
                         if x_fill == 0.0 {
                             *health_bar_visibility = Visibility::Hidden;
                         }
+                        fill.2.update(&fill.0);
                     }
                     Err(_) => {}
                 }
@@ -79,44 +93,62 @@ pub fn update_health_bars(
 }
 
 pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
+    let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
+        HEALTH_BAR_SCALE.x / 2.0,
+        0.0,
+        0.0,
+    ));
+
     let main = commands
-        .spawn((HealthBar { handle }, SpatialBundle::default()))
+        .spawn((
+            HealthBar { handle },
+            DebugTransform::default(),
+            SpatialBundle::default(),
+        ))
         .add_rollback()
         .id();
     let background = commands
-        .spawn((SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgb(0.2, 0.2, 0.2),
-                custom_size: Some(Vec2::new(1.0, 1.0)),
+        .spawn((
+            DebugTransform::new(&transform),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb(0.2, 0.2, 0.2),
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
                 ..default()
             },
-            transform: Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
-                HEALTH_BAR_SCALE.x / 2.0,
-                0.0,
-                0.0,
-            )),
-            ..default()
-        },))
+        ))
         .add_rollback()
         .id();
     let outer = commands
-        .spawn((HealthBarFill, SpatialBundle::default()))
+        .spawn((
+            HealthBarFill,
+            DebugTransform::default(),
+            SpatialBundle::default(),
+        ))
         .add_rollback()
         .id();
+
+    let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
+        HEALTH_BAR_SCALE.x / 2.0,
+        0.0,
+        10.0,
+    ));
     let inner = commands
-        .spawn((SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgb(0.8, 0.0, 0.0),
-                custom_size: Some(Vec2::new(1.0, 1.0)),
+        .spawn((
+            DebugTransform::new(&transform),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb(0.8, 0.0, 0.0),
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
                 ..default()
             },
-            transform: Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
-                HEALTH_BAR_SCALE.x / 2.0,
-                0.0,
-                10.0,
-            )),
-            ..default()
-        },))
+        ))
         .add_rollback()
         .id();
     commands.entity(outer).push_children(&[inner]);
