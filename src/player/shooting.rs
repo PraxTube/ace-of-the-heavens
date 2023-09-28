@@ -48,10 +48,12 @@ impl BulletTimer {
     }
 }
 
-pub fn reload_bullets(time: Res<Time>, mut players: Query<&mut BulletTimer, With<Player>>) {
+pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     for mut bullet_timer in &mut players {
         if !bullet_timer.timer.finished() {
-            bullet_timer.timer.tick(time.delta());
+            bullet_timer
+                .timer
+                .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
         }
     }
 }
