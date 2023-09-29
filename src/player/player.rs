@@ -17,7 +17,7 @@ pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 20.0;
 // Health
-pub const MAX_HEALTH: f32 = 20.0;
+pub const MAX_HEALTH: u32 = 20;
 // Spawning
 const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;
@@ -28,7 +28,7 @@ pub struct Player {
     pub handle: usize,
 
     pub current_speed: f32,
-    pub health: f32,
+    pub health: u32,
 }
 
 impl Player {
@@ -44,7 +44,6 @@ impl Player {
 impl Hash for Player {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.current_speed.to_bits().hash(state);
-        self.health.to_bits().hash(state);
     }
 }
 
@@ -58,8 +57,8 @@ pub fn destroy_players(
     texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     for (player_entity, mut player, transform) in &mut players {
-        if player.health <= 0.0 || outside_of_borders(transform.translation) {
-            player.health = 0.0;
+        if player.health <= 0 || outside_of_borders(transform.translation) {
+            player.health = 0;
             commands.entity(player_entity).despawn_recursive();
         }
     }

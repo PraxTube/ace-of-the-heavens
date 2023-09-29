@@ -11,7 +11,7 @@ use crate::player::player::Player;
 use crate::ImageAssets;
 
 const MOVE_SPEED: f32 = 350.0 / 60.0;
-const DAMAGE: f32 = 1.0;
+const DAMAGE: u32 = 1;
 pub const BULLET_RADIUS: f32 = 1.0;
 const RELOAD_TIME: f32 = 0.1;
 
@@ -22,7 +22,7 @@ const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
 #[reflect(Hash)]
 pub struct Bullet {
     current_speed: f32,
-    pub damage: f32,
+    pub damage: u32,
     pub handle: usize,
     pub disabled: bool,
 }
@@ -40,7 +40,7 @@ impl Bullet {
 
 impl Hash for Bullet {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.damage.to_bits().hash(state);
+        self.current_speed.to_bits().hash(state);
     }
 }
 

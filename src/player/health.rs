@@ -78,9 +78,10 @@ pub fn update_health_bars(
                 let health_bar_fill = health_bar_fills.get_mut(child);
                 match health_bar_fill {
                     Ok(mut fill) => {
-                        let x_fill = (player.health / MAX_HEALTH).clamp(0.0, 1.0);
-                        fill.0.scale = Vec3::new(x_fill, fill.0.scale.y, fill.0.scale.z);
-                        if x_fill == 0.0 {
+                        let x_fill = (100 * player.health / MAX_HEALTH).clamp(0, 100);
+                        fill.0.scale =
+                            Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
+                        if x_fill == 0 {
                             *health_bar_visibility = Visibility::Hidden;
                         }
                         fill.2.update(&fill.0);
