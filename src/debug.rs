@@ -2,6 +2,9 @@ use std::hash::{Hash, Hasher};
 
 use bevy::prelude::*;
 
+use crate::player::player::Player;
+use crate::player::shooting::BulletTimer;
+
 #[derive(Reflect, Component, Default)]
 #[reflect(Hash)]
 pub struct DebugVec3(Vec3);
@@ -47,5 +50,18 @@ impl DebugTransform {
             quat: DebugQuat(t.rotation),
             scale: DebugVec3(t.scale),
         }
+    }
+}
+
+pub fn trigger_desync(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut bullet_timers: Query<&mut BulletTimer, With<Player>>,
+) {
+    if !keyboard_input.pressed(KeyCode::ShiftLeft) {
+        return;
+    }
+
+    for mut bullet_timer in &mut bullet_timers {
+        bullet_timer.timer.reset();
     }
 }

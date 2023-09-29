@@ -47,7 +47,7 @@ impl Hash for Bullet {
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
 pub struct BulletTimer {
-    timer: Timer,
+    pub timer: Timer,
 }
 
 impl BulletTimer {
