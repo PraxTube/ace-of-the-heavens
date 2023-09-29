@@ -83,6 +83,7 @@ fn main() {
                 player::accelerate_players,
                 player::steer_players,
                 player::move_players,
+                player::shooting::cooldown_heat,
                 player::shooting::reload_bullets,
                 player::shooting::fire_bullets,
                 player::shooting::move_bullets,

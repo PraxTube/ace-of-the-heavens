@@ -11,9 +11,14 @@ use crate::player::player::Player;
 use crate::ImageAssets;
 
 const MOVE_SPEED: f32 = 350.0 / 60.0;
-const DAMAGE: u32 = 1;
 pub const BULLET_RADIUS: f32 = 1.0;
+
+const DAMAGE: u32 = 1;
 const RELOAD_TIME: f32 = 0.1;
+const OVERHEAT: u32 = 1000;
+const HEAT_COOLDOWN: u32 = 15;
+const HEAT_COOLDOWN_OVERHEAT: u32 = 5;
+const FIRE_HEAT: u32 = 120;
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
@@ -75,6 +80,32 @@ pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     }
 }
 
+pub fn cooldown_heat(mut players: Query<&mut Player>) {
+    for mut player in &mut players {
+        if player.overheated {
+            if player.heat <= HEAT_COOLDOWN_OVERHEAT {
+                player.overheated = false;
+                player.heat = 0;
+            } else {
+                player.heat -= HEAT_COOLDOWN_OVERHEAT;
+            }
+            continue;
+        }
+
+        player.heat = if player.heat <= HEAT_COOLDOWN {
+            0
+        } else {
+            player.heat - HEAT_COOLDOWN
+        };
+
+        if player.heat >= OVERHEAT {
+            player.overheated = true;
+        }
+
+        info!("{}", player.heat);
+    }
+}
+
 fn spawn_bullet(
     commands: &mut Commands,
     player: &Player,
@@ -107,29 +138,33 @@ pub fn fire_bullets(
     mut commands: Commands,
     inputs: Res<PlayerInputs<GgrsConfig>>,
     images: Res<ImageAssets>,
-    mut players: Query<(&Transform, &Player, &mut BulletTimer)>,
+    mut players: Query<(&Transform, &mut Player, &mut BulletTimer)>,
 ) {
-    for (player_transform, player, mut bullet_timer) in &mut players {
+    for (player_transform, mut player, mut bullet_timer) in &mut players {
         let (input, _) = inputs[player.handle];
         if !input::fire(input) || !bullet_timer.timer.finished() {
+            continue;
+        }
+        if player.overheated {
             continue;
         }
 
         spawn_bullet(
             &mut commands,
-            player,
+            &player,
             player_transform,
             &images,
             LEFT_WING_BULLET_SPAWN,
         );
         spawn_bullet(
             &mut commands,
-            player,
+            &player,
             player_transform,
             &images,
             RIGHT_WING_BULLET_SPAWN,
         );
 
+        player.heat += FIRE_HEAT;
         bullet_timer.timer.reset();
     }
 }

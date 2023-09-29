@@ -29,6 +29,8 @@ pub struct Player {
 
     pub current_speed: f32,
     pub health: u32,
+    pub heat: u32,
+    pub overheated: bool,
 }
 
 impl Player {
@@ -37,6 +39,8 @@ impl Player {
             handle,
             current_speed: MIN_SPEED,
             health: MAX_HEALTH,
+            heat: 0,
+            overheated: false,
         }
     }
 }
