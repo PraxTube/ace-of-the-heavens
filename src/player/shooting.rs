@@ -5,6 +5,7 @@ use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
 use crate::environment::outside_of_borders;
+use crate::flog;
 use crate::input;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;

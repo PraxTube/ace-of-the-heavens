@@ -2,6 +2,7 @@ use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
+use crate::flog;
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting;
 
@@ -38,6 +39,7 @@ pub fn damage_players(
                 bullet.disabled = true;
             }
         }
+        flog!("health.log", "P{}: {}", player.handle, player.health);
     }
 }
 

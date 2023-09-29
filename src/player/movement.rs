@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
+use crate::flog;
 use crate::input;
 use crate::network::GgrsConfig;
 use crate::player::player::{Player, DELTA_SPEED, DELTA_STEERING, MAX_SPEED, MIN_SPEED};
@@ -22,6 +23,12 @@ pub fn steer_players(
         let rotation = DELTA_STEERING * steer_direction;
         transform.rotate_z(rotation);
         debug_transform.update(&transform);
+        flog!(
+            "p_rotation.log",
+            "P{}: {}",
+            player.handle,
+            transform.rotation
+        );
     }
 }
 
@@ -45,5 +52,11 @@ pub fn move_players(mut players: Query<(&mut Transform, &Player, &mut DebugTrans
         let direction = transform.local_x();
         transform.translation += direction * player.current_speed;
         debug_transform.update(&transform);
+        flog!(
+            "p_transform.log",
+            "P{}: {}",
+            player.handle,
+            transform.translation
+        );
     }
 }

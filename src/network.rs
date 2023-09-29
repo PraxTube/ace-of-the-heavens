@@ -19,7 +19,7 @@ pub fn start_matchbox_socket(mut commands: Commands) {
     // Change this to IP address (e.g. 192.168.420.69:3536/)
     // You can optain your IP address on Linux using
     // ip addr show | grep inet
-    let room_url = "ws://localhost:3536/";
+    let room_url = "ws://192.168.178.30:3536/";
     info!("connection to matchbox server: {}", room_url);
     commands.insert_resource(MatchboxSocket::new_ggrs(room_url));
 }
