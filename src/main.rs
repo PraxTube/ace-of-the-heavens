@@ -8,6 +8,7 @@ use bevy_ggrs::*;
 mod debug;
 mod environment;
 mod input;
+mod log;
 mod network;
 mod player;
 

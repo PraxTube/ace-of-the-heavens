@@ -1,5 +1,6 @@
-use bevy::prelude::*;
 use std::hash::{Hash, Hasher};
+
+use bevy::prelude::*;
 
 #[derive(Reflect, Component, Default)]
 #[reflect(Hash)]

@@ -20,3 +20,5 @@ bevy_asset_loader = "0.17.0"
 bevy_ggrs = { version = "0.13" }
 bevy_matchbox = { version = "0.7", features = ["ggrs"] }
 bevy_embedded_assets = "0.8.0"
+
+chrono = "0.4.31"
