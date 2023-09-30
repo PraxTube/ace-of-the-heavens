@@ -90,6 +90,7 @@ fn main() {
                 player::damage_players,
                 player::player::destroy_players,
                 player::update_health_bars,
+                player::shooting::update_reload_bars,
                 player::shooting::destroy_bullets,
             )
                 .chain(),

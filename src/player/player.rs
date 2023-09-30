@@ -6,6 +6,7 @@ use bevy_ggrs::*;
 use crate::debug::DebugTransform;
 use crate::environment::outside_of_borders;
 use crate::player::health::spawn_health_bar;
+use crate::player::shooting::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
@@ -116,6 +117,7 @@ pub fn spawn_players(
         Quat::from_rotation_z(0.0),
     );
     spawn_health_bar(&mut commands, handle);
+    spawn_reload_bars(&mut commands, handle);
 
     let texture_handle = asset_server.load("plane2.png");
     let texture_atlas =
@@ -131,4 +133,5 @@ pub fn spawn_players(
         Quat::from_rotation_z(std::f32::consts::PI),
     );
     spawn_health_bar(&mut commands, handle);
+    spawn_reload_bars(&mut commands, handle);
 }

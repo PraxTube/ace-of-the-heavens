@@ -16,9 +16,12 @@ pub const BULLET_RADIUS: f32 = 1.0;
 const DAMAGE: u32 = 1;
 const RELOAD_TIME: f32 = 0.1;
 const OVERHEAT: u32 = 1000;
-const HEAT_COOLDOWN: u32 = 15;
+const HEAT_COOLDOWN: u32 = 12;
 const HEAT_COOLDOWN_OVERHEAT: u32 = 5;
-const FIRE_HEAT: u32 = 120;
+const FIRE_HEAT: u32 = 80;
+
+const RELOAD_BAR_OFFSET: Vec3 = Vec3::new(0.0, 40.0, 0.0);
+const RELOAD_BAR_SCALE: Vec3 = Vec3::new(50.0, 2.5, 1.0);
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
@@ -69,6 +72,14 @@ impl Hash for BulletTimer {
     }
 }
 
+#[derive(Component)]
+pub struct ReloadBar {
+    pub handle: usize,
+}
+
+#[derive(Component)]
+pub struct ReloadBarTicker;
+
 pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     for mut bullet_timer in &mut players {
         if !bullet_timer.timer.finished() {
@@ -80,8 +91,16 @@ pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     }
 }
 
-pub fn cooldown_heat(mut players: Query<&mut Player>) {
-    for mut player in &mut players {
+pub fn cooldown_heat(mut players: Query<(&mut Player, &BulletTimer)>) {
+    for (mut player, bullet_timer) in &mut players {
+        if player.heat >= OVERHEAT {
+            player.overheated = true;
+        }
+
+        if !bullet_timer.timer.finished() {
+            continue;
+        }
+
         if player.overheated {
             if player.heat <= HEAT_COOLDOWN_OVERHEAT {
                 player.overheated = false;
@@ -97,12 +116,81 @@ pub fn cooldown_heat(mut players: Query<&mut Player>) {
         } else {
             player.heat - HEAT_COOLDOWN
         };
+    }
+}
 
-        if player.heat >= OVERHEAT {
-            player.overheated = true;
+pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
+    let transform = Transform::from_scale(RELOAD_BAR_SCALE);
+    let main = commands
+        .spawn((
+            ReloadBar { handle },
+            DebugTransform::new(&transform),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba(1.0, 1.0, 1.0, 0.6),
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
+                ..default()
+            },
+        ))
+        .add_rollback()
+        .id();
+    let transform = Transform::from_scale(Vec3::new(2.0 / RELOAD_BAR_SCALE.x, 6.0, 1.0));
+    let ticker = commands
+        .spawn((
+            DebugTransform::new(&transform),
+            ReloadBarTicker,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba(1.0, 1.0, 1.0, 0.9),
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
+                ..default()
+            },
+        ))
+        .add_rollback()
+        .id();
+    commands.entity(main).push_children(&[ticker]);
+}
+
+pub fn update_reload_bars(
+    mut reload_bars: Query<
+        (&mut Transform, &ReloadBar, &Children, &mut DebugTransform),
+        (Without<Player>, Without<ReloadBarTicker>),
+    >,
+    mut reload_bar_tickers: Query<
+        (&mut Transform, &ReloadBarTicker, &mut DebugTransform),
+        (Without<Player>, Without<ReloadBar>),
+    >,
+    players: Query<(&Transform, &Player), Without<ReloadBar>>,
+) {
+    for (player_transform, player) in &players {
+        for (mut reload_bar_transform, reload_bar, children, mut reload_bar_debug_transform) in
+            &mut reload_bars
+        {
+            if player.handle != reload_bar.handle {
+                continue;
+            }
+
+            assert! { children.len() == 1 };
+
+            reload_bar_transform.translation = player_transform.translation + RELOAD_BAR_OFFSET;
+            reload_bar_debug_transform.update(&reload_bar_transform);
+
+            let mut fill = reload_bar_tickers
+                .get_mut(children[0])
+                .expect("child of reloadbar (the ticker) is not accessable by it's parent");
+
+            let x_fill = (100 * player.heat / OVERHEAT).clamp(0, 100);
+            let x_fill = (x_fill as f32 / 100.0) - 0.5;
+
+            fill.0.translation = Vec3::new(x_fill, fill.0.translation.y, fill.0.translation.z);
+            fill.2.update(&fill.0);
         }
-
-        info!("{}", player.heat);
     }
 }
 
