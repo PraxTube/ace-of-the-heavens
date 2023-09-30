@@ -28,6 +28,10 @@ pub fn damage_players(
             if bullet.disabled {
                 continue;
             }
+            // This can happen when multiple bullets hit the player at the same time
+            if player.health == 0 {
+                continue;
+            }
 
             let distance = Vec2::distance(
                 player_transform.translation.xy(),
