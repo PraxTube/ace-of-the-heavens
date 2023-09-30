@@ -19,6 +19,20 @@ const OVERHEAT: u32 = 1000;
 const HEAT_COOLDOWN: u32 = 12;
 const HEAT_COOLDOWN_OVERHEAT: u32 = 5;
 const FIRE_HEAT: u32 = 80;
+const RELOAD_BAR_COLOR: Color = Color::rgba(0.9, 0.9, 0.9, 0.6);
+const RELOAD_BAR_COLOR_OVERHEAT: Color = Color::rgba(
+    0xFD as f32 / 255.0,
+    0x38 as f32 / 255.0,
+    0x38 as f32 / 255.0,
+    0.6,
+);
+const RELOAD_BAR_TICKER_COLOR: Color = Color::rgba(1.0, 1.0, 1.0, 0.9);
+const RELOAD_BAR_TICKER_COLOR_OVERHEAT: Color = Color::rgba(
+    0xFD as f32 / 255.0,
+    0x38 as f32 / 255.0,
+    0x38 as f32 / 255.0,
+    0.9,
+);
 
 const RELOAD_BAR_OFFSET: Vec3 = Vec3::new(0.0, 40.0, 0.0);
 const RELOAD_BAR_SCALE: Vec3 = Vec3::new(50.0, 2.5, 1.0);
@@ -119,6 +133,40 @@ pub fn cooldown_heat(mut players: Query<(&mut Player, &BulletTimer)>) {
     }
 }
 
+pub fn color_reload_bars(
+    mut reload_bars: Query<
+        (&mut Sprite, &ReloadBar, &Children),
+        (Without<Player>, Without<ReloadBarTicker>),
+    >,
+    mut reload_bar_tickers: Query<
+        &mut Sprite,
+        (Without<Player>, Without<ReloadBar>, With<ReloadBarTicker>),
+    >,
+    players: Query<&Player, Without<ReloadBar>>,
+) {
+    for player in &players {
+        for (mut reload_bar_sprite, reload_bar, children) in &mut reload_bars {
+            if player.handle != reload_bar.handle {
+                continue;
+            }
+
+            assert! { children.len() == 1 };
+
+            let mut reload_bar_ticker_sprite = reload_bar_tickers
+                .get_mut(children[0])
+                .expect("child of reloadbar (the ticker) is not accessable by it's parent");
+
+            if player.overheated {
+                reload_bar_sprite.color = RELOAD_BAR_COLOR_OVERHEAT;
+                reload_bar_ticker_sprite.color = RELOAD_BAR_TICKER_COLOR_OVERHEAT;
+            } else {
+                reload_bar_sprite.color = RELOAD_BAR_COLOR;
+                reload_bar_ticker_sprite.color = RELOAD_BAR_TICKER_COLOR;
+            }
+        }
+    }
+}
+
 pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
     let transform = Transform::from_scale(RELOAD_BAR_SCALE);
     let main = commands
@@ -127,7 +175,7 @@ pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
             DebugTransform::new(&transform),
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgba(1.0, 1.0, 1.0, 0.6),
+                    color: RELOAD_BAR_COLOR,
                     custom_size: Some(Vec2::new(1.0, 1.0)),
                     ..default()
                 },
@@ -144,7 +192,7 @@ pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
             ReloadBarTicker,
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgba(1.0, 1.0, 1.0, 0.9),
+                    color: RELOAD_BAR_TICKER_COLOR,
                     custom_size: Some(Vec2::new(1.0, 1.0)),
                     ..default()
                 },
