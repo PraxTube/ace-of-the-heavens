@@ -14,7 +14,7 @@ use crate::ImageAssets;
 const MOVE_SPEED: f32 = 350.0 / 60.0;
 pub const BULLET_RADIUS: f32 = 1.0;
 
-const DAMAGE: u32 = 1;
+const DAMAGE: u32 = 100;
 const RELOAD_TIME: f32 = 0.1;
 const OVERHEAT: u32 = 1000;
 const HEAT_COOLDOWN: u32 = 12;
@@ -51,10 +51,10 @@ pub struct Bullet {
 }
 
 impl Bullet {
-    fn new(extra_speed: f32, handle: usize) -> Bullet {
+    fn new(player_speed: f32, extra_damage: u32, handle: usize) -> Bullet {
         Bullet {
-            current_speed: MOVE_SPEED + extra_speed,
-            damage: DAMAGE,
+            current_speed: MOVE_SPEED + player_speed,
+            damage: DAMAGE + extra_damage,
             handle,
             disabled: false,
         }
@@ -256,7 +256,7 @@ fn spawn_bullet(
     .with_rotation(player_transform.rotation);
     commands
         .spawn((
-            Bullet::new(player.current_speed, player.handle),
+            Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
             DebugTransform::new(&transform),
             SpriteBundle {
                 transform,

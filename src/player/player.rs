@@ -19,7 +19,7 @@ pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;
 // Health
-pub const MAX_HEALTH: u32 = 20;
+pub const MAX_HEALTH: u32 = 2000;
 // Spawning
 const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;
@@ -44,6 +44,11 @@ impl Player {
             heat: 0,
             overheated: false,
         }
+    }
+
+    pub fn speed_ratio(&self) -> u32 {
+        ((self.current_speed - MIN_SPEED).max(0.0) / (MAX_SPEED - MIN_SPEED).max(0.0) * 100.0)
+            as u32
     }
 }
 
