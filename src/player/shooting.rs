@@ -4,8 +4,9 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::environment::outside_of_borders;
 use crate::input;
+use crate::map::map::outside_of_borders;
+use crate::map::obstacle::{collision, Obstacle};
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::ImageAssets;
@@ -34,7 +35,7 @@ const RELOAD_BAR_TICKER_COLOR_OVERHEAT: Color = Color::rgba(
     0.9,
 );
 
-const RELOAD_BAR_OFFSET: Vec3 = Vec3::new(0.0, 40.0, 0.0);
+const RELOAD_BAR_OFFSET: Vec3 = Vec3::new(0.0, 40.0, 10.0);
 const RELOAD_BAR_SCALE: Vec3 = Vec3::new(50.0, 2.5, 1.0);
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
@@ -313,10 +314,20 @@ pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet, &mut DebugTrans
     }
 }
 
-pub fn destroy_bullets(mut commands: Commands, bullets: Query<(Entity, &Bullet, &Transform)>) {
+pub fn destroy_bullets(
+    mut commands: Commands,
+    bullets: Query<(Entity, &Bullet, &Transform)>,
+    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
+) {
     for (entity, bullet, transform) in &bullets {
         if bullet.disabled || outside_of_borders(transform.translation) {
             commands.entity(entity).despawn_recursive();
+        }
+
+        for obstacle in &obstacles {
+            if collision(obstacle, transform.translation, BULLET_RADIUS) {
+                commands.entity(entity).despawn_recursive();
+            }
         }
     }
 }

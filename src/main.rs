@@ -6,9 +6,9 @@ use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 
 mod debug;
-mod environment;
 mod input;
 mod log;
+mod map;
 mod network;
 mod player;
 
@@ -65,10 +65,16 @@ fn main() {
             (
                 setup,
                 network::start_matchbox_socket,
-                environment::spawn_background,
+                map::map::spawn_background,
             ),
         )
-        .add_systems(OnEnter(GameState::InGame), player::player::spawn_players)
+        .add_systems(
+            OnEnter(GameState::InGame),
+            (
+                player::player::spawn_players,
+                map::obstacle::spawn_obstacles,
+            ),
+        )
         .add_systems(
             Update,
             (
