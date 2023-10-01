@@ -40,7 +40,11 @@ pub fn damage_players(
             if distance
                 < PLAYER_RADIUS * PLAYER_RADIUS + shooting::BULLET_RADIUS * shooting::BULLET_RADIUS
             {
-                player.health -= bullet.damage;
+                if player.health < bullet.damage {
+                    player.health = 0;
+                } else {
+                    player.health -= bullet.damage;
+                }
                 bullet.disabled = true;
             }
         }
