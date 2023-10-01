@@ -35,7 +35,13 @@ pub fn accelerate_players(inputs: Res<PlayerInputs<GgrsConfig>>, mut players: Qu
             continue;
         }
 
-        player.current_speed += DELTA_SPEED * accelerate_direction;
+        let acceleration = if accelerate_direction > 0.0 {
+            DELTA_SPEED * 3.0
+        } else {
+            -DELTA_SPEED
+        };
+
+        player.current_speed += acceleration;
         player.current_speed = player.current_speed.clamp(MIN_SPEED, MAX_SPEED);
     }
 }
