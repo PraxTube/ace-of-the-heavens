@@ -53,11 +53,17 @@ pub fn spawn_obstacles(
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 96.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    spawn_obstacle(
-        &mut commands,
-        texture_atlas_handle,
+    let positions = [
         Vec3::new(0.0, 0.0, -10.0),
-    );
+        Vec3::new(-550.0, -250.0, -10.0),
+        Vec3::new(550.0, -250.0, -10.0),
+        Vec3::new(550.0, 250.0, -10.0),
+        Vec3::new(-550.0, 250.0, -10.0),
+    ];
+
+    for position in positions {
+        spawn_obstacle(&mut commands, texture_atlas_handle.clone(), position);
+    }
 }
 
 pub fn collision(obstacle: &Obstacle, other_pos: Vec3, other_radius: f32) -> bool {
