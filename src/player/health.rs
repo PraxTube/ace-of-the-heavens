@@ -1,4 +1,4 @@
-use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
@@ -33,11 +33,13 @@ pub fn damage_players(
                 continue;
             }
 
-            let distance = Vec2::distance(
-                player_transform.translation.xy(),
-                bullet_tranform.translation.xy(),
+            let distance = Vec2::distance_squared(
+                player_transform.translation.truncate(),
+                bullet_tranform.translation.truncate(),
             );
-            if distance < PLAYER_RADIUS + shooting::BULLET_RADIUS {
+            if distance
+                < PLAYER_RADIUS * PLAYER_RADIUS + shooting::BULLET_RADIUS * shooting::BULLET_RADIUS
+            {
                 player.health -= bullet.damage;
                 bullet.disabled = true;
             }
@@ -101,7 +103,7 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
     let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
         HEALTH_BAR_SCALE.x / 2.0,
         0.0,
-        0.0,
+        10.0,
     ));
 
     let main = commands
@@ -139,7 +141,7 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
     let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
         HEALTH_BAR_SCALE.x / 2.0,
         0.0,
-        10.0,
+        20.0,
     ));
     let inner = commands
         .spawn((

@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::environment::outside_of_borders;
+use crate::map::map::outside_of_borders;
+use crate::map::obstacle::{collision, Obstacle};
 use crate::player::health::spawn_health_bar;
 use crate::player::shooting::spawn_reload_bars;
 use crate::player::shooting::Bullet;
@@ -16,7 +17,7 @@ pub const MIN_SPEED: f32 = 200.0 / 60.0;
 pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
-pub const PLAYER_RADIUS: f32 = 20.0;
+pub const PLAYER_RADIUS: f32 = 24.0;
 // Health
 pub const MAX_HEALTH: u32 = 20;
 // Spawning
@@ -58,6 +59,7 @@ pub struct LocalPlayerHandle(pub usize);
 pub fn destroy_players(
     mut commands: Commands,
     mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
+    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
     asset_server: Res<AssetServer>,
     texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -65,6 +67,14 @@ pub fn destroy_players(
         if player.health <= 0 || outside_of_borders(transform.translation) {
             player.health = 0;
             commands.entity(player_entity).despawn_recursive();
+            continue;
+        }
+
+        for obstacle in &obstacles {
+            if collision(obstacle, transform.translation, PLAYER_RADIUS) {
+                player.health = 0;
+                commands.entity(player_entity).despawn_recursive();
+            }
         }
     }
 
