@@ -147,7 +147,13 @@ pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
 
 pub fn update_reload_bars(
     mut reload_bars: Query<
-        (&mut Transform, &ReloadBar, &Children, &mut DebugTransform),
+        (
+            &mut Transform,
+            &ReloadBar,
+            &Children,
+            &mut Visibility,
+            &mut DebugTransform,
+        ),
         (Without<Player>, Without<ReloadBarTicker>),
     >,
     mut reload_bar_tickers: Query<
@@ -156,10 +162,17 @@ pub fn update_reload_bars(
     >,
     players: Query<(&Transform, &Player), Without<ReloadBar>>,
 ) {
-    for (player_transform, player) in &players {
-        for (mut reload_bar_transform, reload_bar, children, mut reload_bar_debug_transform) in
-            &mut reload_bars
-        {
+    for (
+        mut reload_bar_transform,
+        reload_bar,
+        children,
+        mut visibility,
+        mut reload_bar_debug_transform,
+    ) in &mut reload_bars
+    {
+        *visibility = Visibility::Hidden;
+
+        for (player_transform, player) in &players {
             if player.handle != reload_bar.handle {
                 continue;
             }
@@ -178,6 +191,9 @@ pub fn update_reload_bars(
 
             fill.0.translation = Vec3::new(x_fill, fill.0.translation.y, fill.0.translation.z);
             fill.2.update(&fill.0);
+
+            *visibility = Visibility::Visible;
+            break;
         }
     }
 }
