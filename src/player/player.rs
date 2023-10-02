@@ -23,6 +23,17 @@ pub const MAX_HEALTH: u32 = 2000;
 // Spawning
 const PLAYER_SCALE: f32 = 1.75;
 const DISTANCE_FROM_SPAWN: f32 = 800.0;
+// Color
+pub const P1_COLOR: Color = Color::rgb(
+    0xDF as f32 / 255.0,
+    0x71 as f32 / 255.0,
+    0x26 as f32 / 255.0,
+);
+pub const P2_COLOR: Color = Color::rgb(
+    0x20 as f32 / 255.0,
+    0x8E as f32 / 255.0,
+    0xD9 as f32 / 255.0,
+);
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]

@@ -11,6 +11,7 @@ mod log;
 mod map;
 mod network;
 mod player;
+mod ui;
 
 use network::GgrsConfig;
 
@@ -73,6 +74,7 @@ fn main() {
             (
                 player::player::spawn_players,
                 map::obstacle::spawn_obstacles,
+                ui::ui::setup,
             ),
         )
         .add_systems(
@@ -106,7 +108,8 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.projection.scaling_mode = ScalingMode::FixedVertical(1000.0);
-    commands.spawn((camera_bundle,));
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
+    camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
+    commands.spawn(camera);
 }
