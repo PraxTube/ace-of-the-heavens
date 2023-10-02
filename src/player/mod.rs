@@ -1,6 +1,7 @@
 pub mod health;
 pub mod movement;
 pub mod player;
+pub mod reloading;
 pub mod shooting;
 
 pub use health::damage_players;

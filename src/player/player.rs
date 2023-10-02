@@ -7,7 +7,7 @@ use crate::debug::DebugTransform;
 use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::player::health::spawn_health_bar;
-use crate::player::shooting::spawn_reload_bars;
+use crate::player::reloading::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
