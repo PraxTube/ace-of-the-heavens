@@ -125,3 +125,7 @@ pub fn update_scoreboard(
         }
     }
 }
+
+pub fn game_over_screen() {
+    info!("Game is over.");
+}

@@ -22,6 +22,7 @@ pub enum GameState {
     AssetLoading,
     Matchmaking,
     InGame,
+    GameOver,
 }
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
@@ -29,6 +30,7 @@ pub enum RollbackState {
     #[default]
     InRound,
     RoundEnd,
+    GameOver,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -99,6 +101,7 @@ fn main() {
             OnEnter(GameState::InGame),
             (map::obstacle::spawn_obstacles, ui::ui::setup),
         )
+        .add_systems(OnEnter(GameState::GameOver), ui::ui::game_over_screen)
         .add_systems(
             Update,
             (
@@ -179,7 +182,12 @@ fn clear_world(
     }
 }
 
-fn adjust_score(players: Query<&player::player::Player>, mut score: ResMut<Score>) {
+fn adjust_score(
+    players: Query<&player::player::Player>,
+    mut score: ResMut<Score>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_rollback_state: ResMut<NextState<RollbackState>>,
+) {
     if players.iter().count() == 0 {
         return;
     }
@@ -188,5 +196,10 @@ fn adjust_score(players: Query<&player::player::Player>, mut score: ResMut<Score
         score.0 += 1;
     } else {
         score.1 += 1;
+    }
+
+    if score.0 == 5 || score.1 == 5 {
+        next_game_state.set(GameState::GameOver);
+        next_rollback_state.set(RollbackState::GameOver);
     }
 }
