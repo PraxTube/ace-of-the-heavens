@@ -15,6 +15,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
+use ui::ui::GameUiPlugin;
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
 pub enum GameState {
@@ -74,6 +75,7 @@ fn main() {
                 .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
+            GameUiPlugin,
         ))
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
@@ -86,6 +88,7 @@ fn main() {
                 .register_rollback_component::<player::shooting::Bullet>()
                 .register_rollback_component::<player::shooting::BulletTimer>(),
         )
+        .add_roll_state::<RollbackState>(GgrsSchedule)
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
         .init_resource::<Score>()
@@ -97,17 +100,7 @@ fn main() {
                 map::map::spawn_background,
             ),
         )
-        .add_systems(
-            OnEnter(GameState::InGame),
-            (map::obstacle::spawn_obstacles, ui::ui::setup),
-        )
-        .add_systems(
-            OnEnter(GameState::GameOver),
-            (
-                ui::game_over_screen::spawn_game_over_screen,
-                ui::round_over_screen::hide_round_over_screen,
-            ),
-        )
+        .add_systems(OnEnter(GameState::InGame), map::obstacle::spawn_obstacles)
         .add_systems(
             Update,
             (
@@ -116,24 +109,11 @@ fn main() {
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
             ),
         )
-        .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_systems(
             OnEnter(RollbackState::InRound),
-            (
-                clear_world,
-                player::player::spawn_players,
-                ui::round_over_screen::hide_round_over_screen,
-            ),
+            (clear_world, player::player::spawn_players),
         )
-        .add_systems(
-            OnEnter(RollbackState::RoundEnd),
-            (
-                adjust_score,
-                ui::scoreboard::update_scoreboard,
-                ui::round_over_screen::show_round_over_screen,
-            )
-                .chain(),
-        )
+        .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
             GgrsSchedule,
             (

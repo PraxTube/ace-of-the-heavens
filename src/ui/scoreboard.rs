@@ -52,7 +52,7 @@ fn spawn_score_circle(
         .id()
 }
 
-pub fn spawn_scoreboard(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+pub fn spawn_scoreboard(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture = asset_server.load("ui/score-empty.png");
     let font = asset_server.load("font/PressStart2P.ttf");
 
@@ -77,15 +77,25 @@ pub fn spawn_scoreboard(commands: &mut Commands, asset_server: &Res<AssetServer>
 
     let handle = 0;
     for i in 0..MAX_SCORE {
-        children.push(spawn_score_circle(commands, texture.clone(), handle, i));
+        children.push(spawn_score_circle(
+            &mut commands,
+            texture.clone(),
+            handle,
+            i,
+        ));
     }
 
-    children.push(spawn_text(commands, font));
+    children.push(spawn_text(&mut commands, font));
 
     let handle = 1;
     for i in 0..MAX_SCORE {
         let i = MAX_SCORE * 2 - 1 - i;
-        children.push(spawn_score_circle(commands, texture.clone(), handle, i));
+        children.push(spawn_score_circle(
+            &mut commands,
+            texture.clone(),
+            handle,
+            i,
+        ));
     }
     commands.entity(root_node).push_children(&children);
 }

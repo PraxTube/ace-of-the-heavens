@@ -9,7 +9,7 @@ pub struct RoundScreen;
 #[derive(Component)]
 pub struct RoundScore;
 
-pub fn spawn_round_over_screen(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+pub fn spawn_round_over_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     let white_pixel = asset_server.load("ui/white-pixel.png");
     let circle = asset_server.load("ui/score-full.png");
 
