@@ -103,7 +103,10 @@ fn main() {
         )
         .add_systems(
             OnEnter(GameState::GameOver),
-            ui::game_over_screen::spawn_screen,
+            (
+                ui::game_over_screen::spawn_game_over_screen,
+                ui::round_over_screen::hide_round_over_screen,
+            ),
         )
         .add_systems(
             Update,
@@ -119,7 +122,7 @@ fn main() {
             (
                 clear_world,
                 player::player::spawn_players,
-                ui::round_over_screen::hide_round_screen,
+                ui::round_over_screen::hide_round_over_screen,
             ),
         )
         .add_systems(
@@ -127,7 +130,7 @@ fn main() {
             (
                 adjust_score,
                 ui::scoreboard::update_scoreboard,
-                ui::round_over_screen::show_round_screen,
+                ui::round_over_screen::show_round_over_screen,
             )
                 .chain(),
         )

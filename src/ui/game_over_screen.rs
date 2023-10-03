@@ -4,7 +4,11 @@ use super::ui::MAX_SCORE;
 use crate::player::player::{P1_COLOR, P2_COLOR};
 use crate::Score;
 
-pub fn spawn_screen(mut commands: Commands, asset_server: Res<AssetServer>, score: Res<Score>) {
+pub fn spawn_game_over_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    score: Res<Score>,
+) {
     let texture = asset_server.load("ui/white-pixel.png");
     let font = asset_server.load("fonts/PressStart2P.ttf");
 
