@@ -45,7 +45,7 @@ impl Default for RoundEndTimer {
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
-pub struct Score(usize, usize);
+pub struct Score(usize, usize, usize);
 
 #[derive(AssetCollection, Resource)]
 pub struct ImageAssets {
@@ -101,7 +101,10 @@ fn main() {
             OnEnter(GameState::InGame),
             (map::obstacle::spawn_obstacles, ui::ui::setup),
         )
-        .add_systems(OnEnter(GameState::GameOver), ui::ui::game_over_screen)
+        .add_systems(
+            OnEnter(GameState::GameOver),
+            ui::game_over_screen::spawn_screen,
+        )
         .add_systems(
             Update,
             (
@@ -113,11 +116,20 @@ fn main() {
         .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_systems(
             OnEnter(RollbackState::InRound),
-            (clear_world, player::player::spawn_players),
+            (
+                clear_world,
+                player::player::spawn_players,
+                ui::round_over_screen::hide_round_screen,
+            ),
         )
         .add_systems(
             OnEnter(RollbackState::RoundEnd),
-            (adjust_score, ui::ui::update_scoreboard).chain(),
+            (
+                adjust_score,
+                ui::scoreboard::update_scoreboard,
+                ui::round_over_screen::show_round_screen,
+            )
+                .chain(),
         )
         .add_systems(
             GgrsSchedule,
@@ -194,8 +206,10 @@ fn adjust_score(
 
     if players.single().handle == 0 {
         score.0 += 1;
+        score.2 = 0;
     } else {
         score.1 += 1;
+        score.2 = 1;
     }
 
     if score.0 == ui::ui::MAX_SCORE || score.1 == ui::ui::MAX_SCORE {
