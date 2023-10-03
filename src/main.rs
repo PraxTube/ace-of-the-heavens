@@ -4,6 +4,7 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
+use bevy_roll_safe::prelude::*;
 
 mod debug;
 mod input;
@@ -21,6 +22,23 @@ pub enum GameState {
     AssetLoading,
     Matchmaking,
     InGame,
+}
+
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
+pub enum RollbackState {
+    #[default]
+    InRound,
+    RoundEnd,
+}
+
+#[derive(Resource, Reflect, Deref, DerefMut)]
+#[reflect(Resource)]
+pub struct RoundEndTimer(Timer);
+
+impl Default for RoundEndTimer {
+    fn default() -> Self {
+        RoundEndTimer(Timer::from_seconds(1.0, TimerMode::Repeating))
+    }
 }
 
 #[derive(AssetCollection, Resource)]
@@ -54,6 +72,8 @@ fn main() {
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
+                .register_roll_state::<RollbackState>()
+                .register_rollback_resource::<RoundEndTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
@@ -61,6 +81,7 @@ fn main() {
                 .register_rollback_component::<player::shooting::BulletTimer>(),
         )
         .insert_resource(ClearColor(Color::BLACK))
+        .init_resource::<RoundEndTimer>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
             (
@@ -71,11 +92,7 @@ fn main() {
         )
         .add_systems(
             OnEnter(GameState::InGame),
-            (
-                player::player::spawn_players,
-                map::obstacle::spawn_obstacles,
-                ui::ui::setup,
-            ),
+            (map::obstacle::spawn_obstacles, ui::ui::setup),
         )
         .add_systems(
             Update,
@@ -84,6 +101,11 @@ fn main() {
                 network::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
             ),
+        )
+        .add_roll_state::<RollbackState>(GgrsSchedule)
+        .add_systems(
+            OnEnter(RollbackState::InRound),
+            (clear_world, player::player::spawn_players),
         )
         .add_systems(
             GgrsSchedule,
@@ -102,7 +124,16 @@ fn main() {
                 player::reloading::color_reload_bars,
                 player::shooting::destroy_bullets,
             )
-                .chain(),
+                .chain()
+                .after(apply_state_transition::<RollbackState>)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            round_end_timeout
+                .ambiguous_with(player::player::destroy_players)
+                .distributive_run_if(in_state(RollbackState::RoundEnd))
+                .after(apply_state_transition::<RollbackState>),
         )
         .run();
 }
@@ -112,4 +143,29 @@ fn setup(mut commands: Commands) {
     camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
     camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
     commands.spawn(camera);
+}
+
+fn round_end_timeout(
+    mut timer: ResMut<RoundEndTimer>,
+    mut next_state: ResMut<NextState<RollbackState>>,
+) {
+    timer.tick(std::time::Duration::from_secs_f32(1.0 / 60.0));
+
+    if timer.just_finished() {
+        next_state.set(RollbackState::InRound);
+    }
+}
+
+fn clear_world(
+    mut commands: Commands,
+    players: Query<Entity, With<player::player::Player>>,
+    bullets: Query<Entity, With<player::shooting::Bullet>>,
+) {
+    for player in &players {
+        commands.entity(player).despawn_recursive();
+    }
+
+    for bullet in &bullets {
+        commands.entity(bullet).despawn_recursive();
+    }
 }

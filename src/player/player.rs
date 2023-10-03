@@ -10,6 +10,7 @@ use crate::player::health::spawn_health_bar;
 use crate::player::reloading::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
+use crate::RollbackState;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
@@ -76,8 +77,7 @@ pub fn destroy_players(
     mut commands: Commands,
     mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
     obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
-    asset_server: Res<AssetServer>,
-    texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut next_state: ResMut<NextState<RollbackState>>,
 ) {
     for (player_entity, mut player, transform) in &mut players {
         if player.health <= 0 || outside_of_borders(transform.translation) {
@@ -94,8 +94,8 @@ pub fn destroy_players(
         }
     }
 
-    if players.iter().count() == 0 {
-        spawn_players(commands, asset_server, texture_atlases);
+    if players.iter().count() <= 1 {
+        next_state.set(RollbackState::RoundEnd);
     }
 }
 
