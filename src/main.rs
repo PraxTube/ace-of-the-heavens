@@ -41,6 +41,10 @@ impl Default for RoundEndTimer {
     }
 }
 
+#[derive(Resource, Reflect, Default, Debug)]
+#[reflect(Resource)]
+pub struct Score(usize, usize);
+
 #[derive(AssetCollection, Resource)]
 pub struct ImageAssets {
     #[asset(path = "bullet.png")]
@@ -82,6 +86,7 @@ fn main() {
         )
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
+        .init_resource::<Score>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
             (
@@ -106,6 +111,10 @@ fn main() {
         .add_systems(
             OnEnter(RollbackState::InRound),
             (clear_world, player::player::spawn_players),
+        )
+        .add_systems(
+            OnEnter(RollbackState::RoundEnd),
+            (adjust_score, ui::ui::update_scoreboard).chain(),
         )
         .add_systems(
             GgrsSchedule,
@@ -167,5 +176,17 @@ fn clear_world(
 
     for bullet in &bullets {
         commands.entity(bullet).despawn_recursive();
+    }
+}
+
+fn adjust_score(players: Query<&player::player::Player>, mut score: ResMut<Score>) {
+    if players.iter().count() == 0 {
+        return;
+    }
+
+    if players.single().handle == 0 {
+        score.0 += 1;
+    } else {
+        score.1 += 1;
     }
 }
