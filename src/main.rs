@@ -198,7 +198,7 @@ fn adjust_score(
         score.1 += 1;
     }
 
-    if score.0 == 5 || score.1 == 5 {
+    if score.0 == ui::ui::MAX_SCORE || score.1 == ui::ui::MAX_SCORE {
         next_game_state.set(GameState::GameOver);
         next_rollback_state.set(RollbackState::GameOver);
     }
