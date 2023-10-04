@@ -103,7 +103,7 @@ pub fn update_health_bars(
     }
 }
 
-pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
+pub fn spawn_health_bar(commands: &mut Commands, handle: usize, spawn_position: Vec3) {
     let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
         HEALTH_BAR_SCALE.x / 2.0,
         0.0,
@@ -114,7 +114,10 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
         .spawn((
             HealthBar { handle },
             DebugTransform::default(),
-            SpatialBundle::default(),
+            SpatialBundle {
+                transform: Transform::from_translation(spawn_position + HEALTH_BAR_OFFSET),
+                ..default()
+            },
         ))
         .add_rollback()
         .id();

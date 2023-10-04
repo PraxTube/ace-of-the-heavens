@@ -175,6 +175,8 @@ fn clear_world(
     mut commands: Commands,
     players: Query<Entity, With<player::player::Player>>,
     bullets: Query<Entity, With<player::shooting::Bullet>>,
+    health_bars: Query<Entity, With<player::health::HealthBar>>,
+    reload_bars: Query<Entity, With<player::reloading::ReloadBar>>,
 ) {
     for player in &players {
         commands.entity(player).despawn_recursive();
@@ -182,6 +184,14 @@ fn clear_world(
 
     for bullet in &bullets {
         commands.entity(bullet).despawn_recursive();
+    }
+
+    for health_bar in &health_bars {
+        commands.entity(health_bar).despawn_recursive();
+    }
+
+    for reload_bar in &reload_bars {
+        commands.entity(reload_bar).despawn_recursive();
     }
 }
 

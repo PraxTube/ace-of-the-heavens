@@ -135,15 +135,16 @@ pub fn spawn_players(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let handle: usize = 0;
+    let position = Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0);
     spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
-        Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0),
+        position,
         Quat::from_rotation_z(0.0),
     );
-    spawn_health_bar(&mut commands, handle);
-    spawn_reload_bars(&mut commands, handle);
+    spawn_health_bar(&mut commands, handle, position);
+    spawn_reload_bars(&mut commands, handle, position);
 
     let texture_handle = asset_server.load("plane2.png");
     let texture_atlas =
@@ -151,13 +152,14 @@ pub fn spawn_players(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let handle: usize = 1;
+    let position = Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0);
     spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
-        Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0),
+        position,
         Quat::from_rotation_z(std::f32::consts::PI),
     );
-    spawn_health_bar(&mut commands, handle);
-    spawn_reload_bars(&mut commands, handle);
+    spawn_health_bar(&mut commands, handle, position);
+    spawn_reload_bars(&mut commands, handle, position);
 }

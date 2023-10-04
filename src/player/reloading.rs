@@ -107,8 +107,9 @@ pub fn color_reload_bars(
     }
 }
 
-pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
-    let transform = Transform::from_scale(RELOAD_BAR_SCALE);
+pub fn spawn_reload_bars(commands: &mut Commands, handle: usize, spawn_position: Vec3) {
+    let transform = Transform::from_scale(RELOAD_BAR_SCALE)
+        .with_translation(spawn_position + RELOAD_BAR_OFFSET);
     let main = commands
         .spawn((
             ReloadBar { handle },
@@ -125,7 +126,8 @@ pub fn spawn_reload_bars(commands: &mut Commands, handle: usize) {
         ))
         .add_rollback()
         .id();
-    let transform = Transform::from_scale(Vec3::new(2.0 / RELOAD_BAR_SCALE.x, 6.0, 1.0));
+    let transform = Transform::from_scale(Vec3::new(2.0 / RELOAD_BAR_SCALE.x, 6.0, 1.0))
+        .with_translation(Vec3::new(-0.5, 0.0, 0.0));
     let ticker = commands
         .spawn((
             DebugTransform::new(&transform),
