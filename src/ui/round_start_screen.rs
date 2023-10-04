@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::player::player::{P1_COLOR, P2_COLOR};
+use crate::player::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::RollbackState;
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -30,7 +30,11 @@ pub struct RoundStartScreen;
 #[derive(Component)]
 pub struct RoundStartText;
 
-pub fn spawn_round_start_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_round_start_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
     let font = asset_server.load("fonts/PressStart2P.ttf");
 
     let text_root_node = commands
@@ -59,7 +63,11 @@ pub fn spawn_round_start_screen(mut commands: Commands, asset_server: Res<AssetS
     let text_bundle = TextBundle::from_sections([TextSection::new(
         "3".to_string(),
         TextStyle {
-            color: P1_COLOR,
+            color: if local_handle.0 == 0 {
+                P1_COLOR
+            } else {
+                P2_COLOR
+            },
             ..text_style.clone()
         },
     )]);
@@ -93,11 +101,11 @@ pub fn animate_round_start_screen(
     let time = 1.0 - timer.elapsed().as_secs_f32();
 
     let num = if time > 0.66 {
-        "3"
+        "PREPARE"
     } else if time > 0.33 {
-        "2"
+        "READY"
     } else {
-        "1"
+        "SET"
     };
 
     text.sections[0].value = num.to_string();
