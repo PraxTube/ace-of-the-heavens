@@ -79,10 +79,12 @@ pub fn show_round_over_screen(
     score: Res<Score>,
 ) {
     round_screen.single_mut().display = Display::Flex;
-    *round_score.single_mut() = if score.2 == 0 {
+    *round_score.single_mut() = if score.2 == Some(0) {
         BackgroundColor(P1_COLOR)
-    } else {
+    } else if score.2 == Some(1) {
         BackgroundColor(P2_COLOR)
+    } else {
+        BackgroundColor(Color::WHITE)
     };
 }
 

@@ -48,7 +48,7 @@ impl Default for RoundEndTimer {
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
-pub struct Score(usize, usize, usize);
+pub struct Score(usize, usize, Option<usize>);
 
 #[derive(AssetCollection, Resource)]
 pub struct ImageAssets {
@@ -202,15 +202,16 @@ fn adjust_score(
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
     if players.iter().count() == 0 {
+        score.2 = None;
         return;
     }
 
     if players.single().handle == 0 {
         score.0 += 1;
-        score.2 = 0;
+        score.2 = Some(0);
     } else {
         score.1 += 1;
-        score.2 = 1;
+        score.2 = Some(1);
     }
 
     if score.0 == ui::ui::MAX_SCORE || score.1 == ui::ui::MAX_SCORE {
