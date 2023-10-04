@@ -4,7 +4,10 @@ use bevy_ggrs::GgrsSchedule;
 use super::{
     game_over_screen::spawn_game_over_screen,
     round_over_screen::{hide_round_over_screen, show_round_over_screen, spawn_round_over_screen},
-    round_start_screen::{round_start_timeout, spawn_round_start_screen},
+    round_start_screen::{
+        animate_round_start_screen, hide_round_start_screen, round_start_timeout,
+        show_round_start_screen, spawn_round_start_screen,
+    },
     scoreboard::{spawn_scoreboard, update_scoreboard},
 };
 use crate::player::player::destroy_players;
@@ -28,12 +31,25 @@ impl Plugin for GameUiPlugin {
             OnEnter(GameState::GameOver),
             (spawn_game_over_screen, hide_round_over_screen),
         )
-        .add_systems(OnEnter(RollbackState::RoundStart), hide_round_over_screen)
+        .add_systems(
+            OnEnter(RollbackState::RoundStart),
+            (show_round_start_screen, hide_round_over_screen),
+        )
+        .add_systems(OnEnter(RollbackState::InRound), hide_round_start_screen)
         .add_systems(
             OnEnter(RollbackState::RoundEnd),
             (
                 update_scoreboard.after(adjust_score),
                 show_round_over_screen.after(adjust_score),
+            ),
+        )
+        .add_systems(
+            Update,
+            (
+                animate_round_start_screen
+                    .run_if(in_state(RollbackState::RoundStart))
+                    .run_if(in_state(GameState::InGame)),
+                hide_round_start_screen.run_if(in_state(RollbackState::InRound)),
             ),
         )
         .add_systems(

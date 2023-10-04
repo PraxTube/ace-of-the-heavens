@@ -15,7 +15,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
-use ui::round_start_screen::RoundStartTimer;
+use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
 use ui::ui::GameUiPlugin;
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
@@ -82,6 +82,7 @@ fn main() {
                 .register_roll_state::<RollbackState>()
                 .register_rollback_resource::<RoundEndTimer>()
                 .register_rollback_resource::<RoundStartTimer>()
+                .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
@@ -97,6 +98,7 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
         .init_resource::<RoundStartTimer>()
+        .init_resource::<HideScreenTimer>()
         .init_resource::<Score>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
