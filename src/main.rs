@@ -15,6 +15,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
+use ui::round_start_screen::RoundStartTimer;
 use ui::ui::GameUiPlugin;
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
@@ -29,6 +30,7 @@ pub enum GameState {
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
 pub enum RollbackState {
     #[default]
+    RoundStart,
     InRound,
     RoundEnd,
     GameOver,
@@ -61,7 +63,7 @@ fn main() {
             LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
         )
         .add_collection_to_loading_state::<_, ImageAssets>(GameState::AssetLoading)
-        .add_plugins((
+        .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
@@ -73,15 +75,13 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .build()
                 .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
-            //LogDiagnosticsPlugin::default(),
-            //FrameTimeDiagnosticsPlugin::default(),
-            GameUiPlugin,
-        ))
+        )
         .add_ggrs_plugin(
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_roll_state::<RollbackState>()
                 .register_rollback_resource::<RoundEndTimer>()
+                .register_rollback_resource::<RoundStartTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
@@ -89,8 +89,14 @@ fn main() {
                 .register_rollback_component::<player::shooting::BulletTimer>(),
         )
         .add_roll_state::<RollbackState>(GgrsSchedule)
+        .add_plugins((
+            //LogDiagnosticsPlugin::default(),
+            //FrameTimeDiagnosticsPlugin::default(),
+            GameUiPlugin,
+        ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
+        .init_resource::<RoundStartTimer>()
         .init_resource::<Score>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
@@ -110,7 +116,7 @@ fn main() {
             ),
         )
         .add_systems(
-            OnEnter(RollbackState::InRound),
+            OnEnter(RollbackState::RoundStart),
             (clear_world, player::player::spawn_players),
         )
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
@@ -159,7 +165,7 @@ fn round_end_timeout(
     timer.tick(std::time::Duration::from_secs_f32(1.0 / 60.0));
 
     if timer.just_finished() {
-        next_state.set(RollbackState::InRound);
+        next_state.set(RollbackState::RoundStart);
     }
 }
 
