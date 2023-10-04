@@ -6,11 +6,12 @@ use bevy_ggrs::*;
 use crate::debug::DebugTransform;
 use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
-use crate::player::health::spawn_health_bar;
 use crate::player::reloading::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 use crate::RollbackState;
+
+use super::health::spawn_health_bar;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
@@ -105,7 +106,7 @@ fn spawn_player(
     handle: usize,
     spawn_position: Vec3,
     spawn_rotation: Quat,
-) {
+) -> Entity {
     let transform = Transform::from_scale(Vec3::splat(PLAYER_SCALE))
         .with_translation(spawn_position)
         .with_rotation(spawn_rotation);
@@ -121,7 +122,8 @@ fn spawn_player(
                 ..default()
             },
         ))
-        .add_rollback();
+        .add_rollback()
+        .id()
 }
 
 pub fn spawn_players(
@@ -135,14 +137,16 @@ pub fn spawn_players(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let handle: usize = 0;
-    spawn_player(
+    let player = spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
         Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0),
         Quat::from_rotation_z(0.0),
     );
-    spawn_health_bar(&mut commands, handle);
+    let health_bar = spawn_health_bar(&mut commands);
+    commands.entity(player).push_children(&[health_bar]);
+
     spawn_reload_bars(&mut commands, handle);
 
     let texture_handle = asset_server.load("plane2.png");
@@ -151,13 +155,15 @@ pub fn spawn_players(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let handle: usize = 1;
-    spawn_player(
+    let player = spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
         Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0),
         Quat::from_rotation_z(std::f32::consts::PI),
     );
-    spawn_health_bar(&mut commands, handle);
+    let health_bar = spawn_health_bar(&mut commands);
+    commands.entity(player).push_children(&[health_bar]);
+
     spawn_reload_bars(&mut commands, handle);
 }

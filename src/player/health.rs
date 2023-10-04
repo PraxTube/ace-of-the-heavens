@@ -9,9 +9,7 @@ const HEALTH_BAR_OFFSET: Vec3 = Vec3::new(-30.0, -40.0, 0.0);
 const HEALTH_BAR_SCALE: Vec3 = Vec3::new(60.0, 7.5, 1.0);
 
 #[derive(Component)]
-pub struct HealthBar {
-    pub handle: usize,
-}
+pub struct HealthBar;
 
 #[derive(Component)]
 pub struct HealthBarFill;
@@ -53,57 +51,49 @@ pub fn damage_players(
 
 pub fn update_health_bars(
     mut health_bars: Query<
-        (
-            &mut Transform,
-            &HealthBar,
-            &Children,
-            &mut Visibility,
-            &mut DebugTransform,
-        ),
-        (Without<Player>, Without<HealthBarFill>),
+        (&mut Transform, &Children, &mut DebugTransform),
+        (With<HealthBar>, Without<Player>, Without<HealthBarFill>),
     >,
     mut health_bar_fills: Query<
         (&mut Transform, &HealthBarFill, &mut DebugTransform),
         (Without<Player>, Without<HealthBar>),
     >,
-    players: Query<(&Transform, &Player), Without<HealthBar>>,
+    players: Query<(&Transform, &Player, &Children), Without<HealthBar>>,
 ) {
-    for (player_transform, player) in &players {
-        for (
-            mut health_bar_transform,
-            health_bar,
-            children,
-            mut health_bar_visibility,
-            mut health_bar_debug_transform,
-        ) in &mut health_bars
-        {
-            if player.handle != health_bar.handle {
-                continue;
-            }
+    for (player_transform, player, p_children) in &players {
+        for &p_child in p_children {
+            let res = health_bars.get_mut(p_child);
 
-            health_bar_transform.translation = player_transform.translation + HEALTH_BAR_OFFSET;
-            health_bar_debug_transform.update(&health_bar_transform);
+            match res {
+                Ok((mut health_bar_transform, h_children, mut health_bar_debug_transform)) => {
+                    health_bar_transform.rotation = player_transform.rotation.inverse();
+                    health_bar_transform.translation =
+                        player_transform.rotation.mul_vec3(HEALTH_BAR_OFFSET);
+                    health_bar_debug_transform.update(&health_bar_transform);
 
-            for &child in children {
-                let health_bar_fill = health_bar_fills.get_mut(child);
-                match health_bar_fill {
-                    Ok(mut fill) => {
-                        let x_fill = (100 * player.health / MAX_HEALTH).clamp(0, 100);
-                        fill.0.scale =
-                            Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
-                        if x_fill == 0 {
-                            *health_bar_visibility = Visibility::Hidden;
+                    for &h_child in h_children {
+                        let health_bar_fill = health_bar_fills.get_mut(h_child);
+                        match health_bar_fill {
+                            Ok(mut fill) => {
+                                let x_fill = (100 * player.health / MAX_HEALTH).clamp(0, 100);
+                                fill.0.scale = Vec3::new(
+                                    x_fill as f32 / 100.0,
+                                    fill.0.scale.y,
+                                    fill.0.scale.z,
+                                );
+                                fill.2.update(&fill.0);
+                            }
+                            Err(_) => {}
                         }
-                        fill.2.update(&fill.0);
                     }
-                    Err(_) => {}
                 }
+                Err(_) => {}
             }
         }
     }
 }
 
-pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
+pub fn spawn_health_bar(commands: &mut Commands) -> Entity {
     let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
         HEALTH_BAR_SCALE.x / 2.0,
         0.0,
@@ -112,9 +102,12 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
 
     let main = commands
         .spawn((
-            HealthBar { handle },
+            HealthBar,
             DebugTransform::default(),
-            SpatialBundle::default(),
+            SpatialBundle {
+                transform: Transform::from_translation(HEALTH_BAR_OFFSET),
+                ..default()
+            },
         ))
         .add_rollback()
         .id();
@@ -164,4 +157,5 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize) {
         .id();
     commands.entity(outer).push_children(&[inner]);
     commands.entity(main).push_children(&[outer, background]);
+    main
 }

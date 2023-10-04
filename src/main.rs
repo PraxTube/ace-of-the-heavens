@@ -119,7 +119,7 @@ fn main() {
         )
         .add_systems(
             OnEnter(RollbackState::RoundStart),
-            (clear_world, player::player::spawn_players),
+            (clear_world, player::player::spawn_players).chain(),
         )
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
