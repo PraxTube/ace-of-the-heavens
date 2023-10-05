@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use super::ui::MAX_SCORE;
 use crate::player::player::{P1_COLOR, P2_COLOR};
+use crate::GameAssets;
 use crate::Score;
 
 #[derive(Component)]
@@ -100,16 +101,9 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
         .push_children(&[winner_text, rematch_text]);
 }
 
-pub fn spawn_game_over_screen(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    score: Res<Score>,
-) {
-    let texture = asset_server.load("ui/white-pixel.png");
-    spawn_background(&mut commands, texture);
-
-    let font = asset_server.load("fonts/PressStart2P.ttf");
-    spawn_text(&mut commands, font, score);
+pub fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>, score: Res<Score>) {
+    spawn_background(&mut commands, assets.white_pixel.clone());
+    spawn_text(&mut commands, assets.font.clone(), score);
 }
 
 pub fn despawn_game_over_screen(

@@ -4,12 +4,12 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::input;
 use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::network::GgrsConfig;
 use crate::Rematch;
 use crate::RollbackState;
+use crate::{input, GameAssets};
 
 use crate::player::health::spawn_health_bar;
 use crate::player::reloading::spawn_reload_bars;
@@ -130,10 +130,10 @@ fn spawn_player(
 
 pub fn spawn_players(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    assets: Res<GameAssets>,
 ) {
-    let texture_handle = asset_server.load("plane1.png");
+    let texture_handle = assets.player_1.clone();
     let texture_atlas =
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
@@ -150,7 +150,7 @@ pub fn spawn_players(
     spawn_health_bar(&mut commands, handle, position);
     spawn_reload_bars(&mut commands, handle, position);
 
-    let texture_handle = asset_server.load("plane2.png");
+    let texture_handle = assets.player_2.clone();
     let texture_atlas =
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);

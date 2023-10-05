@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::player::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
-use crate::RollbackState;
+use crate::{GameAssets, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
 #[reflect(Resource)]
@@ -32,11 +32,9 @@ pub struct RoundStartText;
 
 pub fn spawn_round_start_screen(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<GameAssets>,
     local_handle: Res<LocalPlayerHandle>,
 ) {
-    let font = asset_server.load("fonts/PressStart2P.ttf");
-
     let text_root_node = commands
         .spawn((
             RoundStartScreen,
@@ -56,7 +54,7 @@ pub fn spawn_round_start_screen(
         .id();
 
     let text_style = TextStyle {
-        font,
+        font: assets.font.clone(),
         font_size: 100.0,
         color: Color::WHITE,
     };

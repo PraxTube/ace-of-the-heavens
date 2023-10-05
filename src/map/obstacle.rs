@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
-use crate::debug::DebugTransform;
+use crate::{debug::DebugTransform, GameAssets};
 
 #[derive(Component)]
 pub struct Obstacle {
@@ -45,10 +45,10 @@ fn spawn_obstacle(
 
 pub fn spawn_obstacles(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    assets: Res<GameAssets>,
 ) {
-    let texture_handle = asset_server.load("obstacle.png");
+    let texture_handle = assets.obstacle.clone();
     let texture_atlas =
         TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 96.0), 1, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);

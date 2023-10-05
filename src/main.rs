@@ -55,9 +55,28 @@ pub struct Score(usize, usize, Option<usize>);
 pub struct Rematch(bool, bool);
 
 #[derive(AssetCollection, Resource)]
-pub struct ImageAssets {
+pub struct GameAssets {
+    #[asset(path = "plane1.png")]
+    player_1: Handle<Image>,
+    #[asset(path = "plane2.png")]
+    player_2: Handle<Image>,
     #[asset(path = "bullet.png")]
     bullet: Handle<Image>,
+
+    #[asset(path = "obstacle.png")]
+    obstacle: Handle<Image>,
+    #[asset(path = "stone-background.png")]
+    background: Handle<Image>,
+
+    #[asset(path = "ui/white-pixel.png")]
+    white_pixel: Handle<Image>,
+    #[asset(path = "ui/score-full.png")]
+    score_full: Handle<Image>,
+    #[asset(path = "ui/score-empty.png")]
+    score_empty: Handle<Image>,
+
+    #[asset(path = "fonts/PressStart2P.ttf")]
+    font: Handle<Font>,
 }
 
 fn main() {
@@ -66,7 +85,7 @@ fn main() {
         .add_loading_state(
             LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
         )
-        .add_collection_to_loading_state::<_, ImageAssets>(GameState::AssetLoading)
+        .add_collection_to_loading_state::<_, GameAssets>(GameState::AssetLoading)
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {

@@ -9,7 +9,7 @@ use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
-use crate::ImageAssets;
+use crate::GameAssets;
 
 const MOVE_SPEED: f32 = 350.0 / 60.0;
 pub const BULLET_RADIUS: f32 = 1.0;
@@ -71,7 +71,7 @@ fn spawn_bullet(
     commands: &mut Commands,
     player: &Player,
     player_transform: &Transform,
-    images: &Res<ImageAssets>,
+    texture: Handle<Image>,
     spawn_offset: Vec3,
 ) {
     let transform = Transform::from_translation(
@@ -84,7 +84,7 @@ fn spawn_bullet(
             DebugTransform::new(&transform),
             SpriteBundle {
                 transform,
-                texture: images.bullet.clone(),
+                texture,
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(10.0, 3.0)),
                     ..default()
@@ -98,7 +98,7 @@ fn spawn_bullet(
 pub fn fire_bullets(
     mut commands: Commands,
     inputs: Res<PlayerInputs<GgrsConfig>>,
-    images: Res<ImageAssets>,
+    assets: Res<GameAssets>,
     mut players: Query<(&Transform, &mut Player, &mut BulletTimer)>,
 ) {
     for (player_transform, mut player, mut bullet_timer) in &mut players {
@@ -114,14 +114,14 @@ pub fn fire_bullets(
             &mut commands,
             &player,
             player_transform,
-            &images,
+            assets.bullet.clone(),
             LEFT_WING_BULLET_SPAWN,
         );
         spawn_bullet(
             &mut commands,
             &player,
             player_transform,
-            &images,
+            assets.bullet.clone(),
             RIGHT_WING_BULLET_SPAWN,
         );
 

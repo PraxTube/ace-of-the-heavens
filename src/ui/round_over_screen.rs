@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::player::player::{P1_COLOR, P2_COLOR};
-use crate::Score;
+use crate::{GameAssets, Score};
 
 use super::ui::MAX_SCORE;
 
@@ -11,10 +11,7 @@ pub struct RoundScreen;
 #[derive(Component)]
 pub struct RoundScore;
 
-pub fn spawn_round_over_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let white_pixel = asset_server.load("ui/white-pixel.png");
-    let circle = asset_server.load("ui/score-full.png");
-
+pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
     let root_node = commands
         .spawn((
             RoundScreen,
@@ -43,7 +40,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, asset_server: Res<AssetSe
                 ..default()
             },
             image: UiImage {
-                texture: white_pixel,
+                texture: assets.white_pixel.clone(),
                 ..default()
             },
             background_color: BackgroundColor(Color::rgba(0.2, 0.2, 0.2, 0.65)),
@@ -62,7 +59,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, asset_server: Res<AssetSe
                     ..default()
                 },
                 image: UiImage {
-                    texture: circle,
+                    texture: assets.score_full.clone(),
                     ..default()
                 },
                 ..default()

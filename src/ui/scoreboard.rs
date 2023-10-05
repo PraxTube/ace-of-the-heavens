@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::ui::MAX_SCORE;
 use crate::player::player::{P1_COLOR, P2_COLOR};
-use crate::Score;
+use crate::{GameAssets, Score};
 
 #[derive(Component)]
 pub struct ScoreIcon {
@@ -52,9 +52,9 @@ fn spawn_score_circle(
         .id()
 }
 
-pub fn spawn_scoreboard(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture = asset_server.load("ui/score-empty.png");
-    let font = asset_server.load("font/PressStart2P.ttf");
+pub fn spawn_scoreboard(mut commands: Commands, assets: Res<GameAssets>) {
+    let texture = assets.score_empty.clone();
+    let font = assets.font.clone();
 
     // root node
     let root_node = commands
@@ -103,10 +103,8 @@ pub fn spawn_scoreboard(mut commands: Commands, asset_server: Res<AssetServer>) 
 pub fn update_scoreboard(
     score: Res<Score>,
     mut score_icons: Query<(&ScoreIcon, &mut UiImage)>,
-    asset_server: Res<AssetServer>,
+    assets: Res<GameAssets>,
 ) {
-    let score_full_texture = asset_server.load("ui/score-full.png");
-    let score_empty_texture = asset_server.load("ui/score-empty.png");
     let mut score_mask = [false; MAX_SCORE * 2];
     for i in 0..score.0 {
         score_mask[i] = true;
@@ -118,9 +116,9 @@ pub fn update_scoreboard(
 
     for (score_icon, mut ui_image) in &mut score_icons {
         if score_mask[score_icon.index] {
-            ui_image.texture = score_full_texture.clone();
+            ui_image.texture = assets.score_full.clone();
         } else {
-            ui_image.texture = score_empty_texture.clone();
+            ui_image.texture = assets.score_empty.clone();
         }
     }
 }
