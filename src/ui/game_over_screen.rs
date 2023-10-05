@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 
 use super::ui::MAX_SCORE;
-use crate::player::player::{P1_COLOR, P2_COLOR};
-use crate::GameAssets;
+use crate::player::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::Score;
+use crate::{GameAssets, Rematch};
 
 #[derive(Component)]
 pub struct GameOverScreen;
+
+#[derive(Component)]
+pub struct RematchText;
 
 fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
     commands.spawn((
@@ -71,7 +74,7 @@ fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
         "PRESS R TO REMATCH".to_string(),
         text_style,
     )]);
-    commands.spawn(text_bundle).id()
+    commands.spawn((RematchText, text_bundle)).id()
 }
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
@@ -112,5 +115,19 @@ pub fn despawn_game_over_screen(
 ) {
     for screen_component in &game_over_screens {
         commands.entity(screen_component).despawn_recursive();
+    }
+}
+
+pub fn update_rematch_text(
+    mut rematch_text: Query<&mut Text, With<RematchText>>,
+    rematch: Res<Rematch>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
+    if (rematch.0 && local_handle.0 == 0) || (rematch.1 && local_handle.0 == 1) {
+        let mut text = rematch_text.single_mut();
+        text.sections[0].value = "SEND REQUEST".to_string();
+    } else if (rematch.0 && local_handle.0 != 0) || (rematch.1 && local_handle.0 != 1) {
+        let mut text = rematch_text.single_mut();
+        text.sections[0].value = "PRESS R TO REMATCH\n\nENEMY WANTS REMATCH!".to_string();
     }
 }

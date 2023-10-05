@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
 use super::{
-    game_over_screen::{despawn_game_over_screen, spawn_game_over_screen},
+    game_over_screen::{despawn_game_over_screen, spawn_game_over_screen, update_rematch_text},
     round_over_screen::{hide_round_over_screen, show_round_over_screen, spawn_round_over_screen},
     round_start_screen::{
         animate_round_start_screen, hide_round_start_screen, round_start_timeout,
@@ -49,6 +49,7 @@ impl Plugin for GameUiPlugin {
                     .run_if(in_state(RollbackState::RoundStart))
                     .run_if(in_state(GameState::InGame)),
                 hide_round_start_screen.run_if(in_state(RollbackState::InRound)),
+                update_rematch_text.run_if(in_state(RollbackState::GameOver)),
             ),
         )
         .add_systems(
