@@ -136,11 +136,18 @@ pub fn update_rematch_text(
     rematch: Res<Rematch>,
     local_handle: Res<LocalPlayerHandle>,
 ) {
+    if rematch_text.iter().count() == 0 {
+        return;
+    }
+
     if (rematch.0 && local_handle.0 == 0) || (rematch.1 && local_handle.0 == 1) {
         let mut text = rematch_text.single_mut();
         text.sections[0].value = "SEND REQUEST".to_string();
     } else if (rematch.0 && local_handle.0 != 0) || (rematch.1 && local_handle.0 != 1) {
         let mut text = rematch_text.single_mut();
         text.sections[0].value = "PRESS R TO REMATCH\nENEMY WANTS REMATCH!".to_string();
+    } else {
+        let mut text = rematch_text.single_mut();
+        text.sections[0].value = "PRESS R TO REMATCH".to_string();
     }
 }
