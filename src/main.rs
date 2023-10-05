@@ -138,6 +138,7 @@ fn main() {
                 network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
                 network::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
+                input::quit.run_if(in_state(GameState::GameOver)),
             ),
         )
         .add_systems(

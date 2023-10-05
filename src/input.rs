@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 use bevy_ggrs::*;
 
 const INPUT_FORWARD: u8 = 1 << 0;
@@ -61,4 +61,10 @@ pub fn fire(input: u8) -> bool {
 
 pub fn rematch(input: u8) -> bool {
     input & INPUT_REMATCH != 0
+}
+
+pub fn quit(mut exit: EventWriter<AppExit>, keys: Res<Input<KeyCode>>) {
+    if keys.pressed(KeyCode::Q) {
+        exit.send(AppExit);
+    }
 }

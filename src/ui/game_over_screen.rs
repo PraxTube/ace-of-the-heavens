@@ -73,8 +73,20 @@ fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_bundle = TextBundle::from_sections([TextSection::new(
         "PRESS R TO REMATCH".to_string(),
         text_style,
-    )]);
+    )])
+    .with_text_alignment(TextAlignment::Center);
     commands.spawn((RematchText, text_bundle)).id()
+}
+
+fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
+    let text_style = TextStyle {
+        font,
+        font_size: 25.0,
+        color: Color::WHITE,
+    };
+    let text_bundle =
+        TextBundle::from_sections([TextSection::new("PRESS Q TO QUIT".to_string(), text_style)]);
+    commands.spawn(text_bundle).id()
 }
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
@@ -86,7 +98,7 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
                     height: Val::Vh(100.0),
                     width: Val::Vw(100.0),
                     flex_direction: FlexDirection::Column,
-                    row_gap: Val::Vh(12.0),
+                    row_gap: Val::Vh(10.0),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     position_type: PositionType::Absolute,
@@ -98,10 +110,11 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
         ))
         .id();
     let winner_text = spawn_winner_text(commands, font.clone(), score);
-    let rematch_text = spawn_rematch_text(commands, font);
+    let rematch_text = spawn_rematch_text(commands, font.clone());
+    let quit_text = spawn_quit_text(commands, font.clone());
     commands
         .entity(text_root_node)
-        .push_children(&[winner_text, rematch_text]);
+        .push_children(&[winner_text, rematch_text, quit_text]);
 }
 
 pub fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>, score: Res<Score>) {
@@ -128,6 +141,6 @@ pub fn update_rematch_text(
         text.sections[0].value = "SEND REQUEST".to_string();
     } else if (rematch.0 && local_handle.0 != 0) || (rematch.1 && local_handle.0 != 1) {
         let mut text = rematch_text.single_mut();
-        text.sections[0].value = "PRESS R TO REMATCH\n\nENEMY WANTS REMATCH!".to_string();
+        text.sections[0].value = "PRESS R TO REMATCH\nENEMY WANTS REMATCH!".to_string();
     }
 }
