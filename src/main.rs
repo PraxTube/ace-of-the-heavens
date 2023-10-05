@@ -50,6 +50,10 @@ impl Default for RoundEndTimer {
 #[reflect(Resource)]
 pub struct Score(usize, usize, Option<usize>);
 
+#[derive(Resource, Reflect, Default, Debug)]
+#[reflect(Resource)]
+pub struct Rematch(bool, bool);
+
 #[derive(AssetCollection, Resource)]
 pub struct ImageAssets {
     #[asset(path = "bullet.png")]
@@ -100,15 +104,15 @@ fn main() {
         .init_resource::<RoundStartTimer>()
         .init_resource::<HideScreenTimer>()
         .init_resource::<Score>()
+        .init_resource::<Rematch>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
-            (
-                setup,
-                network::start_matchbox_socket,
-                map::map::spawn_background,
-            ),
+            (spawn_camera, network::start_matchbox_socket),
         )
-        .add_systems(OnEnter(GameState::InGame), map::obstacle::spawn_obstacles)
+        .add_systems(
+            OnExit(GameState::Matchmaking),
+            (map::map::spawn_background, map::obstacle::spawn_obstacles),
+        )
         .add_systems(
             Update,
             (
@@ -145,15 +149,29 @@ fn main() {
         )
         .add_systems(
             GgrsSchedule,
-            round_end_timeout
-                .ambiguous_with(player::player::destroy_players)
-                .distributive_run_if(in_state(RollbackState::RoundEnd))
+            player::player::check_rematch_state
+                .run_if(in_state(GameState::GameOver))
                 .after(apply_state_transition::<RollbackState>),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
+                round_end_timeout
+                    .ambiguous_with(player::player::destroy_players)
+                    .distributive_run_if(in_state(RollbackState::RoundEnd))
+                    .after(apply_state_transition::<RollbackState>),
+                initiate_rematch
+                    .ambiguous_with(player::player::destroy_players)
+                    .ambiguous_with(round_end_timeout)
+                    .distributive_run_if(in_state(RollbackState::GameOver))
+                    .after(apply_state_transition::<RollbackState>)
+                    .after(player::player::check_rematch_state),
+            ),
         )
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
     camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
     camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
@@ -218,4 +236,21 @@ fn adjust_score(
         next_game_state.set(GameState::GameOver);
         next_rollback_state.set(RollbackState::GameOver);
     }
+}
+
+fn initiate_rematch(
+    mut rematch: ResMut<Rematch>,
+    mut score: ResMut<Score>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_rollback_state: ResMut<NextState<RollbackState>>,
+) {
+    if !(rematch.0 && rematch.1) {
+        return;
+    }
+
+    *rematch = Rematch::default();
+    *score = Score::default();
+
+    next_game_state.set(GameState::InGame);
+    next_rollback_state.set(RollbackState::RoundStart);
 }

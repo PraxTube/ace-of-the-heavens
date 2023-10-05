@@ -4,48 +4,34 @@ use super::ui::MAX_SCORE;
 use crate::player::player::{P1_COLOR, P2_COLOR};
 use crate::Score;
 
-pub fn spawn_game_over_screen(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    score: Res<Score>,
-) {
-    let texture = asset_server.load("ui/white-pixel.png");
-    let font = asset_server.load("fonts/PressStart2P.ttf");
+#[derive(Component)]
+pub struct GameOverScreen;
 
-    commands.spawn((ImageBundle {
-        style: Style {
-            height: Val::Vh(100.0),
-            width: Val::Vw(100.0),
-            position_type: PositionType::Absolute,
-            ..default()
-        },
-        image: UiImage {
-            texture,
-            ..default()
-        },
-        background_color: BackgroundColor(Color::rgba(0.2, 0.2, 0.2, 0.85)),
-        z_index: ZIndex::Local(100),
-        ..default()
-    },));
-
-    let text_root_node = commands
-        .spawn(NodeBundle {
+fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
+    commands.spawn((
+        GameOverScreen,
+        ImageBundle {
             style: Style {
                 height: Val::Vh(100.0),
                 width: Val::Vw(100.0),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
                 position_type: PositionType::Absolute,
                 ..default()
             },
-            z_index: ZIndex::Local(101),
+            image: UiImage {
+                texture,
+                ..default()
+            },
+            background_color: BackgroundColor(Color::rgba(0.2, 0.2, 0.2, 0.85)),
+            z_index: ZIndex::Local(100),
             ..default()
-        })
-        .id();
+        },
+    ));
+}
 
+fn spawn_winner_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) -> Entity {
     let text_style = TextStyle {
         font,
-        font_size: 50.0,
+        font_size: 100.0,
         color: Color::WHITE,
     };
     let text_bundle = if score.0 == MAX_SCORE {
@@ -71,7 +57,66 @@ pub fn spawn_game_over_screen(
             TextSection::new("WON".to_string(), text_style.clone()),
         ])
     };
+    commands.spawn((GameOverScreen, text_bundle)).id()
+}
 
-    let text_node = commands.spawn(text_bundle).id();
-    commands.entity(text_root_node).push_children(&[text_node]);
+fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
+    let text_style = TextStyle {
+        font,
+        font_size: 50.0,
+        color: Color::WHITE,
+    };
+    let text_bundle = TextBundle::from_sections([TextSection::new(
+        "PRESS R TO REMATCH".to_string(),
+        text_style,
+    )]);
+    commands.spawn(text_bundle).id()
+}
+
+fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
+    let text_root_node = commands
+        .spawn((
+            GameOverScreen,
+            NodeBundle {
+                style: Style {
+                    height: Val::Vh(100.0),
+                    width: Val::Vw(100.0),
+                    flex_direction: FlexDirection::Column,
+                    row_gap: Val::Vh(12.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                z_index: ZIndex::Local(101),
+                ..default()
+            },
+        ))
+        .id();
+    let winner_text = spawn_winner_text(commands, font.clone(), score);
+    let rematch_text = spawn_rematch_text(commands, font);
+    commands
+        .entity(text_root_node)
+        .push_children(&[winner_text, rematch_text]);
+}
+
+pub fn spawn_game_over_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    score: Res<Score>,
+) {
+    let texture = asset_server.load("ui/white-pixel.png");
+    spawn_background(&mut commands, texture);
+
+    let font = asset_server.load("fonts/PressStart2P.ttf");
+    spawn_text(&mut commands, font, score);
+}
+
+pub fn despawn_game_over_screen(
+    mut commands: Commands,
+    game_over_screens: Query<Entity, With<GameOverScreen>>,
+) {
+    for screen_component in &game_over_screens {
+        commands.entity(screen_component).despawn_recursive();
+    }
 }

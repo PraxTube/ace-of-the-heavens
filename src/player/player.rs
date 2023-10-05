@@ -4,13 +4,17 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
+use crate::input;
 use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
+use crate::network::GgrsConfig;
+use crate::Rematch;
+use crate::RollbackState;
+
 use crate::player::health::spawn_health_bar;
 use crate::player::reloading::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
-use crate::RollbackState;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
@@ -162,4 +166,13 @@ pub fn spawn_players(
     );
     spawn_health_bar(&mut commands, handle, position);
     spawn_reload_bars(&mut commands, handle, position);
+}
+
+pub fn check_rematch_state(mut rematch: ResMut<Rematch>, inputs: Res<PlayerInputs<GgrsConfig>>) {
+    if input::rematch(inputs[0].0) {
+        rematch.0 = true;
+    }
+    if input::rematch(inputs[1].0) {
+        rematch.1 = true;
+    }
 }

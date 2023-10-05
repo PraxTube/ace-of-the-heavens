@@ -105,7 +105,8 @@ pub fn update_scoreboard(
     mut score_icons: Query<(&ScoreIcon, &mut UiImage)>,
     asset_server: Res<AssetServer>,
 ) {
-    let texture = asset_server.load("ui/score-full.png");
+    let score_full_texture = asset_server.load("ui/score-full.png");
+    let score_empty_texture = asset_server.load("ui/score-empty.png");
     let mut score_mask = [false; MAX_SCORE * 2];
     for i in 0..score.0 {
         score_mask[i] = true;
@@ -117,7 +118,9 @@ pub fn update_scoreboard(
 
     for (score_icon, mut ui_image) in &mut score_icons {
         if score_mask[score_icon.index] {
-            ui_image.texture = texture.clone();
+            ui_image.texture = score_full_texture.clone();
+        } else {
+            ui_image.texture = score_empty_texture.clone();
         }
     }
 }

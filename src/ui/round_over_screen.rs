@@ -3,6 +3,8 @@ use bevy::prelude::*;
 use crate::player::player::{P1_COLOR, P2_COLOR};
 use crate::Score;
 
+use super::ui::MAX_SCORE;
+
 #[derive(Component)]
 pub struct RoundScreen;
 
@@ -78,6 +80,10 @@ pub fn show_round_over_screen(
     mut round_score: Query<&mut BackgroundColor, With<RoundScore>>,
     score: Res<Score>,
 ) {
+    if score.0 == MAX_SCORE || score.1 == MAX_SCORE {
+        return;
+    }
+
     round_screen.single_mut().display = Display::Flex;
     *round_score.single_mut() = if score.2 == Some(0) {
         BackgroundColor(P1_COLOR)
