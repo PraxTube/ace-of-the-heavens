@@ -4,8 +4,6 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::map::map::outside_of_borders;
-use crate::map::obstacle::{collision, Obstacle};
 use crate::network::GgrsConfig;
 use crate::Rematch;
 use crate::RollbackState;
@@ -17,17 +15,17 @@ use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
 // Movement
-pub const MAX_SPEED: f32 = 400.0 / 60.0;
-pub const MIN_SPEED: f32 = 200.0 / 60.0;
+pub const MAX_SPEED: f32 = 2000.0 / 60.0;
+pub const MIN_SPEED: f32 = 50.0 / 60.0;
 pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;
 // Health
-pub const MAX_HEALTH: u32 = 2000;
+pub const MAX_HEALTH: u32 = 3000;
 // Spawning
 const PLAYER_SCALE: f32 = 1.75;
-const DISTANCE_FROM_SPAWN: f32 = 800.0;
+const DISTANCE_FROM_SPAWN: f32 = 700.0;
 // Color
 pub const P1_COLOR: Color = Color::rgb(
     0xDF as f32 / 255.0,
@@ -79,22 +77,14 @@ pub struct LocalPlayerHandle(pub usize);
 
 pub fn destroy_players(
     mut commands: Commands,
-    mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
-    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
+    mut players: Query<(Entity, &mut Player), Without<Bullet>>,
     mut next_state: ResMut<NextState<RollbackState>>,
 ) {
-    for (player_entity, mut player, transform) in &mut players {
-        if player.health <= 0 || outside_of_borders(transform.translation) {
+    for (player_entity, mut player) in &mut players {
+        if player.health <= 0 {
             player.health = 0;
             commands.entity(player_entity).despawn_recursive();
             continue;
-        }
-
-        for obstacle in &obstacles {
-            if collision(obstacle, transform.translation, PLAYER_RADIUS) {
-                player.health = 0;
-                commands.entity(player_entity).despawn_recursive();
-            }
         }
     }
 

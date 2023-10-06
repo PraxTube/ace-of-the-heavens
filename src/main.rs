@@ -130,7 +130,11 @@ fn main() {
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
-            (map::map::spawn_background, map::obstacle::spawn_obstacles),
+            (
+                map::map::spawn_background,
+                map::obstacle::spawn_obstacles,
+                map::obstacle::spawn_borders,
+            ),
         )
         .add_systems(
             Update,
@@ -157,6 +161,7 @@ fn main() {
                 player::shooting::fire_bullets,
                 player::shooting::move_bullets,
                 player::damage_players,
+                player::health::obstacle_collision,
                 player::player::destroy_players,
                 player::update_health_bars,
                 player::reloading::update_reload_bars,

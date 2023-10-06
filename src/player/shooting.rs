@@ -5,7 +5,6 @@ use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
 use crate::input;
-use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
@@ -144,12 +143,12 @@ pub fn destroy_bullets(
     obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
 ) {
     for (entity, bullet, transform) in &bullets {
-        if bullet.disabled || outside_of_borders(transform.translation) {
+        if bullet.disabled {
             commands.entity(entity).despawn_recursive();
         }
 
         for obstacle in &obstacles {
-            if collision(obstacle, transform.translation, BULLET_RADIUS) {
+            if collision(obstacle, transform.translation, BULLET_RADIUS).is_some() {
                 commands.entity(entity).despawn_recursive();
             }
         }

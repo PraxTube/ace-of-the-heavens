@@ -82,6 +82,7 @@ dependencies = [
  "bevy_matchbox",
  "bevy_roll_safe",
  "chrono",
+ "glam",
 ]
 
 [[package]]
