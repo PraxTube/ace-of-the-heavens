@@ -83,6 +83,7 @@ dependencies = [
  "bevy_roll_safe",
  "chrono",
  "glam",
+ "rand",
 ]
 
 [[package]]

@@ -1,11 +1,12 @@
 //use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::prelude::*;
 use bevy::window::{PresentMode, Window};
-use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 use bevy_roll_safe::prelude::*;
 
+mod camera;
 mod debug;
 mod input;
 mod log;
@@ -117,6 +118,7 @@ fn main() {
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
             GameUiPlugin,
+            camera::CameraPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
@@ -126,7 +128,7 @@ fn main() {
         .init_resource::<Rematch>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
-            (spawn_camera, network::start_matchbox_socket),
+            network::start_matchbox_socket,
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
@@ -194,13 +196,6 @@ fn main() {
             ),
         )
         .run();
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
-    camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
-    commands.spawn(camera);
 }
 
 fn round_end_timeout(

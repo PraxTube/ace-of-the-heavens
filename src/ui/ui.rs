@@ -13,7 +13,7 @@ use super::{
 use crate::{adjust_score, round_end_timeout, GameState, RollbackState};
 use crate::{initiate_rematch, player::player::destroy_players};
 
-pub const MAX_SCORE: usize = 2;
+pub const MAX_SCORE: usize = 5;
 
 pub struct GameUiPlugin;
 

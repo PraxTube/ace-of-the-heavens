@@ -2,12 +2,13 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, sprite::collide_aabb::Collision};
 
+use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::player::player::{Player, PLAYER_RADIUS};
 use crate::player::shooting::Bullet;
 
-use super::player::MIN_SPEED;
+use super::player::{LocalPlayerHandle, MIN_SPEED};
 
 fn normal_vec(collision: Collision, d: Vec3) -> Option<Vec3> {
     match collision {
@@ -48,6 +49,8 @@ fn check_obstacle_collision(
     player: &mut Player,
     player_debug_transform: &mut DebugTransform,
     obstacle: &Obstacle,
+    camera_shake: &mut ResMut<CameraShake>,
+    local_handle: &Res<LocalPlayerHandle>,
 ) {
     let collision = match collision(obstacle, player_transform.translation, PLAYER_RADIUS) {
         Some(val) => val,
@@ -94,12 +97,17 @@ fn check_obstacle_collision(
     } else {
         player.health -= damage;
         player.current_speed = MIN_SPEED;
+        if player.handle == local_handle.0 {
+            camera_shake.add_shake(damage as f32 / 200.0);
+        }
     }
 }
 
 pub fn obstacle_collision(
     mut players: Query<(&mut Transform, &mut Player, &mut DebugTransform)>,
     obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
+    mut camera_shake: ResMut<CameraShake>,
+    local_handle: Res<LocalPlayerHandle>,
 ) {
     for (mut player_transform, mut player, mut player_debug_transform) in &mut players {
         for obstacle in &obstacles {
@@ -108,6 +116,8 @@ pub fn obstacle_collision(
                 &mut player,
                 &mut player_debug_transform,
                 obstacle,
+                &mut camera_shake,
+                &local_handle,
             );
         }
     }
