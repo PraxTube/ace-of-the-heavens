@@ -12,28 +12,28 @@ use super::player::MIN_SPEED;
 fn normal_vec(collision: Collision, d: Vec3) -> Option<Vec3> {
     match collision {
         Collision::Top => {
-            if d.y > 0.0 {
+            if d.y >= 0.0 {
                 None
             } else {
                 Some(Vec3::Y)
             }
         }
         Collision::Bottom => {
-            if d.y < 0.0 {
+            if d.y <= 0.0 {
                 None
             } else {
                 Some(Vec3::NEG_Y)
             }
         }
         Collision::Left => {
-            if d.x < 0.0 {
+            if d.x <= 0.0 {
                 None
             } else {
                 Some(Vec3::NEG_X)
             }
         }
         Collision::Right => {
-            if d.x > 0.0 {
+            if d.x >= 0.0 {
                 None
             } else {
                 Some(Vec3::X)
@@ -86,10 +86,13 @@ fn check_obstacle_collision(
     player_transform.translation += r * 1.0;
     player_debug_transform.update(&player_transform);
 
-    if player.health < obstacle.damage {
+    let multiplier =
+        (d.dot(n).abs() * 1_000.0 * (player.speed_ratio() + 100) as f32 * 0.5 * 5.0) as u32;
+    let damage = obstacle.damage * multiplier / 100 / 1_000;
+    if player.health < damage {
         player.health = 0;
     } else {
-        player.health -= obstacle.damage;
+        player.health -= damage;
         player.current_speed = MIN_SPEED;
     }
 }

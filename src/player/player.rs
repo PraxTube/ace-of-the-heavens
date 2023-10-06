@@ -15,9 +15,9 @@ use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
 // Movement
-pub const MAX_SPEED: f32 = 2000.0 / 60.0;
-pub const MIN_SPEED: f32 = 50.0 / 60.0;
-pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
+pub const MAX_SPEED: f32 = 650.0 / 60.0;
+pub const MIN_SPEED: f32 = 250.0 / 60.0;
+pub const DELTA_SPEED: f32 = 100.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;

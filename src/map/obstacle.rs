@@ -2,6 +2,7 @@ use bevy::{prelude::*, sprite::collide_aabb::Collision};
 use bevy_ggrs::prelude::*;
 
 use super::map::{BORDER_MAX_X, BORDER_MAX_Y, BORDER_MIN_X, BORDER_MIN_Y};
+use crate::player::player::MAX_HEALTH;
 use crate::{debug::DebugTransform, GameAssets};
 
 #[derive(Component)]
@@ -21,7 +22,7 @@ impl Obstacle {
             max_pos,
             global_pos,
             radius_square,
-            damage: 5,
+            damage: MAX_HEALTH / 10,
         }
     }
 }
