@@ -1,15 +1,9 @@
-use std::f32::consts::PI;
-
-use bevy::{prelude::*, sprite::collide_aabb::Collision};
+use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
-use crate::map::obstacle::{collision, Obstacle};
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting;
-use crate::player::shooting::Bullet;
-
-use super::player::MIN_SPEED;
 
 const HEALTH_BAR_OFFSET: Vec3 = Vec3::new(-30.0, -40.0, 0.0);
 const HEALTH_BAR_SCALE: Vec3 = Vec3::new(60.0, 7.5, 1.0);
@@ -52,86 +46,6 @@ pub fn damage_players(
                     player.health -= bullet.damage;
                 }
                 bullet.disabled = true;
-            }
-        }
-    }
-}
-
-pub fn obstacle_collision(
-    mut players: Query<(&mut Transform, &mut Player, &mut DebugTransform)>,
-    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
-) {
-    for (mut player_transform, mut player, mut player_debug_transform) in &mut players {
-        for obstacle in &obstacles {
-            let collision = collision(obstacle, player_transform.translation, PLAYER_RADIUS);
-            if collision.is_none() {
-                continue;
-            }
-
-            let collision = collision.unwrap();
-            info!("{:?}", collision);
-
-            let d = player_transform.rotation.mul_vec3(Vec3::X);
-            let n = match collision {
-                Collision::Top => {
-                    if d.y > 0.0 {
-                        continue;
-                    }
-                    Vec3::Y
-                }
-                Collision::Bottom => {
-                    if d.y < 0.0 {
-                        continue;
-                    }
-                    Vec3::NEG_Y
-                }
-                Collision::Left => {
-                    if d.x < 0.0 {
-                        continue;
-                    }
-                    Vec3::NEG_X
-                }
-                Collision::Right => {
-                    if d.x > 0.0 {
-                        continue;
-                    }
-                    Vec3::X
-                }
-                _ => continue,
-            };
-
-            let r = d - 2.0 * (d.dot(n)) * n;
-
-            let angle = match collision {
-                Collision::Top => r.angle_between(Vec3::X),
-                Collision::Bottom => 2.0 * PI - r.angle_between(Vec3::X),
-                Collision::Left => {
-                    if r.y < 0.0 {
-                        2.0 * PI - r.angle_between(Vec3::X)
-                    } else {
-                        r.angle_between(Vec3::X)
-                    }
-                }
-                Collision::Right => {
-                    if r.y < 0.0 {
-                        2.0 * PI - r.angle_between(Vec3::X)
-                    } else {
-                        r.angle_between(Vec3::X)
-                    }
-                }
-                _ => panic!("we should never be inside a collision at this point"),
-            };
-
-            info!("{}", angle);
-            player_transform.rotation = Quat::from_rotation_z(angle);
-            player_transform.translation += r * 1.0;
-            player_debug_transform.update(&player_transform);
-
-            if player.health < obstacle.damage {
-                player.health = 0;
-            } else {
-                player.health -= obstacle.damage;
-                player.current_speed = MIN_SPEED;
             }
         }
     }
