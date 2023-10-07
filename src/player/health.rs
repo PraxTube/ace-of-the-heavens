@@ -16,9 +16,13 @@ pub struct HealthBar {
 #[derive(Component)]
 pub struct HealthBarFill;
 
+#[derive(Event)]
+pub struct PlayerTookDamage(pub Transform, pub usize);
+
 pub fn damage_players(
     mut players: Query<(&Transform, &mut Player), Without<shooting::Bullet>>,
     mut bullets: Query<(&Transform, &mut shooting::Bullet)>,
+    mut ev_player_took_damge: EventWriter<PlayerTookDamage>,
 ) {
     for (player_transform, mut player) in &mut players {
         for (bullet_tranform, mut bullet) in &mut bullets {
@@ -45,6 +49,7 @@ pub fn damage_players(
                 } else {
                     player.health -= bullet.damage;
                 }
+                ev_player_took_damge.send(PlayerTookDamage(*player_transform, player.handle));
                 bullet.disabled = true;
             }
         }
