@@ -79,6 +79,7 @@ dependencies = [
  "bevy_asset_loader",
  "bevy_embedded_assets",
  "bevy_ggrs",
+ "bevy_hanabi",
  "bevy_matchbox",
  "bevy_roll_safe",
  "chrono",
@@ -927,6 +928,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_hanabi"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03238827ce780a00e7ab07fcdc59d8a90424fee861f95d37b3a23deab061d56d"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bitflags 2.4.0",
+ "bytemuck",
+ "copyless",
+ "rand",
+ "rand_pcg",
+ "ron",
+ "serde",
+ "typetag",
+]
+
+[[package]]
 name = "bevy_hierarchy"
 version = "0.11.2"
 source = "git+https://github.com/johanhelsing/bevy?branch=reflect-states-0.11#fccd3f1ba45963fea0dc07c861c0b12c22527a60"
@@ -1742,6 +1761,12 @@ name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
+
+[[package]]
+name = "copyless"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 
 [[package]]
 name = "core-foundation"
@@ -2608,7 +2633,7 @@ dependencies = [
  "vec_map",
  "wasm-bindgen",
  "web-sys",
- "windows 0.44.0",
+ "windows 0.48.0",
 ]
 
 [[package]]
@@ -3016,6 +3041,12 @@ dependencies = [
  "webrtc-srtp",
  "webrtc-util",
 ]
+
+[[package]]
+name = "inventory"
+version = "0.3.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1be380c410bf0595e94992a648ea89db4dd3f3354ba54af206fd2a68cf5ac8e"
 
 [[package]]
 name = "io-kit-sys"
@@ -4085,6 +4116,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_pcg"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
+dependencies = [
+ "rand_core 0.6.4",
+]
+
+[[package]]
 name = "range-alloc"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4999,7 +5039,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "static_assertions",
 ]
 
@@ -5008,6 +5048,30 @@ name = "typenum"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+
+[[package]]
+name = "typetag"
+version = "0.2.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80960fd143d4c96275c0e60b08f14b81fbb468e79bc0ef8fbda69fb0afafae43"
+dependencies = [
+ "erased-serde",
+ "inventory",
+ "once_cell",
+ "serde",
+ "typetag-impl",
+]
+
+[[package]]
+name = "typetag-impl"
+version = "0.2.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfc13d450dc4a695200da3074dacf43d449b968baee95e341920e47f61a3b40f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.37",
+]
 
 [[package]]
 name = "unicode-bidi"

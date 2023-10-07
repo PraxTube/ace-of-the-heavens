@@ -17,6 +17,8 @@ opt-level = 3
 #bevy = { version = "0.11.2"}
 bevy = { version = "0.11.2", features = ["dynamic_linking"] }
 
+bevy_hanabi = "0.7.0"
+
 bevy_asset_loader = "0.17.0"
 bevy_embedded_assets = "0.8.0"
 

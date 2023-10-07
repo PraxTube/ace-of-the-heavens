@@ -4,6 +4,7 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
+use bevy_hanabi::HanabiPlugin;
 use bevy_roll_safe::prelude::*;
 
 mod debug;
@@ -117,6 +118,7 @@ fn main() {
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
             GameUiPlugin,
+            HanabiPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
