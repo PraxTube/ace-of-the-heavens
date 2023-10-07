@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
-use bevy_hanabi::prelude::*;
 
-use super::effect::spawn_trail_effect;
 use super::player::{Player, PLAYER_RADIUS};
 
 use crate::debug::DebugTransform;
@@ -51,7 +49,7 @@ fn spawn_player(
     handle: usize,
     spawn_position: Vec3,
     spawn_rotation: Quat,
-) -> Entity {
+) {
     let transform = Transform::from_scale(Vec3::splat(PLAYER_SCALE))
         .with_translation(spawn_position)
         .with_rotation(spawn_rotation);
@@ -67,15 +65,13 @@ fn spawn_player(
                 ..default()
             },
         ))
-        .add_rollback()
-        .id()
+        .add_rollback();
 }
 
 pub fn spawn_players(
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     assets: Res<GameAssets>,
-    mut effects: ResMut<Assets<EffectAsset>>,
 ) {
     let texture_handle = assets.player_1.clone();
     let texture_atlas =
@@ -85,28 +81,13 @@ pub fn spawn_players(
     let handle: usize = 0;
     let position = Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0);
     let rotation = Quat::from_rotation_z(0.0);
-    let player = spawn_player(
+    spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
         position,
         rotation,
     );
-    let trail_left = spawn_trail_effect(
-        &mut commands,
-        Vec3::new(0.0, 15.0, -1.0),
-        rotation,
-        &mut effects,
-    );
-    let trail_right = spawn_trail_effect(
-        &mut commands,
-        Vec3::new(0.0, -15.0, -1.0),
-        rotation,
-        &mut effects,
-    );
-    commands
-        .entity(player)
-        .push_children(&[trail_left, trail_right]);
     spawn_health_bar(&mut commands, handle, position);
     spawn_reload_bars(&mut commands, handle, position);
 
@@ -118,28 +99,13 @@ pub fn spawn_players(
     let handle: usize = 1;
     let position = Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0);
     let rotation = Quat::from_rotation_z(std::f32::consts::PI);
-    let player = spawn_player(
+    spawn_player(
         &mut commands,
         texture_atlas_handle,
         handle,
         position,
         rotation,
     );
-    let trail_left = spawn_trail_effect(
-        &mut commands,
-        Vec3::new(0.0, 15.0, -1.0),
-        rotation,
-        &mut effects,
-    );
-    let trail_right = spawn_trail_effect(
-        &mut commands,
-        Vec3::new(0.0, -15.0, -1.0),
-        rotation,
-        &mut effects,
-    );
-    commands
-        .entity(player)
-        .push_children(&[trail_left, trail_right]);
     spawn_health_bar(&mut commands, handle, position);
     spawn_reload_bars(&mut commands, handle, position);
 }

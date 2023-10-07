@@ -87,9 +87,18 @@ impl Plugin for PlayerPlugin {
             p::spawning::spawn_players,
         )
         .add_event::<p::health::PlayerTookDamage>()
+        .add_systems(OnEnter(RollbackState::InRound), p::effect::activate_trails)
+        .add_systems(OnExit(RollbackState::InRound), p::effect::deactivate_trails)
         .add_systems(
-            OnEnter(GameState::InGame),
-            p::effect::spawn_damage_effect_spawner,
+            OnExit(GameState::Matchmaking),
+            (
+                p::effect::spawn_damage_effect_spawner,
+                p::effect::spawn_trails,
+            ),
+        )
+        .add_systems(
+            Update,
+            p::effect::update_trails.run_if(in_state(GameState::InGame)),
         )
         .add_systems(
             GgrsSchedule,

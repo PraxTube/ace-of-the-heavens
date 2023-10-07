@@ -1,19 +1,25 @@
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
-use super::player::{P1_COLOR, P2_COLOR};
+use super::player::{Player, P1_COLOR, P2_COLOR};
 
 use crate::player::health::PlayerTookDamage;
+
+const TRAILL_OFFSET_LEFT: Vec3 = Vec3::new(0.0, 30.0, -1.0);
+const TRAILL_OFFSET_RIGHT: Vec3 = Vec3::new(0.0, -30.0, -1.0);
+
+#[derive(Component)]
+pub struct Trail(usize, usize);
 
 #[derive(Component)]
 pub struct DamageEffectSpawner;
 
 pub fn spawn_trail_effect(
     commands: &mut Commands,
-    spawn_position: Vec3,
-    spawn_rotation: Quat,
     effects: &mut ResMut<Assets<EffectAsset>>,
-) -> Entity {
+    handle: usize,
+    side: usize,
+) {
     let mut color_gradient = Gradient::new();
     color_gradient.add_key(0.0, Vec4::new(1.0, 1.0, 1.0, 1.0));
     color_gradient.add_key(1.0, Vec4::new(0.7, 0.7, 0.7, 0.0));
@@ -42,7 +48,7 @@ pub fn spawn_trail_effect(
         speed: writer.lit(0.0).expr(),
     };
 
-    let spawner = Spawner::rate(50.0.into());
+    let spawner = Spawner::rate(50.0.into()).with_starts_active(false);
     let effect = effects.add(
         EffectAsset::new(50, spawner, writer.finish())
             .init(init_pos)
@@ -58,13 +64,21 @@ pub fn spawn_trail_effect(
             }),
     );
 
-    commands
-        .spawn(ParticleEffectBundle {
+    commands.spawn((
+        Trail(handle, side),
+        ParticleEffectBundle {
             effect: ParticleEffect::new(effect),
-            transform: Transform::from_translation(spawn_position).with_rotation(spawn_rotation),
             ..default()
-        })
-        .id()
+        },
+    ));
+}
+
+pub fn spawn_trails(mut commands: Commands, mut effects: ResMut<Assets<EffectAsset>>) {
+    for handle in 0..2 {
+        for side in 0..2 {
+            spawn_trail_effect(&mut commands, &mut effects, handle, side);
+        }
+    }
 }
 
 pub fn spawn_damage_effect_spawner(
@@ -156,9 +170,7 @@ pub fn spawn_damage_effect(
         With<DamageEffectSpawner>,
     >,
 ) {
-    let Ok((mut effect, mut spawner, mut transform)) = spawner.get_single_mut() else {
-        return;
-    };
+    let (mut effect, mut spawner, mut transform) = spawner.single_mut();
 
     for ev in ev_player_took_damage.iter() {
         let color = if ev.1 == 0 {
@@ -169,5 +181,39 @@ pub fn spawn_damage_effect(
         transform.translation = ev.0.translation;
         effect.set_property("spawn_color", color.into());
         spawner.reset();
+    }
+}
+
+pub fn update_trails(
+    mut trails: Query<(&mut Transform, &Trail), Without<Player>>,
+    players: Query<(&Transform, &Player), Without<Trail>>,
+) {
+    for (mut trail_transofrm, trail) in &mut trails {
+        for (player_transform, player) in &players {
+            if player.handle != trail.0 {
+                continue;
+            }
+
+            let offset = if trail.1 == 0 {
+                TRAILL_OFFSET_LEFT
+            } else {
+                TRAILL_OFFSET_RIGHT
+            };
+
+            trail_transofrm.translation =
+                player_transform.translation + player_transform.rotation.mul_vec3(offset);
+        }
+    }
+}
+
+pub fn activate_trails(mut trails: Query<&mut EffectSpawner, With<Trail>>) {
+    for mut trail in &mut trails {
+        trail.set_active(true);
+    }
+}
+
+pub fn deactivate_trails(mut trails: Query<&mut EffectSpawner, With<Trail>>) {
+    for mut trail in &mut trails {
+        trail.set_active(false);
     }
 }
