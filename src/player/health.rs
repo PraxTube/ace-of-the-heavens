@@ -5,6 +5,8 @@ use crate::debug::DebugTransform;
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting;
 
+use super::spawning::player_spawn_transform;
+
 const HEALTH_BAR_OFFSET: Vec3 = Vec3::new(-30.0, -40.0, 0.0);
 const HEALTH_BAR_SCALE: Vec3 = Vec3::new(60.0, 7.5, 1.0);
 
@@ -108,14 +110,8 @@ pub fn update_health_bars(
     }
 }
 
-pub fn spawn_health_bar(commands: &mut Commands, handle: usize, spawn_position: Vec3) {
-    let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
-        HEALTH_BAR_SCALE.x / 2.0,
-        0.0,
-        10.0,
-    ));
-
-    let main = commands
+fn spawn_container(commands: &mut Commands, spawn_position: Vec3, handle: usize) -> Entity {
+    commands
         .spawn((
             HealthBar { handle },
             DebugTransform::default(),
@@ -125,8 +121,16 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize, spawn_position: 
             },
         ))
         .add_rollback()
-        .id();
-    let background = commands
+        .id()
+}
+
+fn spawn_background(commands: &mut Commands) -> Entity {
+    let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
+        HEALTH_BAR_SCALE.x / 2.0,
+        0.0,
+        10.0,
+    ));
+    commands
         .spawn((
             DebugTransform::new(&transform),
             SpriteBundle {
@@ -140,22 +144,27 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize, spawn_position: 
             },
         ))
         .add_rollback()
-        .id();
-    let outer = commands
+        .id()
+}
+
+fn spawn_fill_container(commands: &mut Commands) -> Entity {
+    commands
         .spawn((
             HealthBarFill,
             DebugTransform::default(),
             SpatialBundle::default(),
         ))
         .add_rollback()
-        .id();
+        .id()
+}
 
+fn spawn_fill(commands: &mut Commands) -> Entity {
     let transform = Transform::from_scale(HEALTH_BAR_SCALE).with_translation(Vec3::new(
         HEALTH_BAR_SCALE.x / 2.0,
         0.0,
         20.0,
     ));
-    let inner = commands
+    commands
         .spawn((
             DebugTransform::new(&transform),
             SpriteBundle {
@@ -169,7 +178,23 @@ pub fn spawn_health_bar(commands: &mut Commands, handle: usize, spawn_position: 
             },
         ))
         .add_rollback()
-        .id();
-    commands.entity(outer).push_children(&[inner]);
-    commands.entity(main).push_children(&[outer, background]);
+        .id()
+}
+
+pub fn spawn_health_bars(mut commands: Commands) {
+    for handle in 0..2 {
+        let container = spawn_container(
+            &mut commands,
+            player_spawn_transform(handle).translation,
+            handle,
+        );
+        let background = spawn_background(&mut commands);
+        let fill_container = spawn_fill_container(&mut commands);
+        let fill = spawn_fill(&mut commands);
+
+        commands.entity(fill_container).push_children(&[fill]);
+        commands
+            .entity(container)
+            .push_children(&[fill_container, background]);
+    }
 }

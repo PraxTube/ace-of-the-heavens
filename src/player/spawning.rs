@@ -9,13 +9,19 @@ use crate::map::obstacle::{collision, Obstacle};
 use crate::GameAssets;
 use crate::RollbackState;
 
-use crate::player::health::spawn_health_bar;
-use crate::player::reloading::spawn_reload_bars;
 use crate::player::shooting::Bullet;
 use crate::player::shooting::BulletTimer;
 
-const PLAYER_SCALE: f32 = 1.75;
-const DISTANCE_FROM_SPAWN: f32 = 800.0;
+pub const P1_TRANSFORM: Transform = Transform {
+    scale: Vec3::splat(1.75),
+    rotation: Quat::IDENTITY,
+    translation: Vec3::new(-800.0, 0.0, 0.0),
+};
+pub const P2_TRANSFORM: Transform = Transform {
+    scale: Vec3::splat(1.75),
+    rotation: Quat::from_xyzw(0.0, 0.0, 1.0, 0.0),
+    translation: Vec3::new(800.0, 0.0, 0.0),
+};
 
 pub fn despawn_players(
     mut commands: Commands,
@@ -47,12 +53,12 @@ fn spawn_player(
     commands: &mut Commands,
     texture_atlas_handle: Handle<TextureAtlas>,
     handle: usize,
-    spawn_position: Vec3,
-    spawn_rotation: Quat,
 ) {
-    let transform = Transform::from_scale(Vec3::splat(PLAYER_SCALE))
-        .with_translation(spawn_position)
-        .with_rotation(spawn_rotation);
+    let transform = if handle == 0 {
+        P1_TRANSFORM
+    } else {
+        P2_TRANSFORM
+    };
     commands
         .spawn((
             Player::new(handle),
@@ -73,39 +79,20 @@ pub fn spawn_players(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     assets: Res<GameAssets>,
 ) {
-    let texture_handle = assets.player_1.clone();
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let texture_handles = [assets.player_1.clone(), assets.player_2.clone()];
 
-    let handle: usize = 0;
-    let position = Vec3::new(-DISTANCE_FROM_SPAWN, 0.0, 0.0);
-    let rotation = Quat::from_rotation_z(0.0);
-    spawn_player(
-        &mut commands,
-        texture_atlas_handle,
-        handle,
-        position,
-        rotation,
-    );
-    spawn_health_bar(&mut commands, handle, position);
-    spawn_reload_bars(&mut commands, handle, position);
+    for (handle, texture_handle) in texture_handles.into_iter().enumerate() {
+        let texture_atlas =
+            TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
+        let texture_atlas_handle = texture_atlases.add(texture_atlas);
+        spawn_player(&mut commands, texture_atlas_handle, handle);
+    }
+}
 
-    let texture_handle = assets.player_2.clone();
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    let handle: usize = 1;
-    let position = Vec3::new(DISTANCE_FROM_SPAWN, 0.0, 0.0);
-    let rotation = Quat::from_rotation_z(std::f32::consts::PI);
-    spawn_player(
-        &mut commands,
-        texture_atlas_handle,
-        handle,
-        position,
-        rotation,
-    );
-    spawn_health_bar(&mut commands, handle, position);
-    spawn_reload_bars(&mut commands, handle, position);
+pub fn player_spawn_transform(handle: usize) -> Transform {
+    if handle == 0 {
+        P1_TRANSFORM
+    } else {
+        P2_TRANSFORM
+    }
 }

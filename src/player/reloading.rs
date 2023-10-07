@@ -5,6 +5,8 @@ use crate::debug::DebugTransform;
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
 
+use super::spawning::player_spawn_transform;
+
 const OVERHEAT: u32 = 1000;
 const HEAT_COOLDOWN_DELTA: u32 = 12;
 const OVERHEAT_COOLDOWN_DELTA: u32 = 5;
@@ -107,46 +109,6 @@ pub fn color_reload_bars(
     }
 }
 
-pub fn spawn_reload_bars(commands: &mut Commands, handle: usize, spawn_position: Vec3) {
-    let transform = Transform::from_scale(RELOAD_BAR_SCALE)
-        .with_translation(spawn_position + RELOAD_BAR_OFFSET);
-    let main = commands
-        .spawn((
-            ReloadBar { handle },
-            DebugTransform::new(&transform),
-            SpriteBundle {
-                sprite: Sprite {
-                    color: RELOAD_BAR_COLOR,
-                    custom_size: Some(Vec2::new(1.0, 1.0)),
-                    ..default()
-                },
-                transform,
-                ..default()
-            },
-        ))
-        .add_rollback()
-        .id();
-    let transform = Transform::from_scale(Vec3::new(2.0 / RELOAD_BAR_SCALE.x, 6.0, 1.0))
-        .with_translation(Vec3::new(-0.5, 0.0, 0.0));
-    let ticker = commands
-        .spawn((
-            DebugTransform::new(&transform),
-            ReloadBarTicker,
-            SpriteBundle {
-                sprite: Sprite {
-                    color: RELOAD_BAR_TICKER_COLOR,
-                    custom_size: Some(Vec2::new(1.0, 1.0)),
-                    ..default()
-                },
-                transform,
-                ..default()
-            },
-        ))
-        .add_rollback()
-        .id();
-    commands.entity(main).push_children(&[ticker]);
-}
-
 pub fn update_reload_bars(
     mut reload_bars: Query<
         (
@@ -197,5 +159,60 @@ pub fn update_reload_bars(
             *visibility = Visibility::Visible;
             break;
         }
+    }
+}
+
+fn spawn_background(commands: &mut Commands, handle: usize, spawn_position: Vec3) -> Entity {
+    let transform = Transform::from_scale(RELOAD_BAR_SCALE)
+        .with_translation(spawn_position + RELOAD_BAR_OFFSET);
+    commands
+        .spawn((
+            ReloadBar { handle },
+            DebugTransform::new(&transform),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: RELOAD_BAR_COLOR,
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
+                ..default()
+            },
+        ))
+        .add_rollback()
+        .id()
+}
+
+fn spawn_ticker(commands: &mut Commands) -> Entity {
+    let transform = Transform::from_scale(Vec3::new(2.0 / RELOAD_BAR_SCALE.x, 6.0, 1.0))
+        .with_translation(Vec3::new(-0.5, 0.0, 0.0));
+    commands
+        .spawn((
+            DebugTransform::new(&transform),
+            ReloadBarTicker,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: RELOAD_BAR_TICKER_COLOR,
+                    custom_size: Some(Vec2::new(1.0, 1.0)),
+                    ..default()
+                },
+                transform,
+                ..default()
+            },
+        ))
+        .add_rollback()
+        .id()
+}
+
+fn spawn_bars(commands: &mut Commands, handle: usize) {
+    let spawn_position = player_spawn_transform(handle).translation;
+    let background = spawn_background(commands, handle, spawn_position);
+    let ticker = spawn_ticker(commands);
+    commands.entity(background).push_children(&[ticker]);
+}
+
+pub fn spawn_reload_bars(mut commands: Commands) {
+    for handle in 0..2 {
+        spawn_bars(&mut commands, handle);
     }
 }

@@ -84,7 +84,11 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(RollbackState::RoundStart),
-            p::spawning::spawn_players,
+            (
+                p::spawning::spawn_players,
+                p::health::spawn_health_bars,
+                p::reloading::spawn_reload_bars,
+            ),
         )
         .add_event::<p::health::PlayerTookDamage>()
         .add_systems(OnEnter(RollbackState::InRound), p::effect::activate_trails)
