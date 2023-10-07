@@ -11,7 +11,7 @@ use super::{
     scoreboard::{spawn_scoreboard, update_scoreboard},
 };
 use crate::{adjust_score, round_end_timeout, GameState, RollbackState};
-use crate::{initiate_rematch, player::player::destroy_players};
+use crate::{initiate_rematch, player::spawning::despawn_players};
 
 pub const MAX_SCORE: usize = 2;
 
@@ -57,7 +57,7 @@ impl Plugin for GameUiPlugin {
             round_start_timeout
                 .ambiguous_with(round_end_timeout)
                 .ambiguous_with(initiate_rematch)
-                .ambiguous_with(destroy_players)
+                .ambiguous_with(despawn_players)
                 .distributive_run_if(in_state(RollbackState::RoundStart))
                 .after(apply_state_transition::<RollbackState>),
         );

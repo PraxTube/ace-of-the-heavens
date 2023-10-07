@@ -16,6 +16,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
+use player::player::PlayerPlugin;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
 use ui::ui::GameUiPlugin;
 
@@ -119,6 +120,7 @@ fn main() {
             //FrameTimeDiagnosticsPlugin::default(),
             GameUiPlugin,
             HanabiPlugin,
+            PlayerPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundEndTimer>()
@@ -143,47 +145,17 @@ fn main() {
                 input::quit.run_if(in_state(GameState::GameOver)),
             ),
         )
-        .add_systems(
-            OnEnter(RollbackState::RoundStart),
-            (clear_world, player::player::spawn_players),
-        )
+        .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
             GgrsSchedule,
             (
-                player::accelerate_players,
-                player::steer_players,
-                player::move_players,
-                player::reloading::cooldown_heat,
-                player::reloading::reload_bullets,
-                player::shooting::fire_bullets,
-                player::shooting::move_bullets,
-                player::damage_players,
-                player::player::destroy_players,
-                player::update_health_bars,
-                player::reloading::update_reload_bars,
-                player::reloading::color_reload_bars,
-                player::shooting::destroy_bullets,
-            )
-                .chain()
-                .after(apply_state_transition::<RollbackState>)
-                .distributive_run_if(in_state(RollbackState::InRound)),
-        )
-        .add_systems(
-            GgrsSchedule,
-            player::player::check_rematch_state
-                .run_if(in_state(GameState::GameOver))
-                .after(apply_state_transition::<RollbackState>),
-        )
-        .add_systems(
-            GgrsSchedule,
-            (
                 round_end_timeout
-                    .ambiguous_with(player::player::destroy_players)
+                    .ambiguous_with(player::spawning::despawn_players)
                     .distributive_run_if(in_state(RollbackState::RoundEnd))
                     .after(apply_state_transition::<RollbackState>),
                 initiate_rematch
-                    .ambiguous_with(player::player::destroy_players)
+                    .ambiguous_with(player::spawning::despawn_players)
                     .ambiguous_with(round_end_timeout)
                     .distributive_run_if(in_state(RollbackState::GameOver))
                     .after(apply_state_transition::<RollbackState>)
