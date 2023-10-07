@@ -65,9 +65,9 @@ pub struct GameAssets {
     #[asset(path = "bullet.png")]
     bullet: Handle<Image>,
 
-    #[asset(path = "obstacle.png")]
+    #[asset(path = "map/walls/wall-1-1.png")]
     obstacle: Handle<Image>,
-    #[asset(path = "stone-background.png")]
+    #[asset(path = "map/background.png")]
     background: Handle<Image>,
 
     #[asset(path = "ui/white-pixel.png")]
