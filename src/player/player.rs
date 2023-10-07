@@ -89,7 +89,7 @@ impl Plugin for PlayerPlugin {
         .add_event::<p::health::PlayerTookDamage>()
         .add_systems(
             OnEnter(GameState::InGame),
-            p::spawning::spawn_damage_effect_spawner,
+            p::effect::spawn_damage_effect_spawner,
         )
         .add_systems(
             GgrsSchedule,
@@ -108,7 +108,7 @@ impl Plugin for PlayerPlugin {
                 p::shooting::fire_bullets,
                 p::shooting::move_bullets,
                 p::health::damage_players,
-                p::spawning::spawn_damage_effect,
+                p::effect::spawn_damage_effect,
                 p::spawning::despawn_players,
                 p::health::update_health_bars,
                 p::reloading::update_reload_bars,
