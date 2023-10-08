@@ -58,31 +58,16 @@ pub fn damage_players(
     }
 }
 
-pub fn update_health_bars(
+pub fn move_health_bars(
     mut health_bars: Query<
-        (
-            &mut Transform,
-            &HealthBar,
-            &Children,
-            &mut Visibility,
-            &mut DebugTransform,
-        ),
+        (&HealthBar, &mut Transform, &mut DebugTransform),
         (Without<Player>, Without<HealthBarFill>),
-    >,
-    mut health_bar_fills: Query<
-        (&mut Transform, &HealthBarFill, &mut DebugTransform),
-        (Without<Player>, Without<HealthBar>),
     >,
     players: Query<(&Transform, &Player), Without<HealthBar>>,
 ) {
     for (player_transform, player) in &players {
-        for (
-            mut health_bar_transform,
-            health_bar,
-            children,
-            mut health_bar_visibility,
-            mut health_bar_debug_transform,
-        ) in &mut health_bars
+        for (health_bar, mut health_bar_transform, mut health_bar_debug_transform) in
+            &mut health_bars
         {
             if player.handle != health_bar.handle {
                 continue;
@@ -90,22 +75,58 @@ pub fn update_health_bars(
 
             health_bar_transform.translation = player_transform.translation + HEALTH_BAR_OFFSET;
             health_bar_debug_transform.update(&health_bar_transform);
+        }
+    }
+}
 
-            for &child in children {
-                let health_bar_fill = health_bar_fills.get_mut(child);
-                match health_bar_fill {
-                    Ok(mut fill) => {
-                        let x_fill = (100 * player.health / MAX_HEALTH).clamp(0, 100);
-                        fill.0.scale =
-                            Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
-                        if x_fill == 0 {
-                            *health_bar_visibility = Visibility::Hidden;
-                        }
-                        fill.2.update(&fill.0);
-                    }
-                    Err(_) => {}
+fn fill_health_bar(
+    health_bar_fills: &mut Query<
+        (&mut Transform, &HealthBarFill, &mut DebugTransform),
+        (Without<Player>, Without<HealthBar>),
+    >,
+    children: &Children,
+    health_bar_visibility: &mut Visibility,
+    player_health: u32,
+) {
+    for &child in children {
+        let health_bar_fill = health_bar_fills.get_mut(child);
+        match health_bar_fill {
+            Ok(mut fill) => {
+                let x_fill = (100 * player_health / MAX_HEALTH).clamp(0, 100);
+                fill.0.scale = Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
+                if x_fill == 0 {
+                    *health_bar_visibility = Visibility::Hidden;
                 }
+                fill.2.update(&fill.0);
             }
+            Err(_) => {}
+        }
+    }
+}
+
+pub fn fill_health_bars(
+    mut health_bars: Query<
+        (&HealthBar, &Children, &mut Visibility),
+        (Without<Player>, Without<HealthBarFill>),
+    >,
+    mut health_bar_fills: Query<
+        (&mut Transform, &HealthBarFill, &mut DebugTransform),
+        (Without<Player>, Without<HealthBar>),
+    >,
+    players: Query<&Player, Without<HealthBar>>,
+) {
+    for player in &players {
+        for (health_bar, children, mut health_bar_visibility) in &mut health_bars {
+            if player.handle != health_bar.handle {
+                continue;
+            }
+
+            fill_health_bar(
+                &mut health_bar_fills,
+                children,
+                &mut health_bar_visibility,
+                player.health,
+            );
         }
     }
 }

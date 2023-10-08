@@ -93,7 +93,6 @@ pub fn color_reload_bars(
             }
 
             assert! { children.len() == 1 };
-
             let mut reload_bar_ticker_sprite = reload_bar_tickers
                 .get_mut(children[0])
                 .expect("child of reloadbar (the ticker) is not accessable by it's parent");
@@ -109,15 +108,28 @@ pub fn color_reload_bars(
     }
 }
 
-pub fn update_reload_bars(
+pub fn move_reload_bars(
     mut reload_bars: Query<
-        (
-            &mut Transform,
-            &ReloadBar,
-            &Children,
-            &mut Visibility,
-            &mut DebugTransform,
-        ),
+        (&mut Transform, &mut DebugTransform, &ReloadBar),
+        (Without<Player>, Without<ReloadBarTicker>),
+    >,
+    players: Query<(&Transform, &Player), Without<ReloadBar>>,
+) {
+    for (mut reload_bar_transform, mut reload_bar_debug_transform, reload_bar) in &mut reload_bars {
+        for (player_transform, player) in &players {
+            if player.handle != reload_bar.handle {
+                continue;
+            }
+
+            reload_bar_transform.translation = player_transform.translation + RELOAD_BAR_OFFSET;
+            reload_bar_debug_transform.update(&reload_bar_transform);
+        }
+    }
+}
+
+pub fn tick_reload_bars(
+    mut reload_bars: Query<
+        (&ReloadBar, &Children, &mut Visibility),
         (Without<Player>, Without<ReloadBarTicker>),
     >,
     mut reload_bar_tickers: Query<
@@ -126,26 +138,14 @@ pub fn update_reload_bars(
     >,
     players: Query<(&Transform, &Player), Without<ReloadBar>>,
 ) {
-    for (
-        mut reload_bar_transform,
-        reload_bar,
-        children,
-        mut visibility,
-        mut reload_bar_debug_transform,
-    ) in &mut reload_bars
-    {
+    for (reload_bar, children, mut visibility) in &mut reload_bars {
         *visibility = Visibility::Hidden;
-
         for (player_transform, player) in &players {
             if player.handle != reload_bar.handle {
                 continue;
             }
 
             assert! { children.len() == 1 };
-
-            reload_bar_transform.translation = player_transform.translation + RELOAD_BAR_OFFSET;
-            reload_bar_debug_transform.update(&reload_bar_transform);
-
             let mut fill = reload_bar_tickers
                 .get_mut(children[0])
                 .expect("child of reloadbar (the ticker) is not accessable by it's parent");

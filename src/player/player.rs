@@ -123,8 +123,10 @@ impl Plugin for PlayerPlugin {
                 p::health::damage_players,
                 p::effect::spawn_damage_effect,
                 p::spawning::despawn_players,
-                p::health::update_health_bars,
-                p::reloading::update_reload_bars,
+                p::health::move_health_bars,
+                p::health::fill_health_bars,
+                p::reloading::move_reload_bars,
+                p::reloading::tick_reload_bars,
                 p::reloading::color_reload_bars,
                 p::shooting::destroy_bullets,
             )
