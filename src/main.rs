@@ -1,6 +1,6 @@
 //use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::prelude::*;
 use bevy::window::{PresentMode, Window};
-use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
@@ -8,6 +8,7 @@ use bevy_hanabi::HanabiPlugin;
 use bevy_roll_safe::prelude::*;
 
 mod debug;
+mod game_logic;
 mod input;
 mod log;
 mod map;
@@ -16,9 +17,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
-use player::player::PlayerPlugin;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
-use ui::ui::GameUiPlugin;
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
 pub enum GameState {
@@ -37,24 +36,6 @@ pub enum RollbackState {
     RoundEnd,
     GameOver,
 }
-
-#[derive(Resource, Reflect, Deref, DerefMut)]
-#[reflect(Resource)]
-pub struct RoundEndTimer(Timer);
-
-impl Default for RoundEndTimer {
-    fn default() -> Self {
-        RoundEndTimer(Timer::from_seconds(1.0, TimerMode::Repeating))
-    }
-}
-
-#[derive(Resource, Reflect, Default, Debug)]
-#[reflect(Resource)]
-pub struct Score(usize, usize, Option<usize>);
-
-#[derive(Resource, Reflect, Default, Debug)]
-#[reflect(Resource)]
-pub struct Rematch(bool, bool);
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
@@ -113,7 +94,7 @@ fn main() {
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_roll_state::<RollbackState>()
-                .register_rollback_resource::<RoundEndTimer>()
+                .register_rollback_resource::<game_logic::RoundEndTimer>()
                 .register_rollback_resource::<RoundStartTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
@@ -126,19 +107,19 @@ fn main() {
         .add_plugins((
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
-            GameUiPlugin,
+            ui::ui::GameUiPlugin,
             HanabiPlugin,
-            PlayerPlugin,
+            player::player::PlayerPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
-        .init_resource::<RoundEndTimer>()
+        .init_resource::<game_logic::RoundEndTimer>()
         .init_resource::<RoundStartTimer>()
         .init_resource::<HideScreenTimer>()
-        .init_resource::<Score>()
-        .init_resource::<Rematch>()
+        .init_resource::<game_logic::Score>()
+        .init_resource::<game_logic::Rematch>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
-            (spawn_camera, network::start_matchbox_socket),
+            (game_logic::spawn_camera, network::start_matchbox_socket),
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
@@ -157,112 +138,23 @@ fn main() {
         )
         .add_systems(
             OnEnter(RollbackState::RoundStart),
-            (clear_world, map::wall::spawn_map_1),
+            (game_logic::clear_world, map::wall::spawn_map_1),
         )
-        .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
+        .add_systems(OnEnter(RollbackState::RoundEnd), game_logic::adjust_score)
         .add_systems(
             GgrsSchedule,
             (
-                round_end_timeout
+                game_logic::round_end_timeout
                     .ambiguous_with(player::spawning::despawn_players)
                     .distributive_run_if(in_state(RollbackState::RoundEnd))
                     .after(apply_state_transition::<RollbackState>),
-                initiate_rematch
+                game_logic::initiate_rematch
                     .ambiguous_with(player::spawning::despawn_players)
-                    .ambiguous_with(round_end_timeout)
+                    .ambiguous_with(game_logic::round_end_timeout)
                     .distributive_run_if(in_state(RollbackState::GameOver))
                     .after(apply_state_transition::<RollbackState>)
                     .after(player::player::check_rematch_state),
             ),
         )
         .run();
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
-    camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
-    commands.spawn(camera);
-}
-
-fn round_end_timeout(
-    mut timer: ResMut<RoundEndTimer>,
-    mut next_state: ResMut<NextState<RollbackState>>,
-) {
-    timer.tick(std::time::Duration::from_secs_f32(1.0 / 60.0));
-
-    if timer.just_finished() {
-        next_state.set(RollbackState::RoundStart);
-    }
-}
-
-fn clear_world(
-    mut commands: Commands,
-    players: Query<Entity, With<player::player::Player>>,
-    bullets: Query<Entity, With<player::shooting::Bullet>>,
-    health_bars: Query<Entity, With<player::health::HealthBar>>,
-    reload_bars: Query<Entity, With<player::reloading::ReloadBar>>,
-    obstacles: Query<Entity, With<map::obstacle::Obstacle>>,
-) {
-    for player in &players {
-        commands.entity(player).despawn_recursive();
-    }
-
-    for bullet in &bullets {
-        commands.entity(bullet).despawn_recursive();
-    }
-
-    for health_bar in &health_bars {
-        commands.entity(health_bar).despawn_recursive();
-    }
-
-    for reload_bar in &reload_bars {
-        commands.entity(reload_bar).despawn_recursive();
-    }
-
-    for obstacle in &obstacles {
-        commands.entity(obstacle).despawn_recursive();
-    }
-}
-
-fn adjust_score(
-    players: Query<&player::player::Player>,
-    mut score: ResMut<Score>,
-    mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_rollback_state: ResMut<NextState<RollbackState>>,
-) {
-    if players.iter().count() == 0 {
-        score.2 = None;
-        return;
-    }
-
-    if players.single().handle == 0 {
-        score.0 += 1;
-        score.2 = Some(0);
-    } else {
-        score.1 += 1;
-        score.2 = Some(1);
-    }
-
-    if score.0 == ui::ui::MAX_SCORE || score.1 == ui::ui::MAX_SCORE {
-        next_game_state.set(GameState::GameOver);
-        next_rollback_state.set(RollbackState::GameOver);
-    }
-}
-
-fn initiate_rematch(
-    mut rematch: ResMut<Rematch>,
-    mut score: ResMut<Score>,
-    mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_rollback_state: ResMut<NextState<RollbackState>>,
-) {
-    if !(rematch.0 && rematch.1) {
-        return;
-    }
-
-    *rematch = Rematch::default();
-    *score = Score::default();
-
-    next_game_state.set(GameState::InGame);
-    next_rollback_state.set(RollbackState::RoundStart);
 }

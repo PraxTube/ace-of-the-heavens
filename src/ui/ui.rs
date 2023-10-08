@@ -11,8 +11,9 @@ use super::{
     },
     scoreboard::{spawn_scoreboard, update_scoreboard},
 };
-use crate::{adjust_score, round_end_timeout, GameState, RollbackState};
-use crate::{initiate_rematch, player::spawning::despawn_players};
+use crate::game_logic::{adjust_score, initiate_rematch, round_end_timeout};
+use crate::player::spawning::despawn_players;
+use crate::{GameState, RollbackState};
 
 pub const MAX_SCORE: usize = 2;
 

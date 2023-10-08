@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use super::ui::MAX_SCORE;
+use crate::game_logic::Score;
 use crate::player::player::{P1_COLOR, P2_COLOR};
-use crate::{GameAssets, Score};
+use crate::GameAssets;
 
 #[derive(Component)]
 pub struct ScoreIcon {

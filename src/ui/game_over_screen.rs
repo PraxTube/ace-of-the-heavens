@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use super::ui::MAX_SCORE;
+use crate::game_logic::{Rematch, Score};
 use crate::player::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
-use crate::Score;
-use crate::{GameAssets, Rematch};
+use crate::GameAssets;
 
 #[derive(Component)]
 pub struct GameOverScreen;
