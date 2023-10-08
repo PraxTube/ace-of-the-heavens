@@ -1,6 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
@@ -11,6 +12,10 @@ pub struct DebugVec3(Vec3);
 #[derive(Reflect, Component, Default)]
 #[reflect(Hash)]
 pub struct DebugQuat(Quat);
+
+/// We will store the world position of the mouse cursor here.
+#[derive(Resource, Default)]
+pub struct MouseWorldCoords(Vec2);
 
 impl Hash for DebugVec3 {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -63,5 +68,39 @@ pub fn trigger_desync(
 
     for mut bullet_timer in &mut bullet_timers {
         bullet_timer.timer.reset();
+    }
+}
+
+pub fn setup_mouse_tracking(mut commands: Commands) {
+    commands.init_resource::<MouseWorldCoords>();
+}
+
+pub fn print_mouse_transform(
+    mut mycoords: ResMut<MouseWorldCoords>,
+    // query to get the window (so we can read the current cursor position)
+    q_window: Query<&Window, With<PrimaryWindow>>,
+    // query to get camera transform
+    q_camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
+    buttons: Res<Input<MouseButton>>,
+) {
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
+
+    let (camera, camera_transform) = q_camera.single();
+    let window = q_window.single();
+
+    // check if the cursor is inside the window and get its position
+    // then, ask bevy to convert into world coordinates, and truncate to discard Z
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        mycoords.0 = world_position;
+        eprintln!(
+            "Mouse World coords: X: {}, Y: {}",
+            world_position.x, world_position.y
+        );
     }
 }

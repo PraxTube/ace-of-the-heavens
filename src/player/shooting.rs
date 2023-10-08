@@ -149,7 +149,7 @@ pub fn destroy_bullets(
         }
 
         for obstacle in &obstacles {
-            if collision(obstacle, transform.translation, BULLET_RADIUS) {
+            if collision(obstacle, transform.translation) {
                 commands.entity(entity).despawn_recursive();
             }
         }

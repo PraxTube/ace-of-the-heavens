@@ -65,10 +65,18 @@ pub struct GameAssets {
     #[asset(path = "bullet.png")]
     bullet: Handle<Image>,
 
-    #[asset(path = "map/walls/wall-1-1.png")]
-    obstacle: Handle<Image>,
     #[asset(path = "map/background.png")]
     background: Handle<Image>,
+    #[asset(path = "map/walls/wall-1-1.png")]
+    wall_1_1: Handle<Image>,
+    #[asset(path = "map/walls/wall-2-2.png")]
+    wall_2_2: Handle<Image>,
+    #[asset(path = "map/walls/wall-1-5.png")]
+    wall_1_5: Handle<Image>,
+    #[asset(path = "map/walls/wall-5-1.png")]
+    wall_5_1: Handle<Image>,
+    #[asset(path = "map/walls/wall-1-10.png")]
+    wall_1_10: Handle<Image>,
 
     #[asset(path = "ui/white-pixel.png")]
     white_pixel: Handle<Image>,
@@ -134,7 +142,7 @@ fn main() {
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
-            (map::map::spawn_background, map::obstacle::spawn_obstacles),
+            (map::map::spawn_background, debug::setup_mouse_tracking),
         )
         .add_systems(
             Update,
@@ -142,10 +150,14 @@ fn main() {
                 network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
                 network::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
+                debug::print_mouse_transform.run_if(in_state(GameState::InGame)),
                 input::quit.run_if(in_state(GameState::GameOver)),
             ),
         )
-        .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
+        .add_systems(
+            OnEnter(RollbackState::RoundStart),
+            (clear_world, map::wall::spawn_map_1),
+        )
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
             GgrsSchedule,
@@ -189,6 +201,7 @@ fn clear_world(
     bullets: Query<Entity, With<player::shooting::Bullet>>,
     health_bars: Query<Entity, With<player::health::HealthBar>>,
     reload_bars: Query<Entity, With<player::reloading::ReloadBar>>,
+    obstacles: Query<Entity, With<map::obstacle::Obstacle>>,
 ) {
     for player in &players {
         commands.entity(player).despawn_recursive();
@@ -204,6 +217,10 @@ fn clear_world(
 
     for reload_bar in &reload_bars {
         commands.entity(reload_bar).despawn_recursive();
+    }
+
+    for obstacle in &obstacles {
+        commands.entity(obstacle).despawn_recursive();
     }
 }
 

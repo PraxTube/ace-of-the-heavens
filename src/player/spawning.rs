@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
-use super::player::{Player, PLAYER_RADIUS};
+use super::player::Player;
 
 use crate::debug::DebugTransform;
 use crate::map::map::outside_of_borders;
@@ -37,7 +37,7 @@ pub fn despawn_players(
         }
 
         for obstacle in &obstacles {
-            if collision(obstacle, transform.translation, PLAYER_RADIUS) {
+            if collision(obstacle, transform.translation) {
                 player.health = 0;
                 commands.entity(player_entity).despawn_recursive();
             }
