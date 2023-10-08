@@ -4,11 +4,11 @@ use bevy::prelude::*;
 pub struct Obstacle {
     min_pos: Vec2,
     max_pos: Vec2,
-    global_pos: Vec3,
+    global_pos: Vec2,
 }
 
 impl Obstacle {
-    pub fn new(min_pos: Vec2, max_pos: Vec2, global_pos: Vec3) -> Obstacle {
+    pub fn new(min_pos: Vec2, max_pos: Vec2, global_pos: Vec2) -> Obstacle {
         Obstacle {
             min_pos,
             max_pos,
@@ -20,8 +20,8 @@ impl Obstacle {
 pub fn collision(obstacle: &Obstacle, other_pos: Vec3) -> bool {
     let circle_pos = other_pos.truncate();
     let closest_point = circle_pos.clamp(
-        obstacle.min_pos + obstacle.global_pos.truncate(),
-        obstacle.max_pos + obstacle.global_pos.truncate(),
+        obstacle.min_pos + obstacle.global_pos,
+        obstacle.max_pos + obstacle.global_pos,
     );
     let distance = circle_pos.distance_squared(closest_point);
     distance < 1.0
