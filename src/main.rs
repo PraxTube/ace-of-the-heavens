@@ -151,6 +151,7 @@ fn main() {
                 network::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
                 debug::print_mouse_transform.run_if(in_state(GameState::InGame)),
+                input::quit.run_if(in_state(GameState::Matchmaking)),
                 input::quit.run_if(in_state(GameState::GameOver)),
             ),
         )

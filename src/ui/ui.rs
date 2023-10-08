@@ -3,6 +3,7 @@ use bevy_ggrs::GgrsSchedule;
 
 use super::{
     game_over_screen::{despawn_game_over_screen, spawn_game_over_screen, update_rematch_text},
+    networking_screen::{despawn_networking_screen, spawn_networking_screen},
     round_over_screen::{hide_round_over_screen, show_round_over_screen, spawn_round_over_screen},
     round_start_screen::{
         animate_round_start_screen, hide_round_start_screen, round_start_timeout,
@@ -22,11 +23,13 @@ impl Plugin for GameUiPlugin {
         app.add_systems(
             OnExit(GameState::Matchmaking),
             (
+                despawn_networking_screen,
                 spawn_scoreboard,
                 spawn_round_over_screen,
                 spawn_round_start_screen,
             ),
         )
+        .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(OnEnter(GameState::GameOver), spawn_game_over_screen)
         .add_systems(
             OnExit(GameState::GameOver),
