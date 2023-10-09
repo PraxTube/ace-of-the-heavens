@@ -119,7 +119,10 @@ fn main() {
         .init_resource::<game_logic::Rematch>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
-            (game_logic::spawn_camera, network::start_matchbox_socket),
+            (
+                game_logic::spawn_camera,
+                network::session::start_matchbox_socket,
+            ),
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
@@ -128,8 +131,8 @@ fn main() {
         .add_systems(
             Update,
             (
-                network::wait_for_players.run_if(in_state(GameState::Matchmaking)),
-                network::print_events_system.run_if(in_state(GameState::InGame)),
+                network::session::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+                debug::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
                 debug::print_mouse_transform.run_if(in_state(GameState::InGame)),
                 input::quit.run_if(in_state(GameState::Matchmaking)),

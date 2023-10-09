@@ -2,7 +2,9 @@ use std::hash::{Hash, Hasher};
 
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_ggrs::{ggrs::GGRSEvent as GgrsEvent, Session};
 
+use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
 
@@ -102,5 +104,22 @@ pub fn print_mouse_transform(
             "Mouse World coords: X: {}, Y: {}",
             world_position.x, world_position.y
         );
+    }
+}
+
+pub fn print_events_system(mut session: ResMut<Session<GgrsConfig>>) {
+    match session.as_mut() {
+        Session::P2P(s) => {
+            for event in s.events() {
+                match event {
+                    GgrsEvent::Disconnected { .. } | GgrsEvent::NetworkInterrupted { .. } => {
+                        warn!("{event:?}")
+                    }
+                    GgrsEvent::DesyncDetected { .. } => error!("{event:?}"),
+                    _ => info!("{event:?}"),
+                }
+            }
+        }
+        _ => panic!("Expecting a P2P Session."),
     }
 }

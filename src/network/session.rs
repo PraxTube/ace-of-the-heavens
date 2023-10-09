@@ -1,19 +1,10 @@
 use bevy::prelude::*;
 use bevy_ggrs::{ggrs::PlayerType, *};
 use bevy_matchbox::prelude::*;
-use ggrs::GGRSEvent as GgrsEvent;
 
+use super::GgrsConfig;
 use crate::player::player::LocalPlayerHandle;
 use crate::GameState;
-
-#[derive(Debug)]
-pub struct GgrsConfig;
-
-impl ggrs::Config for GgrsConfig {
-    type Input = u8;
-    type State = u8;
-    type Address = PeerId;
-}
 
 pub fn start_matchbox_socket(mut commands: Commands) {
     let room_url = "ws://192.168.178.98:3536/";
@@ -60,24 +51,7 @@ pub fn wait_for_players(
         .start_p2p_session(channel)
         .expect("failed to start session");
 
-    commands.insert_resource(bevy_ggrs::Session::P2P(ggrs_session));
+    commands.insert_resource(Session::P2P(ggrs_session));
 
     next_state.set(GameState::InGame)
-}
-
-pub fn print_events_system(mut session: ResMut<Session<GgrsConfig>>) {
-    match session.as_mut() {
-        Session::P2P(s) => {
-            for event in s.events() {
-                match event {
-                    GgrsEvent::Disconnected { .. } | GgrsEvent::NetworkInterrupted { .. } => {
-                        warn!("{event:?}")
-                    }
-                    GgrsEvent::DesyncDetected { .. } => error!("{event:?}"),
-                    _ => info!("{event:?}"),
-                }
-            }
-        }
-        _ => panic!("Expecting a P2P Session."),
-    }
 }
