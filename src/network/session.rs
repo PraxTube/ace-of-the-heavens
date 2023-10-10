@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_ggrs::{ggrs::PlayerType, *};
-use bevy_matchbox::matchbox_socket::WebRtcSocket;
+use bevy_matchbox::matchbox_socket::{PeerState, WebRtcSocket};
 
 use super::ggrs_config::PLAYER_COUNT;
-use super::peers::{PeerConnectionEvent, PeerHandles};
+use super::peers::PeerConnectionEvent;
 use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::game_logic::{Seed, Seeds};
@@ -36,7 +36,7 @@ pub fn wait_for_players(
     //     return;
     // }
 
-    let new_peers = socket.inner_mut().update_peers();
+    let _new_peers = socket.inner_mut().update_peers();
 
     let players = socket.players();
 
@@ -50,14 +50,7 @@ pub fn wait_for_players(
 
     info!("All peers have joined, going in-game");
 
-    // Send seed to all other peers
-    for (id, state) in new_peers {
-        peer_updater.send(PeerConnectionEvent { id, state });
-    }
-
     let mut session_builder = GgrsConfig::new_builder();
-
-    let mut peer_handles = PeerHandles::default();
 
     for (i, player) in players.into_iter().enumerate() {
         session_builder = session_builder
@@ -66,7 +59,10 @@ pub fn wait_for_players(
 
         match player {
             PlayerType::Remote(peer_id) => {
-                peer_handles.map.insert(peer_id, i);
+                peer_updater.send(PeerConnectionEvent {
+                    id: peer_id,
+                    state: PeerState::Connected,
+                });
             }
             PlayerType::Local => {
                 commands.insert_resource(LocalPlayerHandle(i));
@@ -74,8 +70,6 @@ pub fn wait_for_players(
             PlayerType::Spectator(_) => {}
         };
     }
-
-    commands.insert_resource(peer_handles);
 
     // move the channel out of the socket (required because GGRS takes ownership of it)
     let channel = socket
