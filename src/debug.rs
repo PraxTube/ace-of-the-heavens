@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_ggrs::{ggrs::GGRSEvent as GgrsEvent, Session};
 
+use crate::game_logic::Seeds;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
@@ -84,10 +85,13 @@ pub fn print_mouse_transform(
     // query to get camera transform
     q_camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
     buttons: Res<Input<MouseButton>>,
+    seeds: Res<Seeds>,
 ) {
     if !buttons.just_pressed(MouseButton::Left) {
         return;
     }
+
+    info!("{:?}", seeds.0);
 
     let (camera, camera_transform) = q_camera.single();
     let window = q_window.single();

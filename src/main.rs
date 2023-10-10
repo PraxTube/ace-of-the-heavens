@@ -110,6 +110,7 @@ fn main() {
             ui::ui::GameUiPlugin,
             HanabiPlugin,
             player::player::PlayerPlugin,
+            network::peers::OnlinePeerPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<game_logic::RoundEndTimer>()
@@ -117,10 +118,12 @@ fn main() {
         .init_resource::<HideScreenTimer>()
         .init_resource::<game_logic::Score>()
         .init_resource::<game_logic::Rematch>()
+        .init_resource::<game_logic::Seeds>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
             (
                 game_logic::spawn_camera,
+                game_logic::initiate_seed.before(network::session::start_matchbox_socket),
                 network::session::start_matchbox_socket,
             ),
         )
@@ -132,6 +135,7 @@ fn main() {
             Update,
             (
                 network::session::wait_for_players.run_if(in_state(GameState::Matchmaking)),
+                network::session::wait_for_seed.run_if(in_state(GameState::InGame)),
                 debug::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
                 debug::print_mouse_transform.run_if(in_state(GameState::InGame)),

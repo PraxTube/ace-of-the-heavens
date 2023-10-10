@@ -1,4 +1,6 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy_matchbox::prelude::PeerId;
+use chrono::Utc;
 
 use crate::map;
 use crate::player;
@@ -22,6 +24,21 @@ pub struct Score(pub usize, pub usize, pub Option<usize>);
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
 pub struct Rematch(pub bool, pub bool);
+
+#[derive(Default, Debug)]
+pub struct Seed {
+    pub handle: Option<PeerId>,
+    pub seed: u32,
+}
+
+impl Seed {
+    fn new(handle: Option<PeerId>, seed: u32) -> Seed {
+        Seed { handle, seed }
+    }
+}
+
+#[derive(Resource, Default, Debug)]
+pub struct Seeds(pub Vec<Seed>);
 
 pub fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
@@ -110,4 +127,9 @@ pub fn initiate_rematch(
 
     next_game_state.set(GameState::InGame);
     next_rollback_state.set(RollbackState::RoundStart);
+}
+
+pub fn initiate_seed(mut seeds: ResMut<Seeds>) {
+    let current_time = Utc::now().timestamp() as u32;
+    seeds.0.push(Seed::new(None, current_time));
 }
