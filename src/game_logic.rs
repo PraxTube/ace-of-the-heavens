@@ -1,10 +1,12 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_matchbox::prelude::PeerId;
 use chrono::Utc;
+use rand_xoshiro::rand_core::SeedableRng;
 
 use crate::map;
 use crate::player;
 use crate::ui;
+use crate::utils::GameRng;
 use crate::{GameState, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -39,6 +41,15 @@ impl Seed {
 
 #[derive(Resource, Default, Debug)]
 pub struct Seeds(pub Vec<Seed>);
+
+#[derive(Resource, Debug)]
+pub struct RNG(pub GameRng);
+
+impl Default for RNG {
+    fn default() -> RNG {
+        RNG(GameRng::seed_from_u64(0))
+    }
+}
 
 pub fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
@@ -132,4 +143,14 @@ pub fn initiate_rematch(
 pub fn initiate_seed(mut seeds: ResMut<Seeds>) {
     let current_time = Utc::now().timestamp() as u32;
     seeds.0.push(Seed::new(None, current_time));
+}
+
+pub fn setup_rng(mut rng: ResMut<RNG>, seeds: Res<Seeds>) {
+    let mut smallest_seed = seeds.0[0].seed;
+    for seed in &seeds.0 {
+        if seed.seed < smallest_seed {
+            smallest_seed = seed.seed;
+        }
+    }
+    *rng = RNG(GameRng::seed_from_u64(smallest_seed as u64));
 }

@@ -15,6 +15,7 @@ mod map;
 mod network;
 mod player;
 mod ui;
+mod utils;
 
 use network::GgrsConfig;
 use ui::connecting_screen::ConnectingTimer;
@@ -123,6 +124,7 @@ fn main() {
         .init_resource::<game_logic::Score>()
         .init_resource::<game_logic::Rematch>()
         .init_resource::<game_logic::Seeds>()
+        .init_resource::<game_logic::RNG>()
         .add_systems(
             OnEnter(GameState::Matchmaking),
             (
@@ -133,7 +135,11 @@ fn main() {
         )
         .add_systems(
             OnExit(GameState::Connecting),
-            (map::map::spawn_background, debug::setup_mouse_tracking),
+            (
+                map::map::spawn_background,
+                debug::setup_mouse_tracking,
+                game_logic::setup_rng,
+            ),
         )
         .add_systems(
             Update,
@@ -149,7 +155,7 @@ fn main() {
         )
         .add_systems(
             OnEnter(RollbackState::RoundStart),
-            (game_logic::clear_world, map::wall::spawn_map_1),
+            (game_logic::clear_world, map::map::spawn_random_map),
         )
         .add_systems(OnEnter(RollbackState::RoundEnd), game_logic::adjust_score)
         .add_systems(

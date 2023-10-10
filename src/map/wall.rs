@@ -6,7 +6,7 @@ use crate::{debug::DebugTransform, GameAssets};
 
 const OFFSET: Vec3 = Vec3::new(0.0, 0.0, -10.0);
 
-fn spawn_wall_1_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
+pub fn spawn_wall_1_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
         .spawn((
@@ -21,7 +21,7 @@ fn spawn_wall_1_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<Ga
         .add_rollback();
 }
 
-fn spawn_wall_2_2(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
+pub fn spawn_wall_2_2(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
         .spawn((
@@ -40,7 +40,7 @@ fn spawn_wall_2_2(commands: &mut Commands, spawn_position: Vec2, assets: &Res<Ga
         .add_rollback();
 }
 
-fn spawn_wall_1_5(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
+pub fn spawn_wall_1_5(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
         .spawn((
@@ -59,7 +59,7 @@ fn spawn_wall_1_5(commands: &mut Commands, spawn_position: Vec2, assets: &Res<Ga
         .add_rollback();
 }
 
-fn spawn_wall_5_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
+pub fn spawn_wall_5_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
         .spawn((
@@ -78,7 +78,7 @@ fn spawn_wall_5_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<Ga
         .add_rollback();
 }
 
-fn spawn_wall_1_10(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
+pub fn spawn_wall_1_10(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
         .spawn((
@@ -95,28 +95,4 @@ fn spawn_wall_1_10(commands: &mut Commands, spawn_position: Vec2, assets: &Res<G
             },
         ))
         .add_rollback();
-}
-
-pub fn spawn_map_1(mut commands: Commands, assets: Res<GameAssets>) {
-    spawn_wall_1_5(&mut commands, Vec2::new(-550.0, 200.0), &assets);
-    spawn_wall_1_5(&mut commands, Vec2::new(-550.0, -200.0), &assets);
-    spawn_wall_5_1(&mut commands, Vec2::new(-150.0, 250.0), &assets);
-    spawn_wall_5_1(&mut commands, Vec2::new(-150.0, -250.0), &assets);
-    spawn_wall_2_2(&mut commands, Vec2::new(150.0, 0.0), &assets);
-    spawn_wall_1_1(&mut commands, Vec2::new(150.0, 200.0), &assets);
-}
-
-pub fn spawn_map_2(mut commands: Commands, assets: Res<GameAssets>) {
-    spawn_wall_1_5(&mut commands, Vec2::new(0.0, 0.0), &assets);
-    spawn_wall_5_1(&mut commands, Vec2::new(-450.0, -150.0), &assets);
-    spawn_wall_5_1(&mut commands, Vec2::new(450.0, 150.0), &assets);
-}
-
-pub fn spawn_map_3(mut commands: Commands, assets: Res<GameAssets>) {
-    spawn_wall_1_5(&mut commands, Vec2::new(-150.0, -100.0), &assets);
-    spawn_wall_1_5(&mut commands, Vec2::new(150.0, 100.0), &assets);
-}
-
-pub fn spawn_map_4(mut commands: Commands, assets: Res<GameAssets>) {
-    spawn_wall_1_10(&mut commands, Vec2::new(0.0, 0.0), &assets);
 }
