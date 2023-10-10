@@ -139,7 +139,7 @@ fn main() {
             Update,
             (
                 network::session::wait_for_players.run_if(in_state(GameState::Matchmaking)),
-                network::session::wait_for_seed.run_if(in_state(GameState::InGame)),
+                network::session::wait_for_seed.run_if(in_state(GameState::Connecting)),
                 debug::print_events_system.run_if(in_state(GameState::InGame)),
                 debug::trigger_desync.run_if(in_state(GameState::InGame)),
                 debug::print_mouse_transform.run_if(in_state(GameState::InGame)),

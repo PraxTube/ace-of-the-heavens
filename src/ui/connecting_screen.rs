@@ -19,7 +19,7 @@ pub struct ConnectingTimer(Timer);
 
 impl Default for ConnectingTimer {
     fn default() -> Self {
-        ConnectingTimer(Timer::from_seconds(3.0, TimerMode::Repeating))
+        ConnectingTimer(Timer::from_seconds(1.0, TimerMode::Repeating))
     }
 }
 
