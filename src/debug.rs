@@ -8,6 +8,7 @@ use crate::game_logic::Seeds;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
+use crate::GameState;
 
 #[derive(Reflect, Component, Default)]
 #[reflect(Hash)]
@@ -19,6 +20,22 @@ pub struct DebugQuat(Quat);
 /// We will store the world position of the mouse cursor here.
 #[derive(Resource, Default)]
 pub struct MouseWorldCoords(Vec2);
+
+pub struct AceDebugPlugin;
+
+impl Plugin for AceDebugPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                print_events_system.run_if(in_state(GameState::InGame)),
+                trigger_desync.run_if(in_state(GameState::InGame)),
+                print_mouse_transform.run_if(in_state(GameState::InGame)),
+            ),
+        )
+        .add_systems(OnExit(GameState::Connecting), (setup_mouse_tracking,));
+    }
+}
 
 impl Hash for DebugVec3 {
     fn hash<H: Hasher>(&self, state: &mut H) {

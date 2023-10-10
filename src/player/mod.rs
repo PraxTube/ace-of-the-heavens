@@ -5,3 +5,5 @@ pub mod player;
 pub mod reloading;
 pub mod shooting;
 pub mod spawning;
+
+pub use player::PlayerPlugin;

@@ -1,9 +1,11 @@
 use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy_ggrs::GgrsSchedule;
 use bevy_matchbox::prelude::PeerId;
 use chrono::Utc;
 use rand_xoshiro::rand_core::SeedableRng;
 
 use crate::map;
+use crate::network::session::start_matchbox_socket;
 use crate::player;
 use crate::ui;
 use crate::utils::GameRng;
@@ -48,6 +50,40 @@ pub struct RNG(pub GameRng);
 impl Default for RNG {
     fn default() -> RNG {
         RNG(GameRng::seed_from_u64(0))
+    }
+}
+
+pub struct GameLogicPlugin;
+
+impl Plugin for GameLogicPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            OnEnter(GameState::Matchmaking),
+            (spawn_camera, initiate_seed.before(start_matchbox_socket)),
+        )
+        .init_resource::<RoundEndTimer>()
+        .init_resource::<Score>()
+        .init_resource::<Rematch>()
+        .init_resource::<Seeds>()
+        .init_resource::<RNG>()
+        .add_systems(OnExit(GameState::Connecting), setup_rng)
+        .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
+        .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
+        .add_systems(
+            GgrsSchedule,
+            (
+                round_end_timeout
+                    .ambiguous_with(player::spawning::despawn_players)
+                    .distributive_run_if(in_state(RollbackState::RoundEnd))
+                    .after(apply_state_transition::<RollbackState>),
+                initiate_rematch
+                    .ambiguous_with(player::spawning::despawn_players)
+                    .ambiguous_with(round_end_timeout)
+                    .distributive_run_if(in_state(RollbackState::GameOver))
+                    .after(apply_state_transition::<RollbackState>)
+                    .after(player::player::check_rematch_state),
+            ),
+        );
     }
 }
 

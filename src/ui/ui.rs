@@ -21,9 +21,9 @@ use crate::{GameState, RollbackState};
 
 pub const MAX_SCORE: usize = 2;
 
-pub struct GameUiPlugin;
+pub struct AceUiPlugin;
 
-impl Plugin for GameUiPlugin {
+impl Plugin for AceUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(GameState::Connecting),

@@ -112,65 +112,23 @@ fn main() {
         .add_plugins((
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
-            ui::ui::GameUiPlugin,
             HanabiPlugin,
-            player::player::PlayerPlugin,
+            game_logic::GameLogicPlugin,
+            network::AceNetworkPlugin,
+            ui::AceUiPlugin,
+            map::MapPlugin,
+            player::PlayerPlugin,
+            debug::AceDebugPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
-        .init_resource::<game_logic::RoundEndTimer>()
         .init_resource::<RoundStartTimer>()
         .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
-        .init_resource::<game_logic::Score>()
-        .init_resource::<game_logic::Rematch>()
-        .init_resource::<game_logic::Seeds>()
-        .init_resource::<game_logic::RNG>()
-        .add_systems(
-            OnEnter(GameState::Matchmaking),
-            (
-                game_logic::spawn_camera,
-                game_logic::initiate_seed.before(network::session::start_matchbox_socket),
-                network::session::start_matchbox_socket,
-            ),
-        )
-        .add_systems(
-            OnExit(GameState::Connecting),
-            (
-                map::map::spawn_background,
-                debug::setup_mouse_tracking,
-                game_logic::setup_rng,
-            ),
-        )
         .add_systems(
             Update,
             (
-                network::session::wait_for_players.run_if(in_state(GameState::Matchmaking)),
-                network::session::wait_for_seed.run_if(in_state(GameState::Connecting)),
-                debug::print_events_system.run_if(in_state(GameState::InGame)),
-                debug::trigger_desync.run_if(in_state(GameState::InGame)),
-                debug::print_mouse_transform.run_if(in_state(GameState::InGame)),
                 input::quit.run_if(in_state(GameState::Matchmaking)),
                 input::quit.run_if(in_state(GameState::GameOver)),
-            ),
-        )
-        .add_systems(
-            OnEnter(RollbackState::RoundStart),
-            (game_logic::clear_world, map::map::spawn_random_map),
-        )
-        .add_systems(OnEnter(RollbackState::RoundEnd), game_logic::adjust_score)
-        .add_systems(
-            GgrsSchedule,
-            (
-                game_logic::round_end_timeout
-                    .ambiguous_with(player::spawning::despawn_players)
-                    .distributive_run_if(in_state(RollbackState::RoundEnd))
-                    .after(apply_state_transition::<RollbackState>),
-                game_logic::initiate_rematch
-                    .ambiguous_with(player::spawning::despawn_players)
-                    .ambiguous_with(game_logic::round_end_timeout)
-                    .distributive_run_if(in_state(RollbackState::GameOver))
-                    .after(apply_state_transition::<RollbackState>)
-                    .after(player::player::check_rematch_state),
             ),
         )
         .run();

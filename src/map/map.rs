@@ -3,11 +3,21 @@ use rand::Rng;
 
 use super::wall::*;
 use crate::{game_logic::RNG, GameAssets};
+use crate::{GameState, RollbackState};
 
 const BORDER_MIN_X: f32 = -800.0;
 const BORDER_MAX_X: f32 = 800.0;
 const BORDER_MIN_Y: f32 = -448.0;
 const BORDER_MAX_Y: f32 = 448.0;
+
+pub struct MapPlugin;
+
+impl Plugin for MapPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(RollbackState::RoundStart), spawn_random_map)
+            .add_systems(OnExit(GameState::Connecting), spawn_background);
+    }
+}
 
 pub fn spawn_background(
     mut commands: Commands,
