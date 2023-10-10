@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bevy_ggrs::{ggrs::PlayerType, *};
-use bevy_matchbox::matchbox_socket::{PeerState, WebRtcSocket};
+use bevy_matchbox::matchbox_socket::WebRtcSocket;
 
 use super::ggrs_config::PLAYER_COUNT;
-use super::peers::PeerConnectionEvent;
 use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::game_logic::{Seed, Seeds};
@@ -27,8 +26,8 @@ pub fn start_matchbox_socket(mut commands: Commands) {
 pub fn wait_for_players(
     mut commands: Commands,
     mut socket: ResMut<AceSocket>,
-    mut peer_updater: EventWriter<PeerConnectionEvent>,
     mut next_state: ResMut<NextState<GameState>>,
+    seed: Res<Seeds>,
 ) {
     // We might need this, we would probably need to do something like
     // socket.innter_mut or socket.inner and then get_channel
@@ -59,10 +58,7 @@ pub fn wait_for_players(
 
         match player {
             PlayerType::Remote(peer_id) => {
-                peer_updater.send(PeerConnectionEvent {
-                    id: peer_id,
-                    state: PeerState::Connected,
-                });
+                socket.send_tcp_seed(peer_id, seed.0[0].seed);
             }
             PlayerType::Local => {
                 commands.insert_resource(LocalPlayerHandle(i));
@@ -98,7 +94,7 @@ pub fn wait_for_seed(mut seeds: ResMut<Seeds>, mut socket: ResMut<AceSocket>) {
     for seed in received_seeds {
         seeds.0.push(Seed {
             handle: Some(seed.0),
-            seed: seed.1 .0,
+            seed: seed.1,
         });
     }
 }

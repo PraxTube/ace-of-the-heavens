@@ -110,7 +110,6 @@ fn main() {
             ui::ui::GameUiPlugin,
             HanabiPlugin,
             player::player::PlayerPlugin,
-            network::peers::OnlinePeerPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<game_logic::RoundEndTimer>()

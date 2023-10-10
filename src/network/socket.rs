@@ -7,8 +7,6 @@ use bevy_ggrs::ggrs::PlayerType;
 use bevy_matchbox::matchbox_socket::{MessageLoopFuture, WebRtcSocket};
 use bevy_matchbox::prelude::{MultipleChannels, PeerId};
 
-use super::peers::SeedBroadcast;
-
 #[derive(Resource, Debug, Clone)]
 pub struct AceSocket(pub Arc<RwLock<WebRtcSocket<MultipleChannels>>>);
 
@@ -55,31 +53,21 @@ impl AceSocket {
     pub const GGRS_CHANNEL: usize = 0;
     pub const RELIABLE_CHANNEL: usize = 1;
 
-    pub fn send_tcp_seed(&mut self, peer: PeerId, seed: SeedBroadcast) {
-        let bytes = Box::new(seed.0.to_be_bytes());
+    pub fn send_tcp_seed(&mut self, peer: PeerId, seed: u32) {
+        let bytes = Box::new(seed.to_be_bytes());
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
             .send(bytes, peer);
     }
 
-    pub fn broadcast_tcp_seed(&mut self, seed: SeedBroadcast) {
-        let bytes = Box::new(seed.0.to_be_bytes());
-        let peers = self.inner().connected_peers().collect::<Vec<_>>();
-        for peer in peers {
-            self.inner_mut()
-                .channel(Self::RELIABLE_CHANNEL)
-                .send(bytes.clone(), peer);
-        }
-    }
-
-    pub fn receive_tcp_seed(&mut self) -> Vec<(PeerId, SeedBroadcast)> {
+    pub fn receive_tcp_seed(&mut self) -> Vec<(PeerId, u32)> {
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
             .receive()
             .into_iter()
             .map(|(id, packet)| {
                 let seed = u32::from_be_bytes(try_into_array(packet));
-                (id, SeedBroadcast(seed))
+                (id, seed)
             })
             .collect()
     }
