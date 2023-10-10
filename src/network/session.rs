@@ -79,7 +79,7 @@ pub fn wait_for_players(
         .expect("failed to start session");
 
     commands.insert_resource(Session::P2P(ggrs_session));
-    next_state.set(GameState::InGame);
+    next_state.set(GameState::Connecting);
 }
 
 pub fn wait_for_seed(mut seeds: ResMut<Seeds>, mut socket: ResMut<AceSocket>) {

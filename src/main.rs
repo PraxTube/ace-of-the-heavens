@@ -17,6 +17,7 @@ mod player;
 mod ui;
 
 use network::GgrsConfig;
+use ui::connecting_screen::ConnectingTimer;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
@@ -24,6 +25,7 @@ pub enum GameState {
     #[default]
     AssetLoading,
     Matchmaking,
+    Connecting,
     InGame,
     GameOver,
 }
@@ -31,6 +33,7 @@ pub enum GameState {
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
 pub enum RollbackState {
     #[default]
+    Setup,
     RoundStart,
     InRound,
     RoundEnd,
@@ -96,6 +99,7 @@ fn main() {
                 .register_roll_state::<RollbackState>()
                 .register_rollback_resource::<game_logic::RoundEndTimer>()
                 .register_rollback_resource::<RoundStartTimer>()
+                .register_rollback_resource::<ConnectingTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
@@ -114,6 +118,7 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<game_logic::RoundEndTimer>()
         .init_resource::<RoundStartTimer>()
+        .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
         .init_resource::<game_logic::Score>()
         .init_resource::<game_logic::Rematch>()
@@ -127,7 +132,7 @@ fn main() {
             ),
         )
         .add_systems(
-            OnExit(GameState::Matchmaking),
+            OnExit(GameState::Connecting),
             (map::map::spawn_background, debug::setup_mouse_tracking),
         )
         .add_systems(
