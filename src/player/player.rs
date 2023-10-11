@@ -93,6 +93,7 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<p::health::PlayerTookDamage>()
+        .add_event::<p::shooting::SpawnRocketExplosion>()
         .add_systems(OnEnter(RollbackState::InRound), p::effect::activate_trails)
         .add_systems(OnExit(RollbackState::InRound), p::effect::deactivate_trails)
         .add_systems(
@@ -104,13 +105,21 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             Update,
-            p::effect::update_trails.run_if(in_state(GameState::InGame)),
+            (
+                p::effect::update_trails.run_if(in_state(GameState::InGame)),
+                p::shooting::spawn_rocket_explosions.run_if(in_state(GameState::InGame)),
+            ),
         )
         .add_systems(
             GgrsSchedule,
-            check_rematch_state
-                .run_if(in_state(GameState::GameOver))
-                .after(apply_state_transition::<RollbackState>),
+            (
+                check_rematch_state
+                    .run_if(in_state(GameState::GameOver))
+                    .after(apply_state_transition::<RollbackState>),
+                p::shooting::animate_rocket_explosions
+                    .run_if(in_state(GameState::InGame))
+                    .after(apply_state_transition::<RollbackState>),
+            ),
         )
         .add_systems(
             GgrsSchedule,
@@ -120,10 +129,22 @@ impl Plugin for PlayerPlugin {
                 p::movement::move_players,
                 p::dodge::tick_dodge_timer,
                 p::dodge::initiate_dodge,
+            )
+                .chain()
+                .after(apply_state_transition::<RollbackState>)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
                 p::reloading::cooldown_heat,
                 p::reloading::reload_bullets,
+                p::reloading::reload_rockets,
                 p::shooting::fire_bullets,
                 p::shooting::move_bullets,
+                p::shooting::fire_rockets,
+                p::shooting::move_rockets,
+                p::shooting::check_explosion,
                 p::health::damage_players,
                 p::effect::spawn_damage_effect,
                 p::spawning::despawn_players,
@@ -134,8 +155,10 @@ impl Plugin for PlayerPlugin {
                 p::reloading::tick_reload_bars,
                 p::reloading::color_reload_bars,
                 p::shooting::destroy_bullets,
+                p::shooting::destroy_rockets,
             )
                 .chain()
+                .after(p::dodge::initiate_dodge)
                 .after(apply_state_transition::<RollbackState>)
                 .distributive_run_if(in_state(RollbackState::InRound)),
         );

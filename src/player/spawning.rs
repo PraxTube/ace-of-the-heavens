@@ -3,6 +3,7 @@ use bevy_ggrs::prelude::*;
 
 use super::dodge::DodgeTimer;
 use super::player::Player;
+use super::shooting::RocketTimer;
 
 use crate::debug::DebugTransform;
 use crate::map::map::outside_of_borders;
@@ -64,6 +65,7 @@ fn spawn_player(
         .spawn((
             Player::new(handle),
             BulletTimer::default(),
+            RocketTimer::default(),
             DodgeTimer::default(),
             DebugTransform::new(&transform),
             SpriteSheetBundle {

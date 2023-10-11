@@ -49,6 +49,12 @@ pub struct GameAssets {
     player_2: Handle<Image>,
     #[asset(path = "bullet.png")]
     bullet: Handle<Image>,
+    #[asset(path = "rocket1.png")]
+    rocket1: Handle<Image>,
+    #[asset(path = "rocket2.png")]
+    rocket2: Handle<Image>,
+    #[asset(path = "explosion.png")]
+    explosion: Handle<Image>,
 
     #[asset(path = "map/background.png")]
     background: Handle<Image>,
@@ -106,7 +112,10 @@ fn main() {
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
                 .register_rollback_component::<player::shooting::Bullet>()
-                .register_rollback_component::<player::shooting::BulletTimer>(),
+                .register_rollback_component::<player::shooting::BulletTimer>()
+                .register_rollback_component::<player::shooting::Rocket>()
+                .register_rollback_component::<player::shooting::RocketTimer>()
+                .register_rollback_component::<player::shooting::ExplosionAnimationTimer>(),
         )
         .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_plugins((

@@ -7,6 +7,7 @@ const INPUT_LEFT: u8 = 1 << 2;
 const INPUT_RIGHT: u8 = 1 << 3;
 const INPUT_FIRE: u8 = 1 << 4;
 const INPUT_DODGE: u8 = 1 << 5;
+const INPUT_ROCKET: u8 = 1 << 6;
 const INPUT_REMATCH: u8 = 1 << 7;
 
 pub fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
@@ -29,6 +30,9 @@ pub fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
     }
     if keys.any_pressed([KeyCode::E, KeyCode::L]) {
         input |= INPUT_DODGE;
+    }
+    if keys.any_pressed([KeyCode::Q, KeyCode::Semicolon]) {
+        input |= INPUT_ROCKET;
     }
     if keys.pressed(KeyCode::R) {
         input |= INPUT_REMATCH;
@@ -65,6 +69,10 @@ pub fn fire(input: u8) -> bool {
 
 pub fn dodge(input: u8) -> bool {
     input & INPUT_DODGE != 0
+}
+
+pub fn rocket(input: u8) -> bool {
+    input & INPUT_ROCKET != 0
 }
 
 pub fn rematch(input: u8) -> bool {

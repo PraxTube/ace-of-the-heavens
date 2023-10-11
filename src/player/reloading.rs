@@ -5,6 +5,7 @@ use crate::debug::DebugTransform;
 use crate::player::player::Player;
 use crate::player::shooting::BulletTimer;
 
+use super::shooting::RocketTimer;
 use super::spawning::player_spawn_transform;
 
 const OVERHEAT: u32 = 1000;
@@ -40,6 +41,17 @@ pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
     for mut bullet_timer in &mut players {
         if !bullet_timer.timer.finished() {
             bullet_timer
+                .timer
+                // TODO use gloabal FPS from GGRSSchedule
+                .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
+        }
+    }
+}
+
+pub fn reload_rockets(mut players: Query<&mut RocketTimer, With<Player>>) {
+    for mut rocket_timer in &mut players {
+        if !rocket_timer.timer.finished() {
+            rocket_timer
                 .timer
                 // TODO use gloabal FPS from GGRSSchedule
                 .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
