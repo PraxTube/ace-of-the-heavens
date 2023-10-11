@@ -7,7 +7,7 @@ use bevy_ggrs::{ggrs::GGRSEvent as GgrsEvent, Session};
 use crate::game_logic::Seeds;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
-use crate::player::shooting::BulletTimer;
+use crate::player::shooting::bullet::BulletTimer;
 use crate::GameState;
 
 #[derive(Reflect, Component, Default)]

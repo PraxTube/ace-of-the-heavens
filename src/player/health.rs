@@ -3,7 +3,7 @@ use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
-use crate::player::shooting;
+use crate::player::shooting::bullet::{Bullet, BULLET_RADIUS};
 
 use super::spawning::player_spawn_transform;
 
@@ -22,8 +22,8 @@ pub struct HealthBarFill;
 pub struct PlayerTookDamage(pub Transform, pub usize);
 
 pub fn damage_players(
-    mut players: Query<(&Transform, &mut Player), Without<shooting::Bullet>>,
-    mut bullets: Query<(&Transform, &mut shooting::Bullet)>,
+    mut players: Query<(&Transform, &mut Player), Without<Bullet>>,
+    mut bullets: Query<(&Transform, &mut Bullet)>,
     mut ev_player_took_damge: EventWriter<PlayerTookDamage>,
 ) {
     for (player_transform, mut player) in &mut players {
@@ -46,9 +46,7 @@ pub fn damage_players(
                 player_transform.translation.truncate(),
                 bullet_tranform.translation.truncate(),
             );
-            if distance
-                < PLAYER_RADIUS * PLAYER_RADIUS + shooting::BULLET_RADIUS * shooting::BULLET_RADIUS
-            {
+            if distance < PLAYER_RADIUS.powi(2) + BULLET_RADIUS.powi(2) {
                 if player.health < bullet.damage {
                     player.health = 0;
                 } else {

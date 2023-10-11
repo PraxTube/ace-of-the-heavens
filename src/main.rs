@@ -111,11 +111,11 @@ fn main() {
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<player::player::Player>()
-                .register_rollback_component::<player::shooting::Bullet>()
-                .register_rollback_component::<player::shooting::BulletTimer>()
-                .register_rollback_component::<player::shooting::Rocket>()
-                .register_rollback_component::<player::shooting::RocketTimer>()
-                .register_rollback_component::<player::shooting::ExplosionAnimationTimer>(),
+                .register_rollback_component::<player::shooting::bullet::Bullet>()
+                .register_rollback_component::<player::shooting::bullet::BulletTimer>()
+                .register_rollback_component::<player::shooting::rocket::Rocket>()
+                .register_rollback_component::<player::shooting::rocket::RocketTimer>()
+                .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>(),
         )
         .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_plugins((

@@ -3,10 +3,10 @@ use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
 use crate::player::player::Player;
-use crate::player::shooting::BulletTimer;
 
-use super::shooting::RocketTimer;
-use super::spawning::player_spawn_transform;
+use super::bullet::BulletTimer;
+use super::rocket::RocketTimer;
+use crate::player::spawning::player_spawn_transform;
 
 const OVERHEAT: u32 = 1000;
 const HEAT_COOLDOWN_DELTA: u32 = 12;

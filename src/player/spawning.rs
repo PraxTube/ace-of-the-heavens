@@ -3,16 +3,14 @@ use bevy_ggrs::prelude::*;
 
 use super::dodge::DodgeTimer;
 use super::player::Player;
-use super::shooting::RocketTimer;
+use super::shooting::bullet::{Bullet, BulletTimer};
+use super::shooting::rocket::RocketTimer;
 
 use crate::debug::DebugTransform;
 use crate::map::map::outside_of_borders;
 use crate::map::obstacle::{collision, Obstacle};
 use crate::GameAssets;
 use crate::RollbackState;
-
-use crate::player::shooting::Bullet;
-use crate::player::shooting::BulletTimer;
 
 pub const P1_TRANSFORM: Transform = Transform {
     scale: Vec3::splat(1.75),

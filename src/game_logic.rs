@@ -108,10 +108,10 @@ pub fn round_end_timeout(
 pub fn clear_world(
     mut commands: Commands,
     players: Query<Entity, With<player::player::Player>>,
-    bullets: Query<Entity, With<player::shooting::Bullet>>,
-    rockets: Query<Entity, With<player::shooting::Rocket>>,
+    bullets: Query<Entity, With<player::shooting::bullet::Bullet>>,
+    rockets: Query<Entity, With<player::shooting::rocket::Rocket>>,
     health_bars: Query<Entity, With<player::health::HealthBar>>,
-    reload_bars: Query<Entity, With<player::reloading::ReloadBar>>,
+    reload_bars: Query<Entity, With<player::shooting::reloading::ReloadBar>>,
     obstacles: Query<Entity, With<map::obstacle::Obstacle>>,
 ) {
     for player in &players {

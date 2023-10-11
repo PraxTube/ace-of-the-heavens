@@ -89,11 +89,11 @@ impl Plugin for PlayerPlugin {
             (
                 p::spawning::spawn_players,
                 p::health::spawn_health_bars,
-                p::reloading::spawn_reload_bars,
+                p::shooting::reloading::spawn_reload_bars,
             ),
         )
         .add_event::<p::health::PlayerTookDamage>()
-        .add_event::<p::shooting::SpawnRocketExplosion>()
+        .add_event::<p::shooting::rocket_explosion::SpawnRocketExplosion>()
         .add_systems(OnEnter(RollbackState::InRound), p::effect::activate_trails)
         .add_systems(OnExit(RollbackState::InRound), p::effect::deactivate_trails)
         .add_systems(
@@ -107,7 +107,8 @@ impl Plugin for PlayerPlugin {
             Update,
             (
                 p::effect::update_trails.run_if(in_state(GameState::InGame)),
-                p::shooting::spawn_rocket_explosions.run_if(in_state(GameState::InGame)),
+                p::shooting::rocket_explosion::spawn_rocket_explosions
+                    .run_if(in_state(GameState::InGame)),
             ),
         )
         .add_systems(
@@ -116,7 +117,7 @@ impl Plugin for PlayerPlugin {
                 check_rematch_state
                     .run_if(in_state(GameState::GameOver))
                     .after(apply_state_transition::<RollbackState>),
-                p::shooting::animate_rocket_explosions
+                p::shooting::rocket_explosion::animate_rocket_explosions
                     .run_if(in_state(GameState::InGame))
                     .after(apply_state_transition::<RollbackState>),
             ),
@@ -137,25 +138,25 @@ impl Plugin for PlayerPlugin {
         .add_systems(
             GgrsSchedule,
             (
-                p::reloading::cooldown_heat,
-                p::reloading::reload_bullets,
-                p::reloading::reload_rockets,
-                p::shooting::fire_bullets,
-                p::shooting::move_bullets,
-                p::shooting::fire_rockets,
-                p::shooting::move_rockets,
-                p::shooting::check_explosion,
+                p::shooting::reloading::cooldown_heat,
+                p::shooting::reloading::reload_bullets,
+                p::shooting::reloading::reload_rockets,
+                p::shooting::bullet::fire_bullets,
+                p::shooting::bullet::move_bullets,
+                p::shooting::rocket::fire_rockets,
+                p::shooting::rocket::move_rockets,
+                p::shooting::rocket_explosion::check_explosion,
                 p::health::damage_players,
                 p::effect::spawn_damage_effect,
                 p::spawning::despawn_players,
                 p::dodge::animate_dodge,
                 p::health::move_health_bars,
                 p::health::fill_health_bars,
-                p::reloading::move_reload_bars,
-                p::reloading::tick_reload_bars,
-                p::reloading::color_reload_bars,
-                p::shooting::destroy_bullets,
-                p::shooting::destroy_rockets,
+                p::shooting::reloading::move_reload_bars,
+                p::shooting::reloading::tick_reload_bars,
+                p::shooting::reloading::color_reload_bars,
+                p::shooting::bullet::destroy_bullets,
+                p::shooting::rocket::destroy_rockets,
             )
                 .chain()
                 .after(p::dodge::initiate_dodge)
