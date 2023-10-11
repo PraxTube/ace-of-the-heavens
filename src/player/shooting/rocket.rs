@@ -5,8 +5,7 @@ use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
 use crate::input;
-use crate::map::map::outside_of_borders;
-use crate::map::obstacle::{collision, Obstacle};
+use crate::map::CollisionEntity;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::player::player::PLAYER_RADIUS;
@@ -23,7 +22,6 @@ const ROCKET_RELOAD_TIME: f32 = 0.5;
 pub struct Rocket {
     current_speed: f32,
     pub handle: usize,
-    pub disabled: bool,
 }
 
 impl Rocket {
@@ -31,7 +29,6 @@ impl Rocket {
         Rocket {
             current_speed: ROCKET_MOVE_SPEED + player_speed,
             handle,
-            disabled: false,
         }
     }
 }
@@ -76,6 +73,7 @@ fn spawn_rocket(
     commands
         .spawn((
             Rocket::new(player.current_speed, player.handle),
+            CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {
                 transform,
@@ -125,22 +123,10 @@ pub fn move_rockets(mut rockets: Query<(&mut Transform, &Rocket, &mut DebugTrans
 }
 
 pub fn disable_rockets(
-    obstacles: Query<&Obstacle, (Without<Player>, Without<Rocket>)>,
     players: Query<(&Transform, &Player)>,
-    mut rockets: Query<(&mut Rocket, &Transform)>,
+    mut rockets: Query<(&mut CollisionEntity, &Rocket, &Transform)>,
 ) {
-    for (mut rocket, rocket_transform) in &mut rockets {
-        if rocket.disabled || outside_of_borders(rocket_transform.translation) {
-            rocket.disabled = true;
-            continue;
-        }
-
-        for obstacle in &obstacles {
-            if collision(obstacle, rocket_transform.translation) {
-                rocket.disabled = true;
-            }
-        }
-
+    for (mut collision_entity, rocket, rocket_transform) in &mut rockets {
         for (player_transform, player) in &players {
             if player.handle == rocket.handle {
                 continue;
@@ -151,7 +137,7 @@ pub fn disable_rockets(
                 rocket_transform.translation.truncate(),
             );
             if distance < PLAYER_RADIUS * PLAYER_RADIUS + ROCKET_RADIUS * ROCKET_RADIUS {
-                rocket.disabled = true;
+                collision_entity.disabled = true;
             }
         }
     }
@@ -160,10 +146,10 @@ pub fn disable_rockets(
 pub fn destroy_rockets(
     mut commands: Commands,
     mut ev_spawn_rocket_explosion: EventWriter<SpawnRocketExplosion>,
-    rockets: Query<(Entity, &Rocket, &Transform)>,
+    rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
-    for (entity, rocket, rocket_transform) in &rockets {
-        if !rocket.disabled {
+    for (entity, rocket, rocket_transform, collision_entity) in &rockets {
+        if !collision_entity.disabled {
             continue;
         }
 

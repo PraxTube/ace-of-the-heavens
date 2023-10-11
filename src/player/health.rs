@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
+use crate::map::CollisionEntity;
 use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting::bullet::{Bullet, BULLET_RADIUS};
 
@@ -23,15 +24,15 @@ pub struct PlayerTookDamage(pub Transform, pub usize);
 
 pub fn damage_players(
     mut players: Query<(&Transform, &mut Player), Without<Bullet>>,
-    mut bullets: Query<(&Transform, &mut Bullet)>,
+    mut bullets: Query<(&mut CollisionEntity, &Transform, &Bullet)>,
     mut ev_player_took_damge: EventWriter<PlayerTookDamage>,
 ) {
     for (player_transform, mut player) in &mut players {
-        for (bullet_tranform, mut bullet) in &mut bullets {
+        for (mut collision_entity, bullet_tranform, bullet) in &mut bullets {
             if bullet.handle == player.handle {
                 continue;
             }
-            if bullet.disabled {
+            if collision_entity.disabled {
                 continue;
             }
             // This can happen when multiple bullets hit the player at the same time
@@ -53,7 +54,7 @@ pub fn damage_players(
                     player.health -= bullet.damage;
                 }
                 ev_player_took_damge.send(PlayerTookDamage(*player_transform, player.handle));
-                bullet.disabled = true;
+                collision_entity.disabled = true;
             }
         }
     }

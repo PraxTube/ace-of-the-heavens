@@ -1,21 +1,28 @@
 use bevy::prelude::*;
+use bevy_ggrs::GgrsSchedule;
 use rand::Rng;
 
+use super::obstacle::disable_collision_entities;
 use super::wall::*;
+use crate::player::shooting::bullet::destroy_bullets;
+use crate::player::shooting::reloading::color_reload_bars;
 use crate::{game_logic::RNG, GameAssets};
 use crate::{GameState, RollbackState};
-
-const BORDER_MIN_X: f32 = -800.0;
-const BORDER_MAX_X: f32 = 800.0;
-const BORDER_MIN_Y: f32 = -448.0;
-const BORDER_MAX_Y: f32 = 448.0;
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(RollbackState::RoundStart), spawn_random_map)
-            .add_systems(OnExit(GameState::Connecting), spawn_background);
+            .add_systems(OnExit(GameState::Connecting), spawn_background)
+            .add_systems(
+                GgrsSchedule,
+                disable_collision_entities
+                    .after(color_reload_bars)
+                    .before(destroy_bullets)
+                    .after(apply_state_transition::<RollbackState>)
+                    .distributive_run_if(in_state(RollbackState::InRound)),
+            );
     }
 }
 
@@ -34,15 +41,6 @@ pub fn spawn_background(
         transform: Transform::from_translation(Vec3::new(0.0, 0.0, -1000.0)),
         ..default()
     });
-}
-
-pub fn outside_of_borders(target_position: Vec3) -> bool {
-    if target_position.x < BORDER_MIN_X || target_position.x > BORDER_MAX_X {
-        return true;
-    } else if target_position.y < BORDER_MIN_Y || target_position.y > BORDER_MAX_Y {
-        return true;
-    }
-    false
 }
 
 fn spawn_map_1(commands: &mut Commands, assets: Res<GameAssets>) {

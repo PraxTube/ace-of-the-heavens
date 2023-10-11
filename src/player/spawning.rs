@@ -3,12 +3,11 @@ use bevy_ggrs::prelude::*;
 
 use super::dodge::DodgeTimer;
 use super::player::Player;
-use super::shooting::bullet::{Bullet, BulletTimer};
+use super::shooting::bullet::BulletTimer;
 use super::shooting::rocket::RocketTimer;
 
 use crate::debug::DebugTransform;
-use crate::map::map::outside_of_borders;
-use crate::map::obstacle::{collision, Obstacle};
+use crate::map::CollisionEntity;
 use crate::GameAssets;
 use crate::RollbackState;
 
@@ -23,29 +22,11 @@ pub const P2_TRANSFORM: Transform = Transform {
     translation: Vec3::new(800.0, 0.0, 0.0),
 };
 
-pub fn despawn_players(
-    mut commands: Commands,
-    mut players: Query<(Entity, &mut Player, &Transform), Without<Bullet>>,
-    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
-    mut next_state: ResMut<NextState<RollbackState>>,
-) {
-    for (player_entity, mut player, transform) in &mut players {
-        if player.health <= 0 || outside_of_borders(transform.translation) {
-            player.health = 0;
-            commands.entity(player_entity).despawn_recursive();
-            continue;
-        }
-
-        for obstacle in &obstacles {
-            if collision(obstacle, transform.translation) {
-                player.health = 0;
-                commands.entity(player_entity).despawn_recursive();
-            }
-        }
-    }
-
-    if players.iter().count() <= 1 {
-        next_state.set(RollbackState::RoundEnd);
+pub fn player_spawn_transform(handle: usize) -> Transform {
+    if handle == 0 {
+        P1_TRANSFORM
+    } else {
+        P2_TRANSFORM
     }
 }
 
@@ -54,17 +35,14 @@ fn spawn_player(
     texture_atlas_handle: Handle<TextureAtlas>,
     handle: usize,
 ) {
-    let transform = if handle == 0 {
-        P1_TRANSFORM
-    } else {
-        P2_TRANSFORM
-    };
+    let transform = player_spawn_transform(handle);
     commands
         .spawn((
             Player::new(handle),
             BulletTimer::default(),
             RocketTimer::default(),
             DodgeTimer::default(),
+            CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,
@@ -91,10 +69,19 @@ pub fn spawn_players(
     }
 }
 
-pub fn player_spawn_transform(handle: usize) -> Transform {
-    if handle == 0 {
-        P1_TRANSFORM
-    } else {
-        P2_TRANSFORM
+pub fn despawn_players(
+    mut commands: Commands,
+    mut players: Query<(Entity, &mut Player, &CollisionEntity)>,
+    mut next_state: ResMut<NextState<RollbackState>>,
+) {
+    for (player_entity, mut player, collision_entity) in &mut players {
+        if player.health <= 0 || collision_entity.disabled {
+            player.health = 0;
+            commands.entity(player_entity).despawn_recursive();
+        }
+    }
+
+    if players.iter().count() <= 1 {
+        next_state.set(RollbackState::RoundEnd);
     }
 }

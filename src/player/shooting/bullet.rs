@@ -5,8 +5,7 @@ use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
 use crate::input;
-use crate::map::map::outside_of_borders;
-use crate::map::obstacle::{collision, Obstacle};
+use crate::map::CollisionEntity;
 use crate::network::GgrsConfig;
 use crate::player::player::Player;
 use crate::GameAssets;
@@ -26,7 +25,6 @@ pub struct Bullet {
     current_speed: f32,
     pub damage: u32,
     pub handle: usize,
-    pub disabled: bool,
 }
 
 impl Bullet {
@@ -35,7 +33,6 @@ impl Bullet {
             current_speed: BULLET_MOVE_SPEED + player_speed,
             damage: DAMAGE + extra_damage,
             handle,
-            disabled: false,
         }
     }
 }
@@ -80,6 +77,7 @@ fn spawn_bullet(
     commands
         .spawn((
             Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
+            CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {
                 transform,
@@ -139,18 +137,11 @@ pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet, &mut DebugTrans
 
 pub fn destroy_bullets(
     mut commands: Commands,
-    bullets: Query<(Entity, &Bullet, &Transform)>,
-    obstacles: Query<&Obstacle, (Without<Player>, Without<Bullet>)>,
+    bullets: Query<(Entity, &CollisionEntity), With<Bullet>>,
 ) {
-    for (entity, bullet, transform) in &bullets {
-        if bullet.disabled || outside_of_borders(transform.translation) {
+    for (entity, collision_entity) in &bullets {
+        if collision_entity.disabled {
             commands.entity(entity).despawn_recursive();
-        }
-
-        for obstacle in &obstacles {
-            if collision(obstacle, transform.translation) {
-                commands.entity(entity).despawn_recursive();
-            }
         }
     }
 }
