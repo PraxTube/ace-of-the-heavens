@@ -136,11 +136,11 @@ pub fn tick_reload_bars(
         (&mut Transform, &ReloadBarTicker, &mut DebugTransform),
         (Without<Player>, Without<ReloadBar>),
     >,
-    players: Query<(&Transform, &Player), Without<ReloadBar>>,
+    players: Query<&Player, Without<ReloadBar>>,
 ) {
     for (reload_bar, children, mut visibility) in &mut reload_bars {
         *visibility = Visibility::Hidden;
-        for (player_transform, player) in &players {
+        for player in &players {
             if player.handle != reload_bar.handle {
                 continue;
             }
