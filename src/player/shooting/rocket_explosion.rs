@@ -9,6 +9,7 @@ use crate::player::player::PLAYER_RADIUS;
 use crate::GameAssets;
 
 const ROCKET_EXPLOSION_RADIUS: f32 = 100.0;
+const EXPLOSTION_FRAME_LIFE: usize = 1;
 
 #[derive(Component)]
 pub struct RocketExplosion(usize, bool, usize);
@@ -81,7 +82,7 @@ pub fn check_explosion(
     mut players: Query<(&mut Player, &Transform)>,
 ) {
     for (mut rocket_explosion, rocket_transform) in &mut explosions {
-        if rocket_explosion.2 > 1 {
+        if rocket_explosion.2 > EXPLOSTION_FRAME_LIFE {
             continue;
         }
         rocket_explosion.2 += 1;

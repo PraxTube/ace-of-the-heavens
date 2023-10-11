@@ -156,6 +156,7 @@ impl Plugin for PlayerPlugin {
                 p::shooting::reloading::tick_reload_bars,
                 p::shooting::reloading::color_reload_bars,
                 p::shooting::bullet::destroy_bullets,
+                p::shooting::rocket::disable_rockets,
                 p::shooting::rocket::destroy_rockets,
             )
                 .chain()

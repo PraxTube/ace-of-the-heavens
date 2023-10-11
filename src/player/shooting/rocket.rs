@@ -124,30 +124,20 @@ pub fn move_rockets(mut rockets: Query<(&mut Transform, &Rocket, &mut DebugTrans
     }
 }
 
-pub fn destroy_rockets(
-    mut commands: Commands,
-    rockets: Query<(Entity, &Rocket, &Transform)>,
+pub fn disable_rockets(
     obstacles: Query<&Obstacle, (Without<Player>, Without<Rocket>)>,
     players: Query<(&Transform, &Player)>,
-    mut ev_spawn_rocket_explosion: EventWriter<SpawnRocketExplosion>,
+    mut rockets: Query<(&mut Rocket, &Transform)>,
 ) {
-    for (entity, rocket, rocket_transform) in &rockets {
+    for (mut rocket, rocket_transform) in &mut rockets {
         if rocket.disabled || outside_of_borders(rocket_transform.translation) {
-            ev_spawn_rocket_explosion.send(SpawnRocketExplosion(
-                rocket_transform.translation,
-                rocket.handle,
-            ));
-            commands.entity(entity).despawn_recursive();
+            rocket.disabled = true;
             continue;
         }
 
         for obstacle in &obstacles {
             if collision(obstacle, rocket_transform.translation) {
-                ev_spawn_rocket_explosion.send(SpawnRocketExplosion(
-                    rocket_transform.translation,
-                    rocket.handle,
-                ));
-                commands.entity(entity).despawn_recursive();
+                rocket.disabled = true;
             }
         }
 
@@ -161,12 +151,26 @@ pub fn destroy_rockets(
                 rocket_transform.translation.truncate(),
             );
             if distance < PLAYER_RADIUS * PLAYER_RADIUS + ROCKET_RADIUS * ROCKET_RADIUS {
-                ev_spawn_rocket_explosion.send(SpawnRocketExplosion(
-                    rocket_transform.translation,
-                    rocket.handle,
-                ));
-                commands.entity(entity).despawn_recursive();
+                rocket.disabled = true;
             }
         }
+    }
+}
+
+pub fn destroy_rockets(
+    mut commands: Commands,
+    mut ev_spawn_rocket_explosion: EventWriter<SpawnRocketExplosion>,
+    rockets: Query<(Entity, &Rocket, &Transform)>,
+) {
+    for (entity, rocket, rocket_transform) in &rockets {
+        if !rocket.disabled {
+            continue;
+        }
+
+        ev_spawn_rocket_explosion.send(SpawnRocketExplosion(
+            rocket_transform.translation,
+            rocket.handle,
+        ));
+        commands.entity(entity).despawn_recursive();
     }
 }
