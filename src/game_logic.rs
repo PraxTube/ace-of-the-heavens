@@ -67,6 +67,7 @@ impl Plugin for GameLogicPlugin {
         .init_resource::<Seeds>()
         .init_resource::<RNG>()
         .add_systems(OnExit(GameState::Connecting), setup_rng)
+        .add_systems(OnEnter(GameState::InGame), reset_rematch)
         .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
@@ -165,7 +166,7 @@ pub fn adjust_score(
 }
 
 pub fn initiate_rematch(
-    mut rematch: ResMut<Rematch>,
+    rematch: Res<Rematch>,
     mut score: ResMut<Score>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
@@ -174,11 +175,14 @@ pub fn initiate_rematch(
         return;
     }
 
-    *rematch = Rematch::default();
     *score = Score::default();
 
     next_game_state.set(GameState::InGame);
     next_rollback_state.set(RollbackState::RoundStart);
+}
+
+pub fn reset_rematch(mut rematch: ResMut<Rematch>) {
+    *rematch = Rematch::default();
 }
 
 pub fn initiate_seed(mut seeds: ResMut<Seeds>) {
