@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
+use super::dodge::DodgeTimer;
 use super::player::Player;
 
 use crate::debug::DebugTransform;
@@ -63,6 +64,7 @@ fn spawn_player(
         .spawn((
             Player::new(handle),
             BulletTimer::default(),
+            DodgeTimer::default(),
             DebugTransform::new(&transform),
             SpriteSheetBundle {
                 texture_atlas: texture_atlas_handle,

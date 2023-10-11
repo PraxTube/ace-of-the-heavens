@@ -38,6 +38,9 @@ pub fn damage_players(
             if player.health == 0 {
                 continue;
             }
+            if player.dodging {
+                continue;
+            }
 
             let distance = Vec2::distance_squared(
                 player_transform.translation.truncate(),

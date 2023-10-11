@@ -41,6 +41,7 @@ pub struct Player {
     pub health: u32,
     pub heat: u32,
     pub overheated: bool,
+    pub dodging: bool,
 }
 
 impl Player {
@@ -51,6 +52,7 @@ impl Player {
             health: MAX_HEALTH,
             heat: 0,
             overheated: false,
+            dodging: false,
         }
     }
 
@@ -116,6 +118,8 @@ impl Plugin for PlayerPlugin {
                 p::movement::accelerate_players,
                 p::movement::steer_players,
                 p::movement::move_players,
+                p::dodge::tick_dodge_timer,
+                p::dodge::initiate_dodge,
                 p::reloading::cooldown_heat,
                 p::reloading::reload_bullets,
                 p::shooting::fire_bullets,
@@ -123,6 +127,7 @@ impl Plugin for PlayerPlugin {
                 p::health::damage_players,
                 p::effect::spawn_damage_effect,
                 p::spawning::despawn_players,
+                p::dodge::animate_dodge,
                 p::health::move_health_bars,
                 p::health::fill_health_bars,
                 p::reloading::move_reload_bars,

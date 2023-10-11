@@ -1,3 +1,4 @@
+pub mod dodge;
 pub mod effect;
 pub mod health;
 pub mod movement;
