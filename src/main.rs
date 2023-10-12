@@ -115,6 +115,7 @@ fn main() {
                 .register_rollback_component::<player::shooting::bullet::BulletTimer>()
                 .register_rollback_component::<player::shooting::rocket::Rocket>()
                 .register_rollback_component::<player::shooting::rocket::RocketTimer>()
+                .register_rollback_component::<player::shooting::rocket_explosion::RocketExplosion>()
                 .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>(),
         )
         .add_roll_state::<RollbackState>(GgrsSchedule)
@@ -133,12 +134,6 @@ fn main() {
         .init_resource::<RoundStartTimer>()
         .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
-        .add_systems(
-            Update,
-            (
-                input::quit.run_if(in_state(GameState::Matchmaking)),
-                input::quit.run_if(in_state(GameState::GameOver)),
-            ),
-        )
+        .add_systems(Update, input::quit.run_if(in_state(GameState::Matchmaking).or_else(in_state(GameState::GameOver))))
         .run();
 }

@@ -11,7 +11,7 @@ use crate::player::player::Player;
 use crate::player::player::PLAYER_RADIUS;
 use crate::GameAssets;
 
-use super::rocket_explosion::SpawnRocketExplosion;
+use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
@@ -148,7 +148,8 @@ pub fn disable_rockets(
 
 pub fn destroy_rockets(
     mut commands: Commands,
-    mut ev_spawn_rocket_explosion: EventWriter<SpawnRocketExplosion>,
+    assets: Res<GameAssets>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
     for (entity, rocket, rocket_transform, collision_entity) in &rockets {
@@ -156,10 +157,13 @@ pub fn destroy_rockets(
             continue;
         }
 
-        ev_spawn_rocket_explosion.send(SpawnRocketExplosion(
+        spawn_rocket_explosion(
+            &mut commands,
+            &assets,
+            &mut texture_atlases,
             rocket_transform.translation,
             rocket.handle,
-        ));
+        );
         commands.entity(entity).despawn_recursive();
     }
 }

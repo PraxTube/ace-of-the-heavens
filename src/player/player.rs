@@ -93,7 +93,6 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<p::health::PlayerTookDamage>()
-        .add_event::<p::shooting::rocket_explosion::SpawnRocketExplosion>()
         .add_systems(OnEnter(RollbackState::InRound), p::effect::activate_trails)
         .add_systems(OnExit(RollbackState::InRound), p::effect::deactivate_trails)
         .add_systems(
@@ -105,11 +104,7 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             Update,
-            (
-                p::effect::update_trails.run_if(in_state(GameState::InGame)),
-                p::shooting::rocket_explosion::spawn_rocket_explosions
-                    .run_if(in_state(GameState::InGame)),
-            ),
+            p::effect::update_trails.run_if(in_state(GameState::InGame)),
         )
         .add_systems(
             GgrsSchedule,

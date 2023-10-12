@@ -11,11 +11,8 @@ use crate::GameAssets;
 const ROCKET_EXPLOSION_RADIUS: f32 = 100.0;
 const EXPLOSTION_FRAME_LIFE: usize = 1;
 
-#[derive(Component)]
+#[derive(Component, Default, Reflect)]
 pub struct RocketExplosion(usize, bool, usize);
-
-#[derive(Event)]
-pub struct SpawnRocketExplosion(pub Vec3, pub usize);
 
 #[derive(Component, Reflect, Default)]
 pub struct ExplosionAnimationTimer {
@@ -30,31 +27,30 @@ impl ExplosionAnimationTimer {
     }
 }
 
-pub fn spawn_rocket_explosions(
-    mut commands: Commands,
-    assets: Res<GameAssets>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut ev_spawn_rocket_explosion: EventReader<SpawnRocketExplosion>,
+pub fn spawn_rocket_explosion(
+    commands: &mut Commands,
+    assets: &Res<GameAssets>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    position: Vec3,
+    handle: usize,
 ) {
     let texture = assets.explosion.clone();
     let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(32.0, 32.0), 8, 1, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    for ev in ev_spawn_rocket_explosion.iter() {
-        let transform = Transform::from_translation(ev.0).with_scale(Vec3::splat(4.0));
-        commands
-            .spawn((
-                RocketExplosion(ev.1, false, 0),
-                ExplosionAnimationTimer::default(),
-                DebugTransform::new(&transform),
-                SpriteSheetBundle {
-                    transform,
-                    texture_atlas: texture_atlas_handle.clone(),
-                    ..default()
-                },
-            ))
-            .add_rollback();
-    }
+    let transform = Transform::from_translation(position).with_scale(Vec3::splat(4.0));
+    commands
+        .spawn((
+            RocketExplosion(handle, false, 0),
+            ExplosionAnimationTimer::default(),
+            DebugTransform::new(&transform),
+            SpriteSheetBundle {
+                transform,
+                texture_atlas: texture_atlas_handle.clone(),
+                ..default()
+            },
+        ))
+        .add_rollback();
 }
 
 pub fn animate_rocket_explosions(
