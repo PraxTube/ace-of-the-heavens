@@ -5,6 +5,7 @@ use chrono::Utc;
 use rand_xoshiro::rand_core::SeedableRng;
 
 use crate::map;
+use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::session::start_matchbox_socket;
 use crate::player;
 use crate::ui;
@@ -190,12 +191,19 @@ pub fn initiate_seed(mut seeds: ResMut<Seeds>) {
     seeds.0.push(Seed::new(None, current_time));
 }
 
-pub fn setup_rng(mut rng: ResMut<RNG>, seeds: Res<Seeds>) {
+pub fn determine_seed(seeds: &Res<Seeds>) -> u32 {
     let mut smallest_seed = seeds.0[0].seed;
     for seed in &seeds.0 {
         if seed.seed < smallest_seed {
             smallest_seed = seed.seed;
         }
     }
-    *rng = RNG(GameRng::seed_from_u64(smallest_seed as u64));
+    smallest_seed
+}
+
+pub fn setup_rng(mut rng: ResMut<RNG>, seeds: Res<Seeds>) {
+    if seeds.0.len() != PLAYER_COUNT {
+        panic!("we didn't receive the seed of our peer");
+    }
+    *rng = RNG(GameRng::seed_from_u64(determine_seed(&seeds) as u64));
 }

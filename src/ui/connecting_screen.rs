@@ -2,9 +2,8 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{
-    game_logic::Seeds, network::ggrs_config::PLAYER_COUNT, GameAssets, GameState, RollbackState,
-};
+use crate::game_logic::{determine_seed, Seeds};
+use crate::{network::ggrs_config::PLAYER_COUNT, GameAssets, GameState, RollbackState};
 
 #[derive(Component)]
 pub struct ConnectingScreen;
@@ -41,11 +40,9 @@ fn spawn_seed_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
         font_size: 40.0,
         color: Color::WHITE,
     };
-    let text_bundle = TextBundle::from_sections([TextSection::new(
-        "FETCHING SEED FROM PEER...".to_string(),
-        text_style,
-    )])
-    .with_text_alignment(TextAlignment::Center);
+    let text_bundle =
+        TextBundle::from_sections([TextSection::new("SEED: ???".to_string(), text_style)])
+            .with_text_alignment(TextAlignment::Center);
     commands.spawn((SeedStatus, text_bundle)).id()
 }
 
@@ -128,7 +125,7 @@ pub fn animate_connecting_screen(
     mut timer_bar: Query<&mut Style, With<TimerBar>>,
 ) {
     if seeds.0.len() == PLAYER_COUNT {
-        seed_text.single_mut().sections[0].value = "RECEIVED SEED!".to_string();
+        seed_text.single_mut().sections[0].value = format!("SEED: {}", determine_seed(&seeds));
     }
 
     let progress =
