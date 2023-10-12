@@ -91,6 +91,9 @@ pub fn check_explosion(
             if player.handle == rocket_explosion.0 {
                 continue;
             }
+            if player.dodging {
+                continue;
+            }
 
             let distance = Vec2::distance_squared(
                 player_transform.translation.truncate(),

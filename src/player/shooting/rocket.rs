@@ -131,6 +131,9 @@ pub fn disable_rockets(
             if player.handle == rocket.handle {
                 continue;
             }
+            if player.dodging {
+                continue;
+            }
 
             let distance = Vec2::distance_squared(
                 player_transform.translation.truncate(),
