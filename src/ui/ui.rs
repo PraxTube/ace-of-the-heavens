@@ -27,16 +27,19 @@ impl Plugin for AceUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(GameState::Connecting),
-            (
-                despawn_connecting_screen,
-                spawn_scoreboard,
-                spawn_round_over_screen,
-                spawn_round_start_screen,
-            ),
+            (despawn_connecting_screen, spawn_scoreboard),
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
-            (despawn_networking_screen, spawn_connecting_screen),
+            (
+                despawn_networking_screen,
+                spawn_connecting_screen,
+                // We spawn this here because otherwise the show_round_start_screen
+                // might be triggered to early. This issue originates from using two
+                // states (GameState and RollbackState).
+                spawn_round_start_screen,
+                spawn_round_over_screen,
+            ),
         )
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(OnEnter(GameState::GameOver), spawn_game_over_screen)
