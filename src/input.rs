@@ -10,7 +10,11 @@ const INPUT_DODGE: u8 = 1 << 5;
 const INPUT_ROCKET: u8 = 1 << 6;
 const INPUT_REMATCH: u8 = 1 << 7;
 
-pub fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
+pub fn input(
+    _: In<ggrs::PlayerHandle>,
+    keys: Res<Input<KeyCode>>,
+    mouse_buttons: Res<Input<MouseButton>>,
+) -> u8 {
     let mut input = 0u8;
 
     if keys.any_pressed([KeyCode::Up, KeyCode::W, KeyCode::K]) {
@@ -28,10 +32,12 @@ pub fn input(_: In<ggrs::PlayerHandle>, keys: Res<Input<KeyCode>>) -> u8 {
     if keys.any_pressed([KeyCode::Space, KeyCode::Return]) {
         input |= INPUT_FIRE;
     }
-    if keys.any_pressed([KeyCode::E, KeyCode::L]) {
+    if keys.any_pressed([KeyCode::E, KeyCode::L]) || mouse_buttons.pressed(MouseButton::Right) {
         input |= INPUT_DODGE;
     }
-    if keys.any_pressed([KeyCode::Q, KeyCode::Semicolon]) {
+    if keys.any_pressed([KeyCode::Q, KeyCode::Semicolon])
+        || mouse_buttons.pressed(MouseButton::Left)
+    {
         input |= INPUT_ROCKET;
     }
     if keys.pressed(KeyCode::R) {
