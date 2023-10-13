@@ -87,7 +87,6 @@ fn fill_health_bar(
         (Without<Player>, Without<HealthBar>),
     >,
     children: &Children,
-    health_bar_visibility: &mut Visibility,
     player_health: u32,
 ) {
     for &child in children {
@@ -96,9 +95,6 @@ fn fill_health_bar(
             Ok(mut fill) => {
                 let x_fill = (100 * player_health / MAX_HEALTH).clamp(0, 100);
                 fill.0.scale = Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
-                if x_fill == 0 {
-                    *health_bar_visibility = Visibility::Hidden;
-                }
                 fill.2.update(&fill.0);
             }
             Err(_) => {}
@@ -117,18 +113,15 @@ pub fn fill_health_bars(
     >,
     players: Query<&Player, Without<HealthBar>>,
 ) {
-    for player in &players {
-        for (health_bar, children, mut health_bar_visibility) in &mut health_bars {
+    for (health_bar, children, mut health_bar_visibility) in &mut health_bars {
+        *health_bar_visibility = Visibility::Hidden;
+        for player in &players {
             if player.handle != health_bar.handle {
                 continue;
             }
 
-            fill_health_bar(
-                &mut health_bar_fills,
-                children,
-                &mut health_bar_visibility,
-                player.health,
-            );
+            *health_bar_visibility = Visibility::Visible;
+            fill_health_bar(&mut health_bar_fills, children, player.health);
         }
     }
 }

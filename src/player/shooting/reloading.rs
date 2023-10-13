@@ -169,7 +169,6 @@ pub fn tick_reload_bars(
             fill.2.update(&fill.0);
 
             *visibility = Visibility::Visible;
-            break;
         }
     }
 }
