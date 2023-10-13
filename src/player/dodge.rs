@@ -5,7 +5,7 @@ use bevy_ggrs::PlayerInputs;
 
 use crate::{input::dodge, network::GgrsConfig};
 
-use super::player::Player;
+use super::Player;
 
 const DODGE_COOLDOWN: f32 = 5.0;
 const DODGE_TIME: f32 = 0.5;

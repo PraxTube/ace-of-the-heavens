@@ -7,8 +7,8 @@ use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
 use crate::network::GgrsConfig;
-use crate::player::player::Player;
-use crate::player::player::PLAYER_RADIUS;
+use crate::player::Player;
+use crate::player::PLAYER_RADIUS;
 use crate::GameAssets;
 
 use super::rocket_explosion::spawn_rocket_explosion;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::player::player::Player;
+use crate::player::Player;
 
 use super::bullet::BulletTimer;
 use super::rocket::RocketTimer;

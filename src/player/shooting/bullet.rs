@@ -7,7 +7,7 @@ use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
 use crate::network::GgrsConfig;
-use crate::player::player::Player;
+use crate::player::Player;
 use crate::GameAssets;
 
 pub const BULLET_RADIUS: f32 = 1.0;

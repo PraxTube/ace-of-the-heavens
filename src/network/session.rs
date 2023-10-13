@@ -6,7 +6,7 @@ use super::ggrs_config::PLAYER_COUNT;
 use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::game_logic::{Seed, Seeds};
-use crate::player::player::LocalPlayerHandle;
+use crate::player::LocalPlayerHandle;
 use crate::GameState;
 
 pub fn start_matchbox_socket(mut commands: Commands) {

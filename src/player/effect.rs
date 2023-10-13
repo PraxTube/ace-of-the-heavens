@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
-use super::player::{Player, P1_COLOR, P2_COLOR};
+use super::{Player, P1_COLOR, P2_COLOR};
 
 use crate::player::health::PlayerTookDamage;
 

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::player::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
+use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::{GameAssets, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]

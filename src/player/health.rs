@@ -3,8 +3,8 @@ use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
 use crate::map::CollisionEntity;
-use crate::player::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 use crate::player::shooting::bullet::{Bullet, BULLET_RADIUS};
+use crate::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
 
 use super::spawning::player_spawn_transform;
 

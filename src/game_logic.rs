@@ -83,7 +83,7 @@ impl Plugin for GameLogicPlugin {
                     .ambiguous_with(round_end_timeout)
                     .distributive_run_if(in_state(RollbackState::GameOver))
                     .after(apply_state_transition::<RollbackState>)
-                    .after(player::player::check_rematch_state),
+                    .after(player::check_rematch_state),
             ),
         );
     }
@@ -109,7 +109,7 @@ pub fn round_end_timeout(
 
 pub fn clear_world(
     mut commands: Commands,
-    players: Query<Entity, With<player::player::Player>>,
+    players: Query<Entity, With<player::Player>>,
     bullets: Query<Entity, With<player::shooting::bullet::Bullet>>,
     rockets: Query<Entity, With<player::shooting::rocket::Rocket>>,
     health_bars: Query<Entity, With<player::health::HealthBar>>,
@@ -142,7 +142,7 @@ pub fn clear_world(
 }
 
 pub fn adjust_score(
-    players: Query<&player::player::Player>,
+    players: Query<&player::Player>,
     mut score: ResMut<Score>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,

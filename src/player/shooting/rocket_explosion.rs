@@ -4,8 +4,8 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::debug::DebugTransform;
-use crate::player::player::Player;
-use crate::player::player::PLAYER_RADIUS;
+use crate::player::Player;
+use crate::player::PLAYER_RADIUS;
 use crate::GameAssets;
 
 const ROCKET_EXPLOSION_RADIUS: f32 = 100.0;

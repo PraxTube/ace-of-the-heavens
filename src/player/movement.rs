@@ -4,7 +4,7 @@ use bevy_ggrs::*;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::network::GgrsConfig;
-use crate::player::player::{Player, DELTA_SPEED, DELTA_STEERING, MAX_SPEED, MIN_SPEED};
+use crate::player::{Player, DELTA_SPEED, DELTA_STEERING, MAX_SPEED, MIN_SPEED};
 
 pub fn steer_players(
     inputs: Res<PlayerInputs<GgrsConfig>>,

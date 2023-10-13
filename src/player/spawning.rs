@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
 use super::dodge::DodgeTimer;
-use super::player::Player;
 use super::shooting::bullet::BulletTimer;
 use super::shooting::rocket::RocketTimer;
+use super::Player;
 
 use crate::debug::DebugTransform;
 use crate::map::CollisionEntity;

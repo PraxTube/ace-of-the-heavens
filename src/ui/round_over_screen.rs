@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::game_logic::Score;
-use crate::player::player::{P1_COLOR, P2_COLOR};
+use crate::player::{P1_COLOR, P2_COLOR};
 use crate::GameAssets;
 
 use super::ui::MAX_SCORE;
