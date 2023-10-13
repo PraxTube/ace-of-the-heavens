@@ -6,4 +6,5 @@ pub mod player;
 pub mod shooting;
 pub mod spawning;
 
+pub use player::InGameSet;
 pub use player::PlayerPlugin;

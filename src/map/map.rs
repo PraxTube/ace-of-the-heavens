@@ -4,8 +4,7 @@ use rand::Rng;
 
 use super::obstacle::disable_collision_entities;
 use super::wall::*;
-use crate::player::shooting::bullet::destroy_bullets;
-use crate::player::shooting::reloading::color_reload_bars;
+use crate::player::InGameSet;
 use crate::{game_logic::RNG, GameAssets};
 use crate::{GameState, RollbackState};
 
@@ -18,8 +17,8 @@ impl Plugin for MapPlugin {
             .add_systems(
                 GgrsSchedule,
                 disable_collision_entities
-                    .after(color_reload_bars)
-                    .before(destroy_bullets)
+                    .after(InGameSet::Spawning)
+                    .before(InGameSet::Last)
                     .after(apply_state_transition::<RollbackState>)
                     .distributive_run_if(in_state(RollbackState::InRound)),
             );

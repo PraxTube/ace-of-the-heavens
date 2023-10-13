@@ -80,6 +80,17 @@ pub fn check_rematch_state(mut rematch: ResMut<Rematch>, inputs: Res<PlayerInput
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
+pub enum InGameSet {
+    Movement,
+    Dodge,
+    Shooting,
+    Effect,
+    Health,
+    Spawning,
+    Last,
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -117,17 +128,40 @@ impl Plugin for PlayerPlugin {
                     .after(apply_state_transition::<RollbackState>),
             ),
         )
+        .configure_sets(
+            GgrsSchedule,
+            (
+                InGameSet::Movement,
+                InGameSet::Dodge,
+                InGameSet::Shooting,
+                InGameSet::Health,
+                InGameSet::Effect,
+                InGameSet::Spawning,
+                InGameSet::Last,
+            )
+                .chain()
+                .after(apply_state_transition::<RollbackState>),
+        )
         .add_systems(
             GgrsSchedule,
             (
                 p::movement::accelerate_players,
                 p::movement::steer_players,
                 p::movement::move_players,
-                p::dodge::tick_dodge_timer,
-                p::dodge::initiate_dodge,
             )
                 .chain()
-                .after(apply_state_transition::<RollbackState>)
+                .in_set(InGameSet::Movement)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
+                p::dodge::tick_dodge_timer,
+                p::dodge::initiate_dodge,
+                p::dodge::animate_dodge,
+            )
+                .chain()
+                .in_set(InGameSet::Dodge)
                 .distributive_run_if(in_state(RollbackState::InRound)),
         )
         .add_systems(
@@ -141,22 +175,48 @@ impl Plugin for PlayerPlugin {
                 p::shooting::rocket::fire_rockets,
                 p::shooting::rocket::move_rockets,
                 p::shooting::rocket_explosion::check_explosion,
-                p::health::damage_players,
-                p::effect::spawn_damage_effect,
-                p::spawning::despawn_players,
-                p::dodge::animate_dodge,
-                p::health::move_health_bars,
-                p::health::fill_health_bars,
                 p::shooting::reloading::move_reload_bars,
                 p::shooting::reloading::tick_reload_bars,
                 p::shooting::reloading::color_reload_bars,
+            )
+                .chain()
+                .in_set(InGameSet::Shooting)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (p::effect::spawn_damage_effect,)
+                .chain()
+                .in_set(InGameSet::Effect)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
+                p::health::damage_players,
+                p::health::move_health_bars,
+                p::health::fill_health_bars,
+            )
+                .chain()
+                .in_set(InGameSet::Health)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (p::spawning::despawn_players,)
+                .chain()
+                .in_set(InGameSet::Spawning)
+                .distributive_run_if(in_state(RollbackState::InRound)),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
                 p::shooting::bullet::destroy_bullets,
                 p::shooting::rocket::disable_rockets,
                 p::shooting::rocket::destroy_rockets,
             )
                 .chain()
-                .after(p::dodge::initiate_dodge)
-                .after(apply_state_transition::<RollbackState>)
+                .in_set(InGameSet::Last)
                 .distributive_run_if(in_state(RollbackState::InRound)),
         );
     }
