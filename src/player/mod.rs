@@ -119,6 +119,7 @@ impl Plugin for PlayerPlugin {
             Update,
             effect::update_trails.run_if(in_state(GameState::InGame)),
         )
+        .add_plugins(shooting::ShootingPlugin)
         .add_systems(
             GgrsSchedule,
             (
@@ -168,25 +169,6 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             GgrsSchedule,
-            (
-                shooting::reloading::cooldown_heat,
-                shooting::reloading::reload_bullets,
-                shooting::reloading::reload_rockets,
-                shooting::bullet::fire_bullets,
-                shooting::bullet::move_bullets,
-                shooting::rocket::fire_rockets,
-                shooting::rocket::move_rockets,
-                shooting::rocket_explosion::check_explosion,
-                shooting::reloading::move_reload_bars,
-                shooting::reloading::tick_reload_bars,
-                shooting::reloading::color_reload_bars,
-            )
-                .chain()
-                .in_set(InGameSet::Shooting)
-                .distributive_run_if(in_state(RollbackState::InRound)),
-        )
-        .add_systems(
-            GgrsSchedule,
             (effect::spawn_damage_effect,)
                 .chain()
                 .in_set(InGameSet::Effect)
@@ -208,17 +190,6 @@ impl Plugin for PlayerPlugin {
             (spawning::despawn_players,)
                 .chain()
                 .in_set(InGameSet::Spawning)
-                .distributive_run_if(in_state(RollbackState::InRound)),
-        )
-        .add_systems(
-            GgrsSchedule,
-            (
-                shooting::bullet::destroy_bullets,
-                shooting::rocket::disable_rockets,
-                shooting::rocket::destroy_rockets,
-            )
-                .chain()
-                .in_set(InGameSet::Last)
                 .distributive_run_if(in_state(RollbackState::InRound)),
         );
     }
