@@ -5,11 +5,11 @@ use chrono::Utc;
 use rand_xoshiro::rand_core::SeedableRng;
 
 use crate::map;
+use crate::misc::GameRng;
 use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::session::start_matchbox_socket;
 use crate::player;
 use crate::ui;
-use crate::utils::GameRng;
 use crate::{GameState, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]

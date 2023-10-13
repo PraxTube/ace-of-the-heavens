@@ -7,16 +7,15 @@ use bevy_ggrs::*;
 use bevy_hanabi::HanabiPlugin;
 use bevy_roll_safe::prelude::*;
 
-mod debug;
 mod game_logic;
 mod input;
-mod log;
 mod map;
+mod misc;
 mod network;
 mod player;
 mod ui;
-mod utils;
 
+use misc::debug;
 use network::GgrsConfig;
 use ui::connecting_screen::ConnectingTimer;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
