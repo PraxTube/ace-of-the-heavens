@@ -9,7 +9,7 @@ use crate::misc::GameRng;
 use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::session::start_matchbox_socket;
 use crate::player;
-use crate::ui;
+use crate::ui::MAX_SCORE;
 use crate::{GameState, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -160,7 +160,7 @@ pub fn adjust_score(
         score.2 = Some(1);
     }
 
-    if score.0 == ui::ui::MAX_SCORE || score.1 == ui::ui::MAX_SCORE {
+    if score.0 == MAX_SCORE || score.1 == MAX_SCORE {
         next_game_state.set(GameState::GameOver);
         next_rollback_state.set(RollbackState::GameOver);
     }
