@@ -7,6 +7,7 @@ use bevy_ggrs::*;
 use bevy_hanabi::HanabiPlugin;
 use bevy_roll_safe::prelude::*;
 
+mod assets;
 mod game_logic;
 mod input;
 mod map;
@@ -19,6 +20,8 @@ use misc::debug;
 use network::GgrsConfig;
 use ui::connecting_screen::ConnectingTimer;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
+
+pub use assets::GameAssets;
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
 pub enum GameState {
@@ -38,45 +41,6 @@ pub enum RollbackState {
     InRound,
     RoundEnd,
     GameOver,
-}
-
-#[derive(AssetCollection, Resource)]
-pub struct GameAssets {
-    #[asset(path = "plane1.png")]
-    player_1: Handle<Image>,
-    #[asset(path = "plane2.png")]
-    player_2: Handle<Image>,
-    #[asset(path = "bullet.png")]
-    bullet: Handle<Image>,
-    #[asset(path = "rocket1.png")]
-    rocket1: Handle<Image>,
-    #[asset(path = "rocket2.png")]
-    rocket2: Handle<Image>,
-    #[asset(path = "explosion.png")]
-    explosion: Handle<Image>,
-
-    #[asset(path = "map/background.png")]
-    background: Handle<Image>,
-    #[asset(path = "map/walls/wall-1-1.png")]
-    wall_1_1: Handle<Image>,
-    #[asset(path = "map/walls/wall-2-2.png")]
-    wall_2_2: Handle<Image>,
-    #[asset(path = "map/walls/wall-1-5.png")]
-    wall_1_5: Handle<Image>,
-    #[asset(path = "map/walls/wall-5-1.png")]
-    wall_5_1: Handle<Image>,
-    #[asset(path = "map/walls/wall-1-10.png")]
-    wall_1_10: Handle<Image>,
-
-    #[asset(path = "ui/white-pixel.png")]
-    white_pixel: Handle<Image>,
-    #[asset(path = "ui/score-full.png")]
-    score_full: Handle<Image>,
-    #[asset(path = "ui/score-empty.png")]
-    score_empty: Handle<Image>,
-
-    #[asset(path = "fonts/PressStart2P.ttf")]
-    font: Handle<Font>,
 }
 
 fn main() {
