@@ -4,6 +4,7 @@ pub mod networking_screen;
 pub mod round_over_screen;
 pub mod round_start_screen;
 pub mod scoreboard;
+pub mod seed_screen;
 
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -24,6 +25,7 @@ use round_start_screen::{
     show_round_start_screen, spawn_round_start_screen,
 };
 use scoreboard::{spawn_scoreboard, update_scoreboard};
+use seed_screen::spawn_seed_screen;
 
 pub const MAX_SCORE: usize = 2;
 
@@ -33,7 +35,11 @@ impl Plugin for AceUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(GameState::Connecting),
-            (despawn_connecting_screen, spawn_scoreboard),
+            (
+                despawn_connecting_screen,
+                spawn_scoreboard,
+                spawn_seed_screen,
+            ),
         )
         .add_systems(
             OnExit(GameState::Matchmaking),
