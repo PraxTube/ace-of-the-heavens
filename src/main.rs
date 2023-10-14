@@ -5,9 +5,11 @@ use bevy_asset_loader::prelude::*;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 use bevy_hanabi::HanabiPlugin;
+use bevy_kira_audio::AudioPlugin;
 use bevy_roll_safe::prelude::*;
 
 mod assets;
+mod audio;
 mod game_logic;
 mod input;
 mod map;
@@ -79,7 +81,8 @@ fn main() {
                 .register_rollback_component::<player::shooting::rocket::Rocket>()
                 .register_rollback_component::<player::shooting::rocket::RocketTimer>()
                 .register_rollback_component::<player::shooting::rocket_explosion::RocketExplosion>()
-                .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>(),
+                .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>()
+                .register_rollback_component::<audio::RollbackSound>(),
         )
         .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_plugins((
@@ -98,5 +101,14 @@ fn main() {
         .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
         .add_systems(Update, input::quit.run_if(in_state(GameState::Matchmaking).or_else(in_state(GameState::GameOver))))
+        // AUDIO
+        .add_plugins(AudioPlugin)
+        .init_resource::<audio::PlaybackStates>()
+        .add_systems(Update, (
+            audio::sync_rollback_sounds,
+            audio::update_looped_sounds,
+        ))
+        .add_systems(GgrsSchedule, audio::remove_finished_sounds.after(apply_state_transition::<RollbackState>),
+        )
         .run();
 }
