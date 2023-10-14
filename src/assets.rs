@@ -40,6 +40,6 @@ pub struct GameAssets {
     #[asset(path = "fonts/PressStart2P.ttf")]
     pub font: Handle<Font>,
 
-    #[asset(path = "explosion.ogg")]
+    #[asset(path = "sounds/explosion.ogg")]
     pub explosion_sound: Handle<AudioSource>,
 }
