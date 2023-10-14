@@ -1,8 +1,10 @@
 use std::time::Duration;
 
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::audio::{RollbackSound, RollbackSoundBundle};
 use crate::debug::DebugTransform;
 use crate::player::Player;
 use crate::player::PLAYER_RADIUS;
@@ -30,6 +32,7 @@ impl ExplosionAnimationTimer {
 pub fn spawn_rocket_explosion(
     commands: &mut Commands,
     assets: &Res<GameAssets>,
+    frame: &Res<FrameCount>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     position: Vec3,
     handle: usize,
@@ -39,7 +42,7 @@ pub fn spawn_rocket_explosion(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let transform = Transform::from_translation(position).with_scale(Vec3::splat(4.0));
-    commands
+    let explosion_entity = commands
         .spawn((
             RocketExplosion(handle, false, 0),
             ExplosionAnimationTimer::default(),
@@ -50,6 +53,16 @@ pub fn spawn_rocket_explosion(
                 ..default()
             },
         ))
+        .add_rollback()
+        .id();
+    commands
+        .spawn(RollbackSoundBundle {
+            sound: RollbackSound {
+                clip: assets.explosion_sound.clone(),
+                start_frame: frame.0 as usize,
+                sub_key: explosion_entity.index() as usize,
+            },
+        })
         .add_rollback();
 }
 

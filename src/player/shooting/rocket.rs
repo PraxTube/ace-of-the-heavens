@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
@@ -149,6 +150,7 @@ pub fn disable_rockets(
 pub fn destroy_rockets(
     mut commands: Commands,
     assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
@@ -160,6 +162,7 @@ pub fn destroy_rockets(
         spawn_rocket_explosion(
             &mut commands,
             &assets,
+            &frame,
             &mut texture_atlases,
             rocket_transform.translation,
             rocket.handle,
