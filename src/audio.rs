@@ -7,7 +7,7 @@ use bevy_kira_audio::prelude::{AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
 
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Hash)]
 pub struct RollbackSound {
     /// the actual sound effect to play
     pub clip: Handle<AudioSource>,
