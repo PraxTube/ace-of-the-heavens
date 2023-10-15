@@ -70,6 +70,8 @@ fn main() {
                 .with_input_system(input::input)
                 .register_roll_state::<RollbackState>()
                 .register_rollback_resource::<game_logic::RoundEndTimer>()
+                .register_rollback_resource::<game_logic::Score>()
+                .register_rollback_resource::<game_logic::Rematch>()
                 .register_rollback_resource::<RoundStartTimer>()
                 .register_rollback_resource::<ConnectingTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
