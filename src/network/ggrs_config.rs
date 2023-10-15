@@ -22,7 +22,9 @@ impl GgrsConfig {
             .expect("invalid FPS, must be above 0")
             .with_num_players(PLAYER_COUNT)
             .with_input_delay(INPUT_DELAY)
-            .with_max_prediction_window(MAX_PREDICTION_FRAMES)
+            .with_max_prediction_window(40)
+            .with_max_frames_behind(42)
+            .expect("couldn't set max frames behind")
             .with_desync_detection_mode(DesyncDetection::On { interval: 10 })
     }
 }

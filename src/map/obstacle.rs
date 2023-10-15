@@ -12,7 +12,7 @@ pub struct Obstacle {
     global_pos: Vec2,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct CollisionEntity {
     pub disabled: bool,
 }
