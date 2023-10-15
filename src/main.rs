@@ -75,6 +75,7 @@ fn main() {
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<debug::DebugTransform>()
+                .register_rollback_component::<map::obstacle::CollisionEntity>()
                 .register_rollback_component::<player::Player>()
                 .register_rollback_component::<player::shooting::bullet::Bullet>()
                 .register_rollback_component::<player::shooting::bullet::BulletTimer>()

@@ -3,7 +3,6 @@ use std::time::Duration;
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
-use bevy_ggrs::prelude::*;
 use bevy_kira_audio::prelude::{AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
