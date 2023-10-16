@@ -7,6 +7,7 @@ use bevy_ggrs::*;
 
 use crate::audio::{RollbackSound, RollbackSoundBundle};
 use crate::debug::DebugTransform;
+use crate::network::ggrs_config::GGRS_FPS;
 use crate::player::Player;
 use crate::player::PLAYER_RADIUS;
 use crate::GameAssets;
@@ -91,12 +92,15 @@ pub fn animate_rocket_explosions(
     )>,
 ) {
     for (mut rocket_explosion, mut timer, mut sprite) in &mut query {
-        timer.timer.tick(Duration::from_secs_f32(1.0 / 60.0));
-        if timer.timer.just_finished() {
-            if sprite.index > 7 {
-                continue;
-            }
+        if sprite.index > 7 {
+            rocket_explosion.disabled = true;
+            continue;
+        }
 
+        timer
+            .timer
+            .tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
+        if timer.timer.just_finished() {
             if sprite.index == 7 {
                 rocket_explosion.disabled = true;
             } else {
@@ -128,9 +132,7 @@ pub fn check_explosion(
                 player_transform.translation.truncate(),
                 rocket_transform.translation.truncate(),
             );
-            if distance
-                < PLAYER_RADIUS * PLAYER_RADIUS + ROCKET_EXPLOSION_RADIUS * ROCKET_EXPLOSION_RADIUS
-            {
+            if distance < PLAYER_RADIUS.powi(2) + ROCKET_EXPLOSION_RADIUS.powi(2) {
                 player.health = 0;
             }
         }

@@ -112,6 +112,7 @@ pub fn clear_world(
     players: Query<Entity, With<player::Player>>,
     bullets: Query<Entity, With<player::shooting::bullet::Bullet>>,
     rockets: Query<Entity, With<player::shooting::rocket::Rocket>>,
+    rocket_explosions: Query<Entity, With<player::shooting::rocket_explosion::RocketExplosion>>,
     health_bars: Query<Entity, With<player::health::HealthBar>>,
     reload_bars: Query<Entity, With<player::shooting::reloading::ReloadBar>>,
     obstacles: Query<Entity, With<map::obstacle::Obstacle>>,
@@ -126,6 +127,10 @@ pub fn clear_world(
 
     for rocket in &rockets {
         commands.entity(rocket).despawn_recursive();
+    }
+
+    for rocket_explosion in &rocket_explosions {
+        commands.entity(rocket_explosion).despawn_recursive();
     }
 
     for health_bar in &health_bars {
