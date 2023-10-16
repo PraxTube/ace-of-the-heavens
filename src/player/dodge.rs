@@ -3,7 +3,7 @@ use std::{f32::consts::PI, time::Duration};
 use bevy::prelude::*;
 use bevy_ggrs::PlayerInputs;
 
-use crate::{input::dodge, network::GgrsConfig};
+use crate::{input::dodge, misc::utils::quat_from_vec3, network::GgrsConfig};
 
 use super::Player;
 
@@ -37,6 +37,7 @@ pub fn initiate_dodge(
 pub fn animate_dodge(mut players: Query<(&mut Transform, &mut Player, &DodgeTimer)>) {
     for (mut transform, mut player, timer) in &mut players {
         if timer.0.elapsed_secs() > DODGE_TIME {
+            transform.rotation = quat_from_vec3(transform.local_x());
             player.dodging = false;
             continue;
         }
