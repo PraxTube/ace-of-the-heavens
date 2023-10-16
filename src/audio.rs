@@ -13,7 +13,7 @@ pub struct RollbackSound {
     pub clip: Handle<AudioSource>,
     /// when the sound effect should have started playing
     pub start_frame: usize,
-    /// differentiates several unique instances of the same sound playing at once. (we'll get back to this)
+    /// differentiates several unique instances of the same sound playing at once.
     pub sub_key: usize,
 }
 
