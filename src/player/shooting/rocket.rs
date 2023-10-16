@@ -17,7 +17,7 @@ use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
-const ROCKET_RELOAD_TIME: f32 = 0.5;
+const ROCKET_RELOAD_TIME: f32 = 0.2;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
@@ -152,7 +152,6 @@ pub fn destroy_rockets(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
     for (entity, rocket, rocket_transform, collision_entity) in &rockets {
@@ -164,7 +163,6 @@ pub fn destroy_rockets(
             &mut commands,
             &assets,
             &frame,
-            &mut texture_atlases,
             rocket_transform.translation,
             rocket.handle,
         );

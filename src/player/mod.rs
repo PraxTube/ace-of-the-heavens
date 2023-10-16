@@ -127,7 +127,11 @@ impl Plugin for PlayerPlugin {
                     .run_if(in_state(GameState::GameOver))
                     .after(apply_state_transition::<RollbackState>),
                 shooting::rocket_explosion::animate_rocket_explosions
-                    .run_if(in_state(GameState::InGame))
+                    .run_if(
+                        in_state(RollbackState::RoundStart)
+                            .or_else(in_state(RollbackState::InRound))
+                            .or_else(in_state(RollbackState::RoundEnd)),
+                    )
                     .after(apply_state_transition::<RollbackState>),
             ),
         )

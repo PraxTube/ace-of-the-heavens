@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
 use crate::player::InGameSet;
-use crate::RollbackState;
+use crate::{GameState, RollbackState};
 
 pub struct ShootingPlugin;
 
@@ -23,7 +23,8 @@ impl Plugin for ShootingPlugin {
                 bullet::move_bullets,
                 rocket::fire_rockets,
                 rocket::move_rockets,
-                rocket_explosion::check_explosion,
+                rocket_explosion::check_explosion
+                    .before(rocket_explosion::animate_rocket_explosions),
                 reloading::move_reload_bars,
                 reloading::tick_reload_bars,
                 reloading::color_reload_bars,
@@ -38,10 +39,16 @@ impl Plugin for ShootingPlugin {
                 bullet::destroy_bullets,
                 rocket::disable_rockets,
                 rocket::destroy_rockets,
+                rocket_explosion::despawn_rocket_explosions
+                    .after(rocket_explosion::animate_rocket_explosions),
             )
                 .chain()
                 .in_set(InGameSet::Last)
-                .distributive_run_if(in_state(RollbackState::InRound)),
+                .distributive_run_if(
+                    in_state(RollbackState::RoundStart)
+                        .or_else(in_state(RollbackState::InRound))
+                        .or_else(in_state(RollbackState::RoundEnd)),
+                ),
         );
     }
 }
