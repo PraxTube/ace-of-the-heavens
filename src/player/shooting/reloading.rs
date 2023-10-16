@@ -1,8 +1,11 @@
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::audio::{RollbackSound, RollbackSoundBundle};
 use crate::debug::DebugTransform;
 use crate::player::Player;
+use crate::GameAssets;
 
 use super::bullet::BulletTimer;
 use super::rocket::RocketTimer;
@@ -59,10 +62,24 @@ pub fn reload_rockets(mut players: Query<&mut RocketTimer, With<Player>>) {
     }
 }
 
-pub fn cooldown_heat(mut players: Query<(&mut Player, &BulletTimer)>) {
-    for (mut player, bullet_timer) in &mut players {
+pub fn cooldown_heat(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    mut players: Query<(Entity, &mut Player, &BulletTimer)>,
+) {
+    for (entity, mut player, bullet_timer) in &mut players {
         if player.heat >= OVERHEAT {
             player.overheated = true;
+            commands
+                .spawn(RollbackSoundBundle {
+                    sound: RollbackSound {
+                        clip: assets.overheat.clone(),
+                        start_frame: frame.0 as usize,
+                        sub_key: entity.index() as usize,
+                    },
+                })
+                .add_rollback();
         }
 
         if !bullet_timer.timer.finished() {
@@ -73,6 +90,15 @@ pub fn cooldown_heat(mut players: Query<(&mut Player, &BulletTimer)>) {
             if player.heat <= OVERHEAT_COOLDOWN_DELTA {
                 player.overheated = false;
                 player.heat = 0;
+                commands
+                    .spawn(RollbackSoundBundle {
+                        sound: RollbackSound {
+                            clip: assets.reload.clone(),
+                            start_frame: frame.0 as usize,
+                            sub_key: entity.index() as usize,
+                        },
+                    })
+                    .add_rollback();
             } else {
                 player.heat -= OVERHEAT_COOLDOWN_DELTA;
             }

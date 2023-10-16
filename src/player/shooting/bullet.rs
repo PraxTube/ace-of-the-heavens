@@ -1,8 +1,10 @@
 use std::hash::{Hash, Hasher};
 
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::audio::{RollbackSound, RollbackSoundBundle};
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
@@ -66,23 +68,24 @@ impl Hash for BulletTimer {
 
 fn spawn_bullet(
     commands: &mut Commands,
+    assets: &Res<GameAssets>,
+    frame: &Res<FrameCount>,
     player: &Player,
     player_transform: &Transform,
-    texture: Handle<Image>,
     spawn_offset: Vec3,
 ) {
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
     .with_rotation(quat_from_vec3(player_transform.local_x()));
-    commands
+    let bullet_entity = commands
         .spawn((
             Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {
                 transform,
-                texture,
+                texture: assets.bullet.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(10.0, 3.0)),
                     ..default()
@@ -90,6 +93,16 @@ fn spawn_bullet(
                 ..default()
             },
         ))
+        .add_rollback()
+        .id();
+    commands
+        .spawn(RollbackSoundBundle {
+            sound: RollbackSound {
+                clip: assets.bullet_shot.clone(),
+                start_frame: frame.0 as usize,
+                sub_key: (bullet_entity.index() + frame.0) as usize,
+            },
+        })
         .add_rollback();
 }
 
@@ -97,6 +110,7 @@ pub fn fire_bullets(
     mut commands: Commands,
     inputs: Res<PlayerInputs<GgrsConfig>>,
     assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut players: Query<(&Transform, &mut Player, &mut BulletTimer)>,
 ) {
     for (player_transform, mut player, mut bullet_timer) in &mut players {
@@ -110,16 +124,18 @@ pub fn fire_bullets(
 
         spawn_bullet(
             &mut commands,
+            &assets,
+            &frame,
             &player,
             player_transform,
-            assets.bullet.clone(),
             LEFT_WING_BULLET_SPAWN,
         );
         spawn_bullet(
             &mut commands,
+            &assets,
+            &frame,
             &player,
             player_transform,
-            assets.bullet.clone(),
             RIGHT_WING_BULLET_SPAWN,
         );
 
