@@ -6,6 +6,7 @@ use bevy_ggrs::*;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
+use crate::misc::utils::quat_from_vec3;
 use crate::network::GgrsConfig;
 use crate::player::Player;
 use crate::GameAssets;
@@ -73,7 +74,7 @@ fn spawn_bullet(
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
-    .with_rotation(player_transform.rotation);
+    .with_rotation(quat_from_vec3(player_transform.local_x()));
     commands
         .spawn((
             Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
