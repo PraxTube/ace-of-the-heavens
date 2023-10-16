@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use std::{f32::consts::PI, time::Duration};
 
 use bevy::prelude::*;
@@ -10,7 +11,8 @@ use super::Player;
 const DODGE_COOLDOWN: f32 = 5.0;
 const DODGE_TIME: f32 = 0.5;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Hash)]
 pub struct DodgeTimer(Timer);
 
 impl Default for DodgeTimer {
@@ -18,6 +20,12 @@ impl Default for DodgeTimer {
         let mut timer = Timer::from_seconds(DODGE_COOLDOWN, TimerMode::Once);
         timer.set_elapsed(Duration::from_secs_f32(DODGE_COOLDOWN));
         DodgeTimer(timer)
+    }
+}
+
+impl Hash for DodgeTimer {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.duration().as_secs_f32().to_bits().hash(state);
     }
 }
 
