@@ -4,6 +4,7 @@ use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
+use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
@@ -63,16 +64,22 @@ impl Hash for RocketTimer {
 
 fn spawn_rocket(
     commands: &mut Commands,
+    assets: &Res<GameAssets>,
+    frame: &Res<FrameCount>,
     player: &Player,
     player_transform: &Transform,
-    texture: Handle<Image>,
     spawn_offset: Vec3,
 ) {
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
     .with_rotation(quat_from_vec3(player_transform.local_x()));
-    commands
+    let texture = if player.handle == 0 {
+        assets.rocket1.clone()
+    } else {
+        assets.rocket2.clone()
+    };
+    let rocket_entity = commands
         .spawn((
             Rocket::new(player.current_speed, player.handle),
             CollisionEntity::default(),
@@ -83,13 +90,23 @@ fn spawn_rocket(
                 ..default()
             },
         ))
+        .add_rollback()
+        .id();
+    commands
+        .spawn(RollbackSound {
+            clip: assets.rocket_shot.clone(),
+            start_frame: frame.0 as usize,
+            sub_key: (rocket_entity.index() + frame.0) as usize,
+            volume: 0.5,
+        })
         .add_rollback();
 }
 
 pub fn fire_rockets(
     mut commands: Commands,
-    inputs: Res<PlayerInputs<GgrsConfig>>,
     assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    inputs: Res<PlayerInputs<GgrsConfig>>,
     mut players: Query<(&Transform, &Player, &mut RocketTimer)>,
 ) {
     for (player_transform, player, mut rocket_timer) in &mut players {
@@ -98,17 +115,12 @@ pub fn fire_rockets(
             continue;
         }
 
-        let texture = if player.handle == 0 {
-            assets.rocket1.clone()
-        } else {
-            assets.rocket2.clone()
-        };
-
         spawn_rocket(
             &mut commands,
+            &assets,
+            &frame,
             &player,
             player_transform,
-            texture,
             Vec3::default(),
         );
 

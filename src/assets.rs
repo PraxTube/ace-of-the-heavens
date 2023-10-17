@@ -48,6 +48,16 @@ pub struct GameAssets {
     #[asset(path = "sounds/reload.ogg")]
     pub reload: Handle<AudioSource>,
 
+    #[asset(path = "sounds/rocket_shot.ogg")]
+    pub rocket_shot: Handle<AudioSource>,
     #[asset(path = "sounds/explosion.ogg")]
     pub explosion_sound: Handle<AudioSource>,
+
+    #[asset(path = "sounds/damage.ogg")]
+    pub damage_sound: Handle<AudioSource>,
+    #[asset(path = "sounds/death.ogg")]
+    pub death_sound: Handle<AudioSource>,
+
+    #[asset(path = "sounds/dodge.ogg")]
+    pub dodge_sound: Handle<AudioSource>,
 }

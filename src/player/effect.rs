@@ -1,9 +1,10 @@
-use bevy::prelude::*;
+use bevy::{core::FrameCount, prelude::*};
+use bevy_ggrs::AddRollbackCommandExtension;
 use bevy_hanabi::prelude::*;
 
 use super::{Player, P1_COLOR, P2_COLOR};
 
-use crate::player::health::PlayerTookDamage;
+use crate::{audio::RollbackSound, player::health::PlayerTookDamage, GameAssets};
 
 const TRAILL_OFFSET_LEFT: Vec3 = Vec3::new(0.0, 30.0, -1.0);
 const TRAILL_OFFSET_RIGHT: Vec3 = Vec3::new(0.0, -30.0, -1.0);
@@ -160,6 +161,9 @@ fn color_to_u32(color: Color) -> u32 {
 }
 
 pub fn spawn_damage_effect(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut ev_player_took_damage: EventReader<PlayerTookDamage>,
     mut spawner: Query<
         (
@@ -181,6 +185,15 @@ pub fn spawn_damage_effect(
         transform.translation = ev.0.translation;
         effect.set_property("spawn_color", color.into());
         spawner.reset();
+
+        commands
+            .spawn(RollbackSound {
+                clip: assets.damage_sound.clone(),
+                start_frame: frame.0 as usize,
+                sub_key: frame.0 as usize,
+                ..default()
+            })
+            .add_rollback();
     }
 }
 

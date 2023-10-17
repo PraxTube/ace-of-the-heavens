@@ -7,6 +7,8 @@ use bevy_kira_audio::prelude::{AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
 
+const MAIN_VOLUME: f64 = 0.35;
+
 #[derive(Component, Reflect)]
 pub struct RollbackSound {
     /// the actual sound effect to play
@@ -95,7 +97,7 @@ pub fn sync_rollback_sounds(
                 }
                 let instance_handle = audio
                     .play(rollback_sound.clip.clone())
-                    .with_volume(rollback_sound.volume)
+                    .with_volume(rollback_sound.volume * MAIN_VOLUME)
                     .handle();
                 current_state
                     .playing

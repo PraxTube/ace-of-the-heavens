@@ -1,3 +1,4 @@
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
@@ -6,6 +7,7 @@ use super::shooting::bullet::BulletTimer;
 use super::shooting::rocket::RocketTimer;
 use super::Player;
 
+use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::map::CollisionEntity;
 use crate::GameAssets;
@@ -71,6 +73,8 @@ pub fn spawn_players(
 
 pub fn despawn_players(
     mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut players: Query<(Entity, &mut Player, &CollisionEntity)>,
     mut next_state: ResMut<NextState<RollbackState>>,
 ) {
@@ -78,6 +82,14 @@ pub fn despawn_players(
         if player.health <= 0 || collision_entity.disabled {
             player.health = 0;
             commands.entity(player_entity).despawn_recursive();
+            commands
+                .spawn(RollbackSound {
+                    clip: assets.death_sound.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: player_entity.index() as usize,
+                    ..default()
+                })
+                .add_rollback();
         }
     }
 

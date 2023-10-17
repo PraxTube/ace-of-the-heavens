@@ -1,9 +1,12 @@
 use std::hash::{Hash, Hasher};
 use std::{f32::consts::PI, time::Duration};
 
+use bevy::core::FrameCount;
 use bevy::prelude::*;
-use bevy_ggrs::PlayerInputs;
+use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 
+use crate::audio::RollbackSound;
+use crate::GameAssets;
 use crate::{input::dodge, misc::utils::quat_from_vec3, network::GgrsConfig};
 
 use super::Player;
@@ -30,6 +33,9 @@ impl Hash for DodgeTimer {
 }
 
 pub fn initiate_dodge(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut timers: Query<(&mut DodgeTimer, &mut Player)>,
     inputs: Res<PlayerInputs<GgrsConfig>>,
 ) {
@@ -38,6 +44,14 @@ pub fn initiate_dodge(
         if timer.0.finished() && dodge(input) {
             player.dodging = true;
             timer.0.reset();
+            commands
+                .spawn(RollbackSound {
+                    clip: assets.dodge_sound.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: player.handle,
+                    volume: 0.35,
+                })
+                .add_rollback();
         }
     }
 }
