@@ -79,6 +79,7 @@ pub fn spawn_rocket_explosion(
                 clip: assets.explosion_sound.clone(),
                 start_frame: frame.0 as usize,
                 sub_key: (explosion_entity.index() + frame.0) as usize,
+                ..default()
             },
         })
         .add_rollback();

@@ -7,7 +7,7 @@ use bevy_kira_audio::prelude::{AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
 
-#[derive(Component, Default, Reflect, Hash)]
+#[derive(Component, Reflect)]
 pub struct RollbackSound {
     /// the actual sound effect to play
     pub clip: Handle<AudioSource>,
@@ -15,11 +15,23 @@ pub struct RollbackSound {
     pub start_frame: usize,
     /// differentiates several unique instances of the same sound playing at once.
     pub sub_key: usize,
+    pub volume: f64,
 }
 
 impl RollbackSound {
     pub fn key(&self) -> (Handle<AudioSource>, usize) {
         (self.clip.clone(), self.sub_key)
+    }
+}
+
+impl Default for RollbackSound {
+    fn default() -> Self {
+        Self {
+            clip: Handle::default(),
+            start_frame: 0,
+            sub_key: 0,
+            volume: 1.0,
+        }
     }
 }
 
@@ -68,7 +80,6 @@ pub fn sync_rollback_sounds(
 
     let mut live = HashSet::new();
 
-    // start/update sound effects
     for rollback_sound in desired_query.iter() {
         let key = rollback_sound.key();
         if current_state.playing.contains_key(&key) {
@@ -87,7 +98,10 @@ pub fn sync_rollback_sounds(
                         frame.0 as usize - rollback_sound.start_frame
                     );
                 }
-                let instance_handle = audio.play(rollback_sound.clip.clone()).handle();
+                let instance_handle = audio
+                    .play(rollback_sound.clip.clone())
+                    .with_volume(rollback_sound.volume)
+                    .handle();
                 current_state
                     .playing
                     .insert(key.to_owned(), instance_handle);
@@ -115,13 +129,12 @@ pub fn sync_rollback_sounds(
 }
 
 pub fn remove_finished_sounds(
-    frame: Res<FrameCount>,
-    query: Query<(Entity, &RollbackSound)>,
     mut commands: Commands,
+    frame: Res<FrameCount>,
     audio_sources: Res<Assets<AudioSource>>,
+    query: Query<(Entity, &RollbackSound)>,
 ) {
     for (entity, rollback_sound) in query.iter() {
-        // perf: cache frames_to_play instead of checking audio_sources every frame?
         if let Some(audio_source) = audio_sources.get(&rollback_sound.clip) {
             let frames_played = frame.0 as usize - rollback_sound.start_frame;
             let seconds_to_play = audio_source.sound.duration().as_secs_f64();

@@ -101,6 +101,7 @@ fn spawn_bullet(
                 clip: assets.bullet_shot.clone(),
                 start_frame: frame.0 as usize,
                 sub_key: (bullet_entity.index() + frame.0) as usize,
+                volume: 0.4,
             },
         })
         .add_rollback();

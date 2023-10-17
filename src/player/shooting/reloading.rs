@@ -77,6 +77,7 @@ pub fn cooldown_heat(
                         clip: assets.overheat.clone(),
                         start_frame: frame.0 as usize,
                         sub_key: entity.index() as usize,
+                        ..default()
                     },
                 })
                 .add_rollback();
@@ -96,6 +97,7 @@ pub fn cooldown_heat(
                             clip: assets.reload.clone(),
                             start_frame: frame.0 as usize,
                             sub_key: entity.index() as usize,
+                            ..default()
                         },
                     })
                     .add_rollback();

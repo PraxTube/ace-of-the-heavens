@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
 use crate::player::InGameSet;
-use crate::{GameState, RollbackState};
+use crate::RollbackState;
 
 pub struct ShootingPlugin;
 
