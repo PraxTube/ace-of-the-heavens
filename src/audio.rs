@@ -3,9 +3,11 @@ use std::time::Duration;
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
-use bevy_kira_audio::prelude::{AudioSource, *};
+use bevy_ggrs::GgrsSchedule;
+use bevy_kira_audio::prelude::{AudioPlugin, AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
+use crate::RollbackState;
 
 const MAIN_VOLUME: f64 = 0.35;
 
@@ -60,7 +62,7 @@ pub struct PlaybackStates {
     pub playing: HashMap<(Handle<AudioSource>, usize), Handle<AudioInstance>>,
 }
 
-pub fn sync_rollback_sounds(
+fn sync_rollback_sounds(
     mut current_state: ResMut<PlaybackStates>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
     desired_query: Query<&RollbackSound>,
@@ -125,7 +127,7 @@ pub fn sync_rollback_sounds(
     }
 }
 
-pub fn remove_finished_sounds(
+fn remove_finished_sounds(
     mut commands: Commands,
     frame: Res<FrameCount>,
     audio_sources: Res<Assets<AudioSource>>,
@@ -144,7 +146,7 @@ pub fn remove_finished_sounds(
     }
 }
 
-pub fn update_looped_sounds(
+fn update_looped_sounds(
     mut sounds: Query<&mut FadedLoopSound>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
     audio: Res<Audio>,
@@ -165,5 +167,19 @@ pub fn update_looped_sounds(
                 instance.stop(AudioTween::linear(Duration::from_secs_f32(sound.fade_out)));
             }
         };
+    }
+}
+
+pub struct GameAudioPlugin;
+
+impl Plugin for GameAudioPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(AudioPlugin)
+            .init_resource::<PlaybackStates>()
+            .add_systems(Update, (sync_rollback_sounds, update_looped_sounds))
+            .add_systems(
+                GgrsSchedule,
+                remove_finished_sounds.after(apply_state_transition::<RollbackState>),
+            );
     }
 }
