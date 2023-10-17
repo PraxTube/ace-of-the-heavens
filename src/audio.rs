@@ -50,11 +50,6 @@ pub struct FadedLoopSound {
     pub should_play: bool,
 }
 
-#[derive(Bundle)]
-pub struct RollbackSoundBundle {
-    pub sound: RollbackSound,
-}
-
 /// The "Actual" state.
 ///
 /// I'm using bevy_kira for sound, but this could probably work similarly with bevy_audio.

@@ -5,7 +5,7 @@ use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
-use crate::audio::{RollbackSound, RollbackSoundBundle};
+use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::network::ggrs_config::GGRS_FPS;
 use crate::player::Player;
@@ -74,13 +74,11 @@ pub fn spawn_rocket_explosion(
         .add_rollback()
         .id();
     commands
-        .spawn(RollbackSoundBundle {
-            sound: RollbackSound {
-                clip: assets.explosion_sound.clone(),
-                start_frame: frame.0 as usize,
-                sub_key: (explosion_entity.index() + frame.0) as usize,
-                ..default()
-            },
+        .spawn(RollbackSound {
+            clip: assets.explosion_sound.clone(),
+            start_frame: frame.0 as usize,
+            sub_key: (explosion_entity.index() + frame.0) as usize,
+            ..default()
         })
         .add_rollback();
 }

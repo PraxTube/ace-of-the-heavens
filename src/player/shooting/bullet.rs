@@ -4,7 +4,7 @@ use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
-use crate::audio::{RollbackSound, RollbackSoundBundle};
+use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
@@ -96,13 +96,11 @@ fn spawn_bullet(
         .add_rollback()
         .id();
     commands
-        .spawn(RollbackSoundBundle {
-            sound: RollbackSound {
-                clip: assets.bullet_shot.clone(),
-                start_frame: frame.0 as usize,
-                sub_key: (bullet_entity.index() + frame.0) as usize,
-                volume: 0.4,
-            },
+        .spawn(RollbackSound {
+            clip: assets.bullet_shot.clone(),
+            start_frame: frame.0 as usize,
+            sub_key: (bullet_entity.index() + frame.0) as usize,
+            volume: 0.4,
         })
         .add_rollback();
 }

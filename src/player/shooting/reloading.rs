@@ -2,7 +2,7 @@ use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
-use crate::audio::{RollbackSound, RollbackSoundBundle};
+use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::player::Player;
 use crate::GameAssets;
@@ -72,13 +72,11 @@ pub fn cooldown_heat(
         if player.heat >= OVERHEAT {
             player.overheated = true;
             commands
-                .spawn(RollbackSoundBundle {
-                    sound: RollbackSound {
-                        clip: assets.overheat.clone(),
-                        start_frame: frame.0 as usize,
-                        sub_key: entity.index() as usize,
-                        ..default()
-                    },
+                .spawn(RollbackSound {
+                    clip: assets.overheat.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: entity.index() as usize,
+                    ..default()
                 })
                 .add_rollback();
         }
@@ -92,13 +90,11 @@ pub fn cooldown_heat(
                 player.overheated = false;
                 player.heat = 0;
                 commands
-                    .spawn(RollbackSoundBundle {
-                        sound: RollbackSound {
-                            clip: assets.reload.clone(),
-                            start_frame: frame.0 as usize,
-                            sub_key: entity.index() as usize,
-                            ..default()
-                        },
+                    .spawn(RollbackSound {
+                        clip: assets.reload.clone(),
+                        start_frame: frame.0 as usize,
+                        sub_key: entity.index() as usize,
+                        ..default()
                     })
                     .add_rollback();
             } else {
