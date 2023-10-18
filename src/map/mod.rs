@@ -6,9 +6,12 @@ pub use obstacle::CollisionEntity;
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 use rand::Rng;
+use rand_xoshiro::rand_core::SeedableRng;
 
+use crate::game_logic::RoundStats;
+use crate::misc::GameRng;
 use crate::player::InGameSet;
-use crate::{game_logic::RNG, GameAssets};
+use crate::{game_logic::Seed, GameAssets};
 use crate::{GameState, RollbackState};
 use obstacle::disable_collision_entities;
 use wall::*;
@@ -71,8 +74,14 @@ fn spawn_map_4(commands: &mut Commands, assets: Res<GameAssets>) {
     spawn_wall_1_10(commands, Vec2::new(0.0, 0.0), &assets);
 }
 
-pub fn spawn_random_map(mut commands: Commands, assets: Res<GameAssets>, mut rng: ResMut<RNG>) {
-    let index: usize = rng.0.gen_range(0..4);
+pub fn spawn_random_map(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    seed: Res<Seed>,
+    round_stats: Res<RoundStats>,
+) {
+    let mut rng = GameRng::seed_from_u64(seed.seed + round_stats.rounds_played);
+    let index: usize = rng.gen_range(0..4);
     match index {
         0 => spawn_map_1(&mut commands, assets),
         1 => spawn_map_2(&mut commands, assets),
