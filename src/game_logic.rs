@@ -2,10 +2,8 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_ggrs::GgrsSchedule;
 use bevy_matchbox::prelude::PeerId;
 use chrono::Utc;
-use rand_xoshiro::rand_core::SeedableRng;
 
 use crate::map;
-use crate::misc::GameRng;
 use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::session::start_matchbox_socket;
 use crate::player;
@@ -30,28 +28,30 @@ pub struct Score(pub usize, pub usize, pub Option<usize>);
 #[reflect(Resource)]
 pub struct Rematch(pub bool, pub bool);
 
+#[derive(Resource, Reflect, Default, Debug)]
+#[reflect(Resource)]
+pub struct RoundStats {
+    pub rounds_played: u64,
+}
+
 #[derive(Default, Debug)]
-pub struct Seed {
+pub struct SeedHandle {
     pub handle: Option<PeerId>,
     pub seed: u32,
 }
 
-impl Seed {
-    fn new(handle: Option<PeerId>, seed: u32) -> Seed {
-        Seed { handle, seed }
+impl SeedHandle {
+    fn new(handle: Option<PeerId>, seed: u32) -> SeedHandle {
+        SeedHandle { handle, seed }
     }
 }
 
 #[derive(Resource, Default, Debug)]
-pub struct Seeds(pub Vec<Seed>);
+pub struct Seeds(pub Vec<SeedHandle>);
 
-#[derive(Resource, Debug)]
-pub struct RNG(pub GameRng);
-
-impl Default for RNG {
-    fn default() -> RNG {
-        RNG(GameRng::seed_from_u64(0))
-    }
+#[derive(Resource, Default, Debug)]
+pub struct Seed {
+    pub seed: u64,
 }
 
 pub struct GameLogicPlugin;
@@ -65,9 +65,10 @@ impl Plugin for GameLogicPlugin {
         .init_resource::<RoundEndTimer>()
         .init_resource::<Score>()
         .init_resource::<Rematch>()
+        .init_resource::<RoundStats>()
         .init_resource::<Seeds>()
-        .init_resource::<RNG>()
-        .add_systems(OnExit(GameState::Connecting), setup_rng)
+        .init_resource::<Seed>()
+        .add_systems(OnExit(GameState::Connecting), setup_seed)
         .add_systems(OnExit(RollbackState::GameOver), reset_rematch)
         .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
@@ -149,8 +150,10 @@ pub fn clear_world(
 pub fn adjust_score(
     players: Query<&player::Player>,
     mut score: ResMut<Score>,
+    mut round_stats: ResMut<RoundStats>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
+    round_stats.rounds_played += 1;
     if players.iter().count() == 0 {
         score.2 = None;
         return;
@@ -189,7 +192,7 @@ pub fn reset_rematch(mut rematch: ResMut<Rematch>) {
 
 pub fn initiate_seed(mut seeds: ResMut<Seeds>) {
     let current_time = Utc::now().timestamp() as u32;
-    seeds.0.push(Seed::new(None, current_time));
+    seeds.0.push(SeedHandle::new(None, current_time));
 }
 
 pub fn determine_seed(seeds: &Res<Seeds>) -> u32 {
@@ -202,9 +205,11 @@ pub fn determine_seed(seeds: &Res<Seeds>) -> u32 {
     smallest_seed
 }
 
-pub fn setup_rng(mut rng: ResMut<RNG>, seeds: Res<Seeds>) {
+pub fn setup_seed(mut seed: ResMut<Seed>, seeds: Res<Seeds>) {
     if seeds.0.len() != PLAYER_COUNT {
         panic!("we didn't receive the seed of our peer");
     }
-    *rng = RNG(GameRng::seed_from_u64(determine_seed(&seeds) as u64));
+    *seed = Seed {
+        seed: determine_seed(&seeds) as u64,
+    };
 }

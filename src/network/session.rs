@@ -5,7 +5,7 @@ use bevy_matchbox::matchbox_socket::WebRtcSocket;
 use super::ggrs_config::PLAYER_COUNT;
 use super::socket::AceSocket;
 use super::GgrsConfig;
-use crate::game_logic::{Seed, Seeds};
+use crate::game_logic::{SeedHandle, Seeds};
 use crate::player::LocalPlayerHandle;
 use crate::GameState;
 
@@ -92,7 +92,7 @@ pub fn wait_for_seed(mut seeds: ResMut<Seeds>, mut socket: ResMut<AceSocket>) {
     info!("received seeds");
 
     for seed in received_seeds {
-        seeds.0.push(Seed {
+        seeds.0.push(SeedHandle {
             handle: Some(seed.0),
             seed: seed.1,
         });
