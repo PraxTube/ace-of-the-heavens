@@ -11,6 +11,9 @@ pub struct GameOverScreen;
 #[derive(Component)]
 pub struct RematchText;
 
+#[derive(Component)]
+pub struct WinnerText;
+
 fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
     commands.spawn((
         GameOverScreen,
@@ -19,6 +22,7 @@ fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
                 height: Val::Vh(100.0),
                 width: Val::Vw(100.0),
                 position_type: PositionType::Absolute,
+                display: Display::None,
                 ..default()
             },
             image: UiImage {
@@ -32,36 +36,24 @@ fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
     ));
 }
 
-fn spawn_winner_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) -> Entity {
+fn spawn_winner_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
         font,
         font_size: 100.0,
         color: Color::WHITE,
     };
-    let text_bundle = if score.0 == MAX_SCORE {
-        TextBundle::from_sections([
-            TextSection::new(
-                "ORANGE ".to_string(),
-                TextStyle {
-                    color: P1_COLOR,
-                    ..text_style.clone()
-                },
-            ),
-            TextSection::new("WON".to_string(), text_style.clone()),
-        ])
-    } else {
-        TextBundle::from_sections([
-            TextSection::new(
-                "BLUE ".to_string(),
-                TextStyle {
-                    color: P2_COLOR,
-                    ..text_style.clone()
-                },
-            ),
-            TextSection::new("WON".to_string(), text_style.clone()),
-        ])
-    };
-    commands.spawn((GameOverScreen, text_bundle)).id()
+    let text_bundle = TextBundle::from_sections([
+        TextSection::new(
+            String::new(),
+            TextStyle {
+                ..text_style.clone()
+            },
+        ),
+        TextSection::new("WON".to_string(), text_style.clone()),
+    ]);
+    commands
+        .spawn((GameOverScreen, WinnerText, text_bundle))
+        .id()
 }
 
 fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
@@ -89,7 +81,7 @@ fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     commands.spawn(text_bundle).id()
 }
 
-fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
+fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
     let text_root_node = commands
         .spawn((
             GameOverScreen,
@@ -102,6 +94,7 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     position_type: PositionType::Absolute,
+                    display: Display::None,
                     ..default()
                 },
                 z_index: ZIndex::Local(101),
@@ -109,7 +102,7 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
             },
         ))
         .id();
-    let winner_text = spawn_winner_text(commands, font.clone(), score);
+    let winner_text = spawn_winner_text(commands, font.clone());
     let rematch_text = spawn_rematch_text(commands, font.clone());
     let quit_text = spawn_quit_text(commands, font.clone());
     commands
@@ -117,18 +110,52 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, score: Res<Score>) {
         .push_children(&[winner_text, rematch_text, quit_text]);
 }
 
-pub fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>, score: Res<Score>) {
+pub fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
     spawn_background(&mut commands, assets.white_pixel.clone());
-    spawn_text(&mut commands, assets.font.clone(), score);
+    spawn_text(&mut commands, assets.font.clone());
 }
 
-pub fn despawn_game_over_screen(
-    mut commands: Commands,
-    game_over_screens: Query<Entity, With<GameOverScreen>>,
-) {
-    for screen_component in &game_over_screens {
-        commands.entity(screen_component).despawn_recursive();
+pub fn show_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
+    for mut screen_component in &mut screen_components {
+        screen_component.display = Display::Flex;
     }
+}
+
+pub fn hide_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
+    for mut screen_component in &mut screen_components {
+        screen_component.display = Display::None;
+    }
+}
+
+pub fn update_winner_text(
+    assets: Res<GameAssets>,
+    mut winner_text: Query<&mut Text, With<WinnerText>>,
+    score: Res<Score>,
+) {
+    let text_style = TextStyle {
+        font: assets.font.clone(),
+        font_size: 100.0,
+        color: Color::WHITE,
+    };
+    winner_text.single_mut().sections[0] = if score.0 == MAX_SCORE {
+        TextSection::new(
+            "ORANGE ".to_string(),
+            TextStyle {
+                color: P1_COLOR,
+                ..text_style.clone()
+            },
+        )
+    } else if score.1 == MAX_SCORE {
+        TextSection::new(
+            "BLUE ".to_string(),
+            TextStyle {
+                color: P2_COLOR,
+                ..text_style.clone()
+            },
+        )
+    } else {
+        TextSection::new("???".to_string(), text_style.clone())
+    };
 }
 
 pub fn update_rematch_text(

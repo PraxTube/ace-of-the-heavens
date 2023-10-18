@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
 use crate::game_logic::{adjust_score, check_rematch, round_end_timeout};
+use crate::player::check_rematch_state;
 use crate::player::spawning::despawn_players;
 use crate::{GameState, RollbackState};
 
@@ -17,7 +18,7 @@ use connecting_screen::{
     animate_connecting_screen, despawn_connecting_screen, spawn_connecting_screen,
     tick_connecting_timer,
 };
-use game_over_screen::{despawn_game_over_screen, spawn_game_over_screen, update_rematch_text};
+use game_over_screen::{spawn_game_over_screen, update_rematch_text};
 use networking_screen::{despawn_networking_screen, spawn_networking_screen};
 use round_over_screen::{hide_round_over_screen, show_round_over_screen, spawn_round_over_screen};
 use round_start_screen::{
@@ -26,6 +27,8 @@ use round_start_screen::{
 };
 use scoreboard::{spawn_scoreboard, update_scoreboard};
 use seed_screen::spawn_seed_screen;
+
+use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
 
 pub const MAX_SCORE: usize = 2;
 
@@ -41,6 +44,7 @@ impl Plugin for AceUiPlugin {
                 spawn_seed_screen,
             ),
         )
+        .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(
             OnExit(GameState::Matchmaking),
             (
@@ -51,13 +55,16 @@ impl Plugin for AceUiPlugin {
                 // states (GameState and RollbackState).
                 spawn_round_start_screen,
                 spawn_round_over_screen,
+                spawn_game_over_screen,
             ),
         )
-        .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
-        .add_systems(OnEnter(RollbackState::GameOver), spawn_game_over_screen)
+        .add_systems(
+            OnEnter(RollbackState::GameOver),
+            (show_game_over_screen, update_winner_text),
+        )
         .add_systems(
             OnExit(RollbackState::GameOver),
-            (despawn_game_over_screen, update_scoreboard),
+            (hide_game_over_screen, update_scoreboard),
         )
         .add_systems(OnExit(RollbackState::RoundEnd), hide_round_over_screen)
         .add_systems(OnEnter(RollbackState::RoundStart), show_round_start_screen)
@@ -71,12 +78,21 @@ impl Plugin for AceUiPlugin {
         )
         .add_systems(
             Update,
+            animate_connecting_screen.run_if(in_state(GameState::Connecting)),
+        )
+        .add_systems(
+            GgrsSchedule,
             (
-                animate_round_start_screen.run_if(in_state(RollbackState::RoundStart)),
-                animate_connecting_screen.run_if(in_state(GameState::Connecting)),
+                animate_round_start_screen
+                    .run_if(in_state(RollbackState::RoundStart))
+                    .after(round_start_timeout),
                 hide_round_start_screen.run_if(in_state(RollbackState::InRound)),
-                update_rematch_text.run_if(in_state(RollbackState::GameOver)),
-            ),
+                update_rematch_text
+                    .run_if(in_state(RollbackState::GameOver))
+                    .after(check_rematch_state),
+            )
+                .chain()
+                .after(apply_state_transition::<RollbackState>),
         )
         .add_systems(
             GgrsSchedule,
