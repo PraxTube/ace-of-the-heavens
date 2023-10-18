@@ -30,14 +30,13 @@ pub enum GameState {
     AssetLoading,
     Matchmaking,
     Connecting,
-    InGame,
-    GameOver,
+    InRollbackGame,
 }
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
 pub enum RollbackState {
     #[default]
-    Setup,
+    Empty,
     RoundStart,
     InRound,
     RoundEnd,
@@ -104,6 +103,9 @@ fn main() {
         .init_resource::<RoundStartTimer>()
         .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
-        .add_systems(Update, input::quit.run_if(in_state(GameState::Matchmaking).or_else(in_state(GameState::GameOver))))
+        .add_systems(
+            Update,
+            input::quit.run_if(in_state(GameState::Matchmaking)
+                .or_else(in_state(GameState::InRollbackGame).and_then(in_state(RollbackState::GameOver)))))
         .run();
 }

@@ -113,7 +113,7 @@ pub fn tick_connecting_timer(
     timer.tick(Duration::from_secs_f32(1.0 / 60.0));
 
     if timer.just_finished() {
-        next_game_state.set(GameState::InGame);
+        next_game_state.set(GameState::InRollbackGame);
         next_rollback_state.set(RollbackState::RoundStart);
     }
 }

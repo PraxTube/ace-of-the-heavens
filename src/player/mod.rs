@@ -117,14 +117,14 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             Update,
-            effect::update_trails.run_if(in_state(GameState::InGame)),
+            effect::update_trails.run_if(in_state(GameState::InRollbackGame)),
         )
         .add_plugins(shooting::ShootingPlugin)
         .add_systems(
             GgrsSchedule,
             (
                 check_rematch_state
-                    .run_if(in_state(GameState::GameOver))
+                    .run_if(in_state(RollbackState::GameOver))
                     .after(apply_state_transition::<RollbackState>),
                 shooting::rocket_explosion::animate_rocket_explosions
                     .run_if(

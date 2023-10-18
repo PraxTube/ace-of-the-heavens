@@ -68,7 +68,7 @@ impl Plugin for GameLogicPlugin {
         .init_resource::<Seeds>()
         .init_resource::<RNG>()
         .add_systems(OnExit(GameState::Connecting), setup_rng)
-        .add_systems(OnEnter(GameState::InGame), reset_rematch)
+        .add_systems(OnExit(RollbackState::GameOver), reset_rematch)
         .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
         .add_systems(
@@ -78,7 +78,7 @@ impl Plugin for GameLogicPlugin {
                     .ambiguous_with(player::spawning::despawn_players)
                     .distributive_run_if(in_state(RollbackState::RoundEnd))
                     .after(apply_state_transition::<RollbackState>),
-                initiate_rematch
+                check_rematch
                     .ambiguous_with(player::spawning::despawn_players)
                     .ambiguous_with(round_end_timeout)
                     .distributive_run_if(in_state(RollbackState::GameOver))
@@ -149,7 +149,6 @@ pub fn clear_world(
 pub fn adjust_score(
     players: Query<&player::Player>,
     mut score: ResMut<Score>,
-    mut next_game_state: ResMut<NextState<GameState>>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
     if players.iter().count() == 0 {
@@ -166,15 +165,13 @@ pub fn adjust_score(
     }
 
     if score.0 == MAX_SCORE || score.1 == MAX_SCORE {
-        next_game_state.set(GameState::GameOver);
         next_rollback_state.set(RollbackState::GameOver);
     }
 }
 
-pub fn initiate_rematch(
+pub fn check_rematch(
     rematch: Res<Rematch>,
     mut score: ResMut<Score>,
-    mut next_game_state: ResMut<NextState<GameState>>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
     if !(rematch.0 && rematch.1) {
@@ -183,7 +180,6 @@ pub fn initiate_rematch(
 
     *score = Score::default();
 
-    next_game_state.set(GameState::InGame);
     next_rollback_state.set(RollbackState::RoundStart);
 }
 

@@ -28,9 +28,9 @@ impl Plugin for AceDebugPlugin {
         app.add_systems(
             Update,
             (
-                print_events_system.run_if(in_state(GameState::InGame)),
-                trigger_desync.run_if(in_state(GameState::InGame)),
-                print_mouse_transform.run_if(in_state(GameState::InGame)),
+                print_events_system.run_if(in_state(GameState::InRollbackGame)),
+                trigger_desync.run_if(in_state(GameState::InRollbackGame)),
+                print_mouse_transform.run_if(in_state(GameState::InRollbackGame)),
             ),
         )
         .add_systems(OnExit(GameState::Connecting), (setup_mouse_tracking,));

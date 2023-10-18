@@ -9,7 +9,7 @@ pub mod seed_screen;
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
-use crate::game_logic::{adjust_score, initiate_rematch, round_end_timeout};
+use crate::game_logic::{adjust_score, check_rematch, round_end_timeout};
 use crate::player::spawning::despawn_players;
 use crate::{GameState, RollbackState};
 
@@ -47,16 +47,16 @@ impl Plugin for AceUiPlugin {
                 despawn_networking_screen,
                 spawn_connecting_screen,
                 // We spawn this here because otherwise the show_round_start_screen
-                // might be triggered to early. This issue originates from using two
+                // might be triggered too early. This issue originates from using two
                 // states (GameState and RollbackState).
                 spawn_round_start_screen,
                 spawn_round_over_screen,
             ),
         )
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
-        .add_systems(OnEnter(GameState::GameOver), spawn_game_over_screen)
+        .add_systems(OnEnter(RollbackState::GameOver), spawn_game_over_screen)
         .add_systems(
-            OnExit(GameState::GameOver),
+            OnExit(RollbackState::GameOver),
             (despawn_game_over_screen, update_scoreboard),
         )
         .add_systems(OnExit(RollbackState::RoundEnd), hide_round_over_screen)
@@ -72,9 +72,7 @@ impl Plugin for AceUiPlugin {
         .add_systems(
             Update,
             (
-                animate_round_start_screen
-                    .run_if(in_state(RollbackState::RoundStart))
-                    .run_if(in_state(GameState::InGame)),
+                animate_round_start_screen.run_if(in_state(RollbackState::RoundStart)),
                 animate_connecting_screen.run_if(in_state(GameState::Connecting)),
                 hide_round_start_screen.run_if(in_state(RollbackState::InRound)),
                 update_rematch_text.run_if(in_state(RollbackState::GameOver)),
@@ -85,13 +83,13 @@ impl Plugin for AceUiPlugin {
             (
                 round_start_timeout
                     .ambiguous_with(round_end_timeout)
-                    .ambiguous_with(initiate_rematch)
+                    .ambiguous_with(check_rematch)
                     .ambiguous_with(despawn_players)
                     .distributive_run_if(in_state(RollbackState::RoundStart))
                     .after(apply_state_transition::<RollbackState>),
                 tick_connecting_timer
                     .ambiguous_with(round_end_timeout)
-                    .ambiguous_with(initiate_rematch)
+                    .ambiguous_with(check_rematch)
                     .ambiguous_with(despawn_players)
                     .ambiguous_with(round_start_timeout)
                     .distributive_run_if(in_state(GameState::Connecting))
