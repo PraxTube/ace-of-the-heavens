@@ -32,11 +32,7 @@ pub fn player_spawn_transform(handle: usize) -> Transform {
     }
 }
 
-fn spawn_player(
-    commands: &mut Commands,
-    texture_atlas_handle: Handle<TextureAtlas>,
-    handle: usize,
-) {
+fn spawn_player(commands: &mut Commands, texture: Handle<Image>, handle: usize) {
     let transform = player_spawn_transform(handle);
     commands
         .spawn((
@@ -46,9 +42,8 @@ fn spawn_player(
             DodgeTimer::default(),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
-            SpriteSheetBundle {
-                texture_atlas: texture_atlas_handle,
-                sprite: TextureAtlasSprite::new(0),
+            SpriteBundle {
+                texture,
                 transform,
                 ..default()
             },
@@ -56,18 +51,11 @@ fn spawn_player(
         .add_rollback();
 }
 
-pub fn spawn_players(
-    mut commands: Commands,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    assets: Res<GameAssets>,
-) {
-    let texture_handles = [assets.player_1.clone(), assets.player_2.clone()];
+pub fn spawn_players(mut commands: Commands, assets: Res<GameAssets>) {
+    let textures = [assets.player_1.clone(), assets.player_2.clone()];
 
-    for (handle, texture_handle) in texture_handles.into_iter().enumerate() {
-        let texture_atlas =
-            TextureAtlas::from_grid(texture_handle, Vec2::new(64.0, 64.0), 1, 1, None, None);
-        let texture_atlas_handle = texture_atlases.add(texture_atlas);
-        spawn_player(&mut commands, texture_atlas_handle, handle);
+    for (handle, texture) in textures.into_iter().enumerate() {
+        spawn_player(&mut commands, texture, handle);
     }
 }
 
