@@ -4,8 +4,8 @@ use bevy_matchbox::prelude::PeerId;
 pub const GGRS_FPS: usize = 60;
 pub const PLAYER_COUNT: usize = 2;
 pub const INPUT_DELAY: usize = 2;
-pub const MAX_PREDICTION_FRAMES: usize = 8;
-pub const MAX_FRAME_BEHIND: usize = 10;
+pub const MAX_PREDICTION_FRAMES: usize = 38;
+pub const MAX_FRAME_BEHIND: usize = 40;
 
 #[derive(Debug)]
 pub struct GgrsConfig;
