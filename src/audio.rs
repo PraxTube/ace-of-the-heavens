@@ -3,11 +3,13 @@ use std::time::Duration;
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
-use bevy_ggrs::GgrsSchedule;
+use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 use bevy_kira_audio::prelude::{AudioPlugin, AudioSource, *};
 
+use crate::game_logic::Score;
 use crate::network::ggrs_config::GGRS_FPS;
-use crate::RollbackState;
+use crate::ui::MAX_SCORE;
+use crate::{GameAssets, GameState, RollbackState};
 
 const MAIN_VOLUME: f64 = 0.35;
 
@@ -39,7 +41,7 @@ impl Default for RollbackSound {
     }
 }
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct FadedLoopSound {
     /// The actual sound playing, if any
@@ -52,6 +54,22 @@ pub struct FadedLoopSound {
     pub fade_out: f32,
     /// whether the sound effect should be playing or not
     pub should_play: bool,
+    pub despawn_on_silence: bool,
+    pub volume: f64,
+}
+
+impl Default for FadedLoopSound {
+    fn default() -> Self {
+        Self {
+            audio_instance: None,
+            clip: Handle::default(),
+            fade_in: 0.0,
+            fade_out: 0.0,
+            should_play: true,
+            despawn_on_silence: false,
+            volume: 1.0,
+        }
+    }
 }
 
 /// The "Actual" state.
@@ -159,6 +177,7 @@ fn update_looped_sounds(
                         .play(sound.clip.clone())
                         .looped()
                         .linear_fade_in(Duration::from_secs_f32(sound.fade_in))
+                        .with_volume(sound.volume)
                         .handle(),
                 );
             }
@@ -170,13 +189,113 @@ fn update_looped_sounds(
     }
 }
 
+fn remove_looped_sounds(mut commands: Commands, query: Query<(Entity, &FadedLoopSound)>) {
+    for (entity, sound) in &query {
+        if !sound.should_play && sound.audio_instance.is_none() {
+            if sound.despawn_on_silence {
+                commands.entity(entity).despawn_recursive();
+            }
+        }
+    }
+}
+
+#[derive(Component)]
+struct BgmStage {
+    stage: usize,
+}
+
+fn check_bgm_stage(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    score: Res<Score>,
+    mut query: Query<(&mut FadedLoopSound, &BgmStage)>,
+) {
+    let match_point = score.0 == MAX_SCORE - 1 || score.1 == MAX_SCORE - 1;
+    let (clip, stage) = if match_point {
+        // Matchpoint Round
+        (assets.bgm_match_point.clone(), 1)
+    } else {
+        // Normal Round
+        (assets.bgm.clone(), 0)
+    };
+
+    let bgm_count = query.iter().count();
+    if bgm_count == 0 {
+        // Start Round
+        commands
+            .spawn((
+                BgmStage { stage },
+                FadedLoopSound {
+                    clip,
+                    volume: 0.2,
+                    despawn_on_silence: true,
+                    ..default()
+                },
+            ))
+            .add_rollback();
+        return;
+    } else if bgm_count > 1 {
+        panic!(
+            "there are {} bgm's playing, only one or none should be playing",
+            bgm_count
+        );
+    }
+    let (mut sound, bgm_stage) = query.single_mut();
+
+    // We are in a normal round and the BGM is already playing it
+    if !match_point && bgm_stage.stage == 0 {
+        return;
+    }
+    // We are at match point and the BGM is already playing it
+    if match_point && bgm_stage.stage == 1 {
+        return;
+    }
+
+    sound.should_play = false;
+    commands
+        .spawn((
+            BgmStage { stage },
+            FadedLoopSound {
+                clip,
+                volume: 0.2,
+                despawn_on_silence: true,
+                ..default()
+            },
+        ))
+        .add_rollback();
+}
+
+fn fade_out_game_over_bgm(mut query: Query<&mut FadedLoopSound>) {
+    if query.iter().count() != 1 {
+        error!(
+            "there should be exactly one BGM playing at this point.\nHowever there are {} playing",
+            query.iter().count()
+        );
+        return;
+    }
+
+    for mut sound in &mut query {
+        sound.fade_out = 3.5;
+        sound.should_play = false;
+    }
+}
+
 pub struct GameAudioPlugin;
 
 impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AudioPlugin)
             .init_resource::<PlaybackStates>()
-            .add_systems(Update, (sync_rollback_sounds, update_looped_sounds))
+            .add_systems(
+                Update,
+                (
+                    sync_rollback_sounds,
+                    update_looped_sounds,
+                    remove_looped_sounds,
+                ),
+            )
+            .add_systems(OnEnter(RollbackState::RoundStart), check_bgm_stage)
+            .add_systems(OnEnter(GameState::GameOver), fade_out_game_over_bgm)
             .add_systems(
                 GgrsSchedule,
                 remove_finished_sounds.after(apply_state_transition::<RollbackState>),
