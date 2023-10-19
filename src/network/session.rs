@@ -11,6 +11,7 @@ use crate::{GameState, RollbackState};
 
 #[derive(Resource)]
 pub struct Ready {
+    connection_ready: bool,
     local_ready: bool,
     remote_ready: bool,
 }
@@ -18,6 +19,7 @@ pub struct Ready {
 impl Default for Ready {
     fn default() -> Self {
         Self {
+            connection_ready: false,
             local_ready: false,
             remote_ready: false,
         }
@@ -38,7 +40,12 @@ pub fn start_matchbox_socket(mut commands: Commands) {
 /// Initialize the multiplayer session.
 /// Having input systems in GGRS schedule will not execute them until a session is initialized.
 /// Will wait until all players have joined.
-pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<AceSocket>, seed: Res<Seeds>) {
+pub fn wait_for_players(
+    mut commands: Commands,
+    mut socket: ResMut<AceSocket>,
+    mut ready: ResMut<Ready>,
+    seed: Res<Seeds>,
+) {
     if socket.inner_mut().get_channel(0).is_err() {
         return;
     }
@@ -87,6 +94,7 @@ pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<AceSocket>, s
         .expect("failed to start session");
 
     commands.insert_resource(Session::P2P(ggrs_session));
+    ready.connection_ready = true;
 }
 
 pub fn wait_for_seed(
@@ -94,18 +102,22 @@ pub fn wait_for_seed(
     mut socket: ResMut<AceSocket>,
     mut ready: ResMut<Ready>,
 ) {
+    if !ready.connection_ready {
+        return;
+    }
+
     let received_seeds = socket.receive_tcp_seed();
 
     if received_seeds.len() == 0 {
         return;
     }
 
-    info!("received seeds");
-
     for seed in received_seeds {
+        info!("SEEEEEEEEEEEEEEEEEEEEEED: {}", seed.1);
         // Ready signal from peer
         if seed.1 == 0 {
             ready.remote_ready = true;
+            info!("peer is ready, received 0 seed");
             continue;
         }
 
@@ -126,7 +138,7 @@ pub fn wait_for_seed(
                 _ => {}
             };
         }
-        info!("sent ready seed 0");
+        info!("we are ready, received peer seed and sent 0 seed");
     }
 }
 
@@ -136,6 +148,10 @@ pub fn check_ready_state(
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
     if ready.local_ready && ready.remote_ready {
+        if !ready.connection_ready {
+            // sanity check, should never trigger
+            panic!("conneciton is not established but we are ready to play?")
+        }
         next_game_state.set(GameState::InRollbackGame);
         next_rollback_state.set(RollbackState::RoundStart);
     }

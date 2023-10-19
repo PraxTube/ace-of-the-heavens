@@ -27,6 +27,7 @@ pub use assets::GameAssets;
 pub enum GameState {
     #[default]
     AssetLoading,
+    MainMenu,
     Matchmaking,
     InRollbackGame,
 }
@@ -45,7 +46,7 @@ fn main() {
     App::new()
         .add_state::<GameState>()
         .add_loading_state(
-            LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Matchmaking),
+            LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::MainMenu),
         )
         .add_collection_to_loading_state::<_, GameAssets>(GameState::AssetLoading)
         .add_plugins(
@@ -103,7 +104,8 @@ fn main() {
         .init_resource::<HideScreenTimer>()
         .add_systems(
             Update,
-            input::quit.run_if(in_state(GameState::Matchmaking)
+            input::quit.run_if(in_state(GameState::MainMenu)
+                .or_else(in_state(GameState::Matchmaking))
                 .or_else(in_state(GameState::InRollbackGame).and_then(in_state(RollbackState::GameOver)))))
         .run();
 }

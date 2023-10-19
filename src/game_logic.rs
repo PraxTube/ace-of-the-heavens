@@ -60,8 +60,9 @@ impl Plugin for GameLogicPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameState::Matchmaking),
-            (spawn_camera, initiate_seed.before(start_matchbox_socket)),
+            initiate_seed.before(start_matchbox_socket),
         )
+        .add_systems(OnEnter(GameState::MainMenu), spawn_camera)
         .init_resource::<RoundEndTimer>()
         .init_resource::<Score>()
         .init_resource::<Rematch>()

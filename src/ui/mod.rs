@@ -1,4 +1,5 @@
 pub mod game_over_screen;
+pub mod main_menu_screen;
 pub mod networking_screen;
 pub mod round_over_screen;
 pub mod round_start_screen;
@@ -24,6 +25,7 @@ use scoreboard::{spawn_scoreboard, update_scoreboard};
 use seed_screen::spawn_seed_screen;
 
 use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
+use self::main_menu_screen::{despawn_main_menu_screen, play_game, spawn_main_menu_screen};
 
 pub const MAX_SCORE: usize = 2;
 
@@ -35,6 +37,8 @@ impl Plugin for AceUiPlugin {
             OnExit(GameState::Matchmaking),
             (despawn_networking_screen, spawn_seed_screen),
         )
+        .add_systems(OnEnter(GameState::MainMenu), spawn_main_menu_screen)
+        .add_systems(OnExit(GameState::MainMenu), despawn_main_menu_screen)
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(
             OnExit(RollbackState::Setup),
@@ -57,6 +61,7 @@ impl Plugin for AceUiPlugin {
             OnEnter(RollbackState::RoundEnd),
             (show_round_over_screen.after(adjust_score),),
         )
+        .add_systems(Update, play_game.run_if(in_state(GameState::MainMenu)))
         .add_systems(
             GgrsSchedule,
             (
