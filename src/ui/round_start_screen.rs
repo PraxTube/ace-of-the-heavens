@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::{GameAssets, RollbackState};
@@ -52,6 +53,7 @@ pub fn spawn_round_start_screen(
                 ..default()
             },
         ))
+        .add_rollback()
         .id();
 
     let text_style = TextStyle {
@@ -71,7 +73,10 @@ pub fn spawn_round_start_screen(
         },
     )]);
 
-    let text_node = commands.spawn((RoundStartText, text_bundle)).id();
+    let text_node = commands
+        .spawn((RoundStartText, text_bundle))
+        .add_rollback()
+        .id();
     commands.entity(text_root_node).push_children(&[text_node]);
 }
 

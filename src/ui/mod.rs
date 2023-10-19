@@ -38,43 +38,33 @@ impl Plugin for AceUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(GameState::Connecting),
-            (
-                despawn_connecting_screen,
-                spawn_scoreboard,
-                spawn_seed_screen,
-            ),
+            (despawn_connecting_screen, spawn_seed_screen),
         )
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(
             OnExit(GameState::Matchmaking),
+            (despawn_networking_screen, spawn_connecting_screen),
+        )
+        .add_systems(
+            OnExit(RollbackState::Setup),
             (
-                despawn_networking_screen,
-                spawn_connecting_screen,
-                // We spawn this here because otherwise the show_round_start_screen
-                // might be triggered too early. This issue originates from using two
-                // states (GameState and RollbackState).
+                spawn_scoreboard,
                 spawn_round_start_screen,
                 spawn_round_over_screen,
+                spawn_game_over_screen,
             ),
         )
-        .add_systems(OnExit(RollbackState::Setup), spawn_game_over_screen)
         .add_systems(
             OnEnter(RollbackState::GameOver),
             (show_game_over_screen, update_winner_text),
         )
-        .add_systems(
-            OnExit(RollbackState::GameOver),
-            (hide_game_over_screen, update_scoreboard),
-        )
+        .add_systems(OnExit(RollbackState::GameOver), hide_game_over_screen)
         .add_systems(OnExit(RollbackState::RoundEnd), hide_round_over_screen)
         .add_systems(OnEnter(RollbackState::RoundStart), show_round_start_screen)
         .add_systems(OnExit(RollbackState::RoundStart), hide_round_start_screen)
         .add_systems(
             OnEnter(RollbackState::RoundEnd),
-            (
-                update_scoreboard.after(adjust_score),
-                show_round_over_screen.after(adjust_score),
-            ),
+            (show_round_over_screen.after(adjust_score),),
         )
         .add_systems(
             Update,
@@ -90,6 +80,14 @@ impl Plugin for AceUiPlugin {
                 update_rematch_text
                     .run_if(in_state(RollbackState::GameOver))
                     .after(check_rematch_state),
+                update_scoreboard
+                    .run_if(
+                        in_state(RollbackState::InRound)
+                            .or_else(in_state(RollbackState::RoundStart))
+                            .or_else(in_state(RollbackState::RoundEnd))
+                            .or_else(in_state(RollbackState::GameOver)),
+                    )
+                    .after(check_rematch),
             )
                 .chain()
                 .after(apply_state_transition::<RollbackState>),
