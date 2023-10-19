@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_ggrs::AddRollbackCommandExtension;
 
 use super::MAX_SCORE;
 use crate::game_logic::Score;
@@ -23,6 +24,7 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
             )
             .with_text_alignment(TextAlignment::Center),
         )
+        .add_rollback()
         .id()
 }
 
@@ -50,6 +52,7 @@ fn spawn_score_circle(
                 ..default()
             },
         ))
+        .add_rollback()
         .id()
 }
 
@@ -72,6 +75,7 @@ pub fn spawn_scoreboard(mut commands: Commands, assets: Res<GameAssets>) {
             },
             ..default()
         })
+        .add_rollback()
         .id();
 
     let mut children: Vec<Entity> = Vec::new();
@@ -106,6 +110,10 @@ pub fn update_scoreboard(
     mut score_icons: Query<(&ScoreIcon, &mut UiImage)>,
     assets: Res<GameAssets>,
 ) {
+    if !score.is_changed() {
+        return;
+    }
+
     let mut score_mask = [false; MAX_SCORE * 2];
     for i in 0..score.0 {
         score_mask[i] = true;

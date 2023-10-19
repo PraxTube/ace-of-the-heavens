@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::game_logic::Score;
 use crate::player::{P1_COLOR, P2_COLOR};
@@ -30,6 +31,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) 
                 ..default()
             },
         ))
+        .add_rollback()
         .id();
 
     let background = commands
@@ -48,6 +50,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) 
             z_index: ZIndex::Local(-1),
             ..default()
         },))
+        .add_rollback()
         .id();
 
     let score = commands
@@ -66,6 +69,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) 
                 ..default()
             },
         ))
+        .add_rollback()
         .id();
 
     commands
