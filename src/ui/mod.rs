@@ -55,9 +55,9 @@ impl Plugin for AceUiPlugin {
                 // states (GameState and RollbackState).
                 spawn_round_start_screen,
                 spawn_round_over_screen,
-                spawn_game_over_screen,
             ),
         )
+        .add_systems(OnExit(RollbackState::Setup), spawn_game_over_screen)
         .add_systems(
             OnEnter(RollbackState::GameOver),
             (show_game_over_screen, update_winner_text),
