@@ -112,7 +112,7 @@ impl Plugin for PlayerPlugin {
         .add_systems(OnEnter(RollbackState::InRound), effect::activate_trails)
         .add_systems(OnExit(RollbackState::InRound), effect::deactivate_trails)
         .add_systems(
-            OnExit(GameState::Connecting),
+            OnExit(GameState::Matchmaking),
             (effect::spawn_damage_effect_spawner, effect::spawn_trails),
         )
         .add_systems(

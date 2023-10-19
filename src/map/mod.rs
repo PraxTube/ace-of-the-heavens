@@ -21,7 +21,7 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(RollbackState::RoundStart), spawn_random_map)
-            .add_systems(OnExit(GameState::Connecting), spawn_background)
+            .add_systems(OnExit(GameState::Matchmaking), spawn_background)
             .add_systems(
                 GgrsSchedule,
                 disable_collision_entities

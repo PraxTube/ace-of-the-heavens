@@ -7,7 +7,22 @@ use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::game_logic::{SeedHandle, Seeds};
 use crate::player::LocalPlayerHandle;
-use crate::GameState;
+use crate::{GameState, RollbackState};
+
+#[derive(Resource)]
+pub struct Ready {
+    local_ready: bool,
+    remote_ready: bool,
+}
+
+impl Default for Ready {
+    fn default() -> Self {
+        Self {
+            local_ready: false,
+            remote_ready: false,
+        }
+    }
+}
 
 pub fn start_matchbox_socket(mut commands: Commands) {
     let room_url = "ws://192.168.178.98:3536/";
@@ -23,17 +38,10 @@ pub fn start_matchbox_socket(mut commands: Commands) {
 /// Initialize the multiplayer session.
 /// Having input systems in GGRS schedule will not execute them until a session is initialized.
 /// Will wait until all players have joined.
-pub fn wait_for_players(
-    mut commands: Commands,
-    mut socket: ResMut<AceSocket>,
-    mut next_state: ResMut<NextState<GameState>>,
-    seed: Res<Seeds>,
-) {
-    // We might need this, we would probably need to do something like
-    // socket.innter_mut or socket.inner and then get_channel
-    // if socket.get_channel(0).is_err() {
-    //     return;
-    // }
+pub fn wait_for_players(mut commands: Commands, mut socket: ResMut<AceSocket>, seed: Res<Seeds>) {
+    if socket.inner_mut().get_channel(0).is_err() {
+        return;
+    }
 
     let _new_peers = socket.inner_mut().update_peers();
 
@@ -47,7 +55,7 @@ pub fn wait_for_players(
         return;
     }
 
-    info!("All peers have joined, going in-game");
+    info!("all peers have joined!");
 
     let mut session_builder = GgrsConfig::new_builder();
 
@@ -79,10 +87,13 @@ pub fn wait_for_players(
         .expect("failed to start session");
 
     commands.insert_resource(Session::P2P(ggrs_session));
-    next_state.set(GameState::Connecting);
 }
 
-pub fn wait_for_seed(mut seeds: ResMut<Seeds>, mut socket: ResMut<AceSocket>) {
+pub fn wait_for_seed(
+    mut seeds: ResMut<Seeds>,
+    mut socket: ResMut<AceSocket>,
+    mut ready: ResMut<Ready>,
+) {
     let received_seeds = socket.receive_tcp_seed();
 
     if received_seeds.len() == 0 {
@@ -92,9 +103,40 @@ pub fn wait_for_seed(mut seeds: ResMut<Seeds>, mut socket: ResMut<AceSocket>) {
     info!("received seeds");
 
     for seed in received_seeds {
+        // Ready signal from peer
+        if seed.1 == 0 {
+            ready.remote_ready = true;
+            continue;
+        }
+
+        // Normal seed
         seeds.0.push(SeedHandle {
             handle: Some(seed.0),
             seed: seed.1,
         });
+
+        ready.local_ready = true;
+        // Send the 0 seed as a confirmation that we are ready.
+        // The 0 seed should never be possible as a normal seed.
+        for player in socket.players() {
+            match player {
+                PlayerType::Remote(peer_id) => {
+                    socket.send_tcp_seed(peer_id, 0);
+                }
+                _ => {}
+            };
+        }
+        info!("sent ready seed 0");
+    }
+}
+
+pub fn check_ready_state(
+    ready: Res<Ready>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_rollback_state: ResMut<NextState<RollbackState>>,
+) {
+    if ready.local_ready && ready.remote_ready {
+        next_game_state.set(GameState::InRollbackGame);
+        next_rollback_state.set(RollbackState::RoundStart);
     }
 }

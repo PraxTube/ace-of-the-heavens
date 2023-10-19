@@ -33,7 +33,7 @@ impl Plugin for AceDebugPlugin {
                 print_mouse_transform.run_if(in_state(GameState::InRollbackGame)),
             ),
         )
-        .add_systems(OnExit(GameState::Connecting), (setup_mouse_tracking,));
+        .add_systems(OnExit(GameState::Matchmaking), setup_mouse_tracking);
     }
 }
 

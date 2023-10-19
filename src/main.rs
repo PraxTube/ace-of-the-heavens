@@ -19,7 +19,6 @@ mod ui;
 
 use misc::debug;
 use network::GgrsConfig;
-use ui::connecting_screen::ConnectingTimer;
 use ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
 
 pub use assets::GameAssets;
@@ -29,7 +28,6 @@ pub enum GameState {
     #[default]
     AssetLoading,
     Matchmaking,
-    Connecting,
     InRollbackGame,
 }
 
@@ -72,7 +70,6 @@ fn main() {
                 .register_rollback_resource::<game_logic::Rematch>()
                 .register_rollback_resource::<game_logic::RoundStats>()
                 .register_rollback_resource::<RoundStartTimer>()
-                .register_rollback_resource::<ConnectingTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<Style>()
@@ -103,7 +100,6 @@ fn main() {
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundStartTimer>()
-        .init_resource::<ConnectingTimer>()
         .init_resource::<HideScreenTimer>()
         .add_systems(
             Update,

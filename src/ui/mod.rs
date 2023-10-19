@@ -1,4 +1,3 @@
-pub mod connecting_screen;
 pub mod game_over_screen;
 pub mod networking_screen;
 pub mod round_over_screen;
@@ -14,10 +13,6 @@ use crate::player::check_rematch_state;
 use crate::player::spawning::despawn_players;
 use crate::{GameState, RollbackState};
 
-use connecting_screen::{
-    animate_connecting_screen, despawn_connecting_screen, spawn_connecting_screen,
-    tick_connecting_timer,
-};
 use game_over_screen::{spawn_game_over_screen, update_rematch_text};
 use networking_screen::{despawn_networking_screen, spawn_networking_screen};
 use round_over_screen::{hide_round_over_screen, show_round_over_screen, spawn_round_over_screen};
@@ -37,14 +32,10 @@ pub struct AceUiPlugin;
 impl Plugin for AceUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnExit(GameState::Connecting),
-            (despawn_connecting_screen, spawn_seed_screen),
+            OnExit(GameState::Matchmaking),
+            (despawn_networking_screen, spawn_seed_screen),
         )
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
-        .add_systems(
-            OnExit(GameState::Matchmaking),
-            (despawn_networking_screen, spawn_connecting_screen),
-        )
         .add_systems(
             OnExit(RollbackState::Setup),
             (
@@ -65,10 +56,6 @@ impl Plugin for AceUiPlugin {
         .add_systems(
             OnEnter(RollbackState::RoundEnd),
             (show_round_over_screen.after(adjust_score),),
-        )
-        .add_systems(
-            Update,
-            animate_connecting_screen.run_if(in_state(GameState::Connecting)),
         )
         .add_systems(
             GgrsSchedule,
@@ -94,21 +81,12 @@ impl Plugin for AceUiPlugin {
         )
         .add_systems(
             GgrsSchedule,
-            (
-                round_start_timeout
-                    .ambiguous_with(round_end_timeout)
-                    .ambiguous_with(check_rematch)
-                    .ambiguous_with(despawn_players)
-                    .distributive_run_if(in_state(RollbackState::RoundStart))
-                    .after(apply_state_transition::<RollbackState>),
-                tick_connecting_timer
-                    .ambiguous_with(round_end_timeout)
-                    .ambiguous_with(check_rematch)
-                    .ambiguous_with(despawn_players)
-                    .ambiguous_with(round_start_timeout)
-                    .distributive_run_if(in_state(GameState::Connecting))
-                    .after(apply_state_transition::<RollbackState>),
-            ),
+            round_start_timeout
+                .ambiguous_with(round_end_timeout)
+                .ambiguous_with(check_rematch)
+                .ambiguous_with(despawn_players)
+                .distributive_run_if(in_state(RollbackState::RoundStart))
+                .after(apply_state_transition::<RollbackState>),
         );
     }
 }

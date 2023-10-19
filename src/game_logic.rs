@@ -68,7 +68,7 @@ impl Plugin for GameLogicPlugin {
         .init_resource::<RoundStats>()
         .init_resource::<Seeds>()
         .init_resource::<Seed>()
-        .add_systems(OnExit(GameState::Connecting), setup_seed)
+        .add_systems(OnExit(GameState::Matchmaking), setup_seed)
         .add_systems(OnExit(RollbackState::GameOver), reset_rematch)
         .add_systems(OnEnter(RollbackState::RoundStart), clear_world)
         .add_systems(OnEnter(RollbackState::RoundEnd), adjust_score)
@@ -207,7 +207,10 @@ pub fn determine_seed(seeds: &Res<Seeds>) -> u32 {
 
 pub fn setup_seed(mut seed: ResMut<Seed>, seeds: Res<Seeds>) {
     if seeds.0.len() != PLAYER_COUNT {
-        panic!("we didn't receive the seed of our peer");
+        panic!(
+            "we didn't receive the correct amount of seeds from our peer\nReceived {} seeds",
+            seeds.0.len()
+        );
     }
     *seed = Seed {
         seed: determine_seed(&seeds) as u64,
