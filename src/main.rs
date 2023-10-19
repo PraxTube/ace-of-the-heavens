@@ -36,7 +36,7 @@ pub enum GameState {
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default, Reflect)]
 pub enum RollbackState {
     #[default]
-    Empty,
+    Setup,
     RoundStart,
     InRound,
     RoundEnd,
@@ -75,6 +75,7 @@ fn main() {
                 .register_rollback_resource::<ConnectingTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
+                .register_rollback_component::<Style>()
                 .register_rollback_component::<debug::DebugTransform>()
                 .register_rollback_component::<map::obstacle::CollisionEntity>()
                 .register_rollback_component::<player::Player>()

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_ggrs::AddRollbackCommandExtension;
 
 use super::MAX_SCORE;
 use crate::game_logic::{Rematch, Score};
@@ -15,25 +16,27 @@ pub struct RematchText;
 pub struct WinnerText;
 
 fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
-    commands.spawn((
-        GameOverScreen,
-        ImageBundle {
-            style: Style {
-                height: Val::Vh(100.0),
-                width: Val::Vw(100.0),
-                position_type: PositionType::Absolute,
-                display: Display::None,
+    commands
+        .spawn((
+            GameOverScreen,
+            ImageBundle {
+                style: Style {
+                    height: Val::Vh(100.0),
+                    width: Val::Vw(100.0),
+                    position_type: PositionType::Absolute,
+                    display: Display::None,
+                    ..default()
+                },
+                image: UiImage {
+                    texture,
+                    ..default()
+                },
+                background_color: BackgroundColor(Color::rgba(0.2, 0.2, 0.2, 0.85)),
+                z_index: ZIndex::Local(100),
                 ..default()
             },
-            image: UiImage {
-                texture,
-                ..default()
-            },
-            background_color: BackgroundColor(Color::rgba(0.2, 0.2, 0.2, 0.85)),
-            z_index: ZIndex::Local(100),
-            ..default()
-        },
-    ));
+        ))
+        .add_rollback();
 }
 
 fn spawn_winner_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
@@ -53,6 +56,7 @@ fn spawn_winner_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     ]);
     commands
         .spawn((GameOverScreen, WinnerText, text_bundle))
+        .add_rollback()
         .id()
 }
 
@@ -67,7 +71,10 @@ fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
         text_style,
     )])
     .with_text_alignment(TextAlignment::Center);
-    commands.spawn((RematchText, text_bundle)).id()
+    commands
+        .spawn((RematchText, text_bundle))
+        .add_rollback()
+        .id()
 }
 
 fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
@@ -78,7 +85,7 @@ fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     };
     let text_bundle =
         TextBundle::from_sections([TextSection::new("PRESS Q TO QUIT".to_string(), text_style)]);
-    commands.spawn(text_bundle).id()
+    commands.spawn(text_bundle).add_rollback().id()
 }
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
@@ -101,6 +108,7 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
                 ..default()
             },
         ))
+        .add_rollback()
         .id();
     let winner_text = spawn_winner_text(commands, font.clone());
     let rematch_text = spawn_rematch_text(commands, font.clone());
