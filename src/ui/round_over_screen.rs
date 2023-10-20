@@ -82,14 +82,14 @@ pub fn show_round_over_screen(
     mut round_score: Query<&mut BackgroundColor, With<RoundScore>>,
     score: Res<Score>,
 ) {
-    if score.0 == MAX_SCORE || score.1 == MAX_SCORE {
+    if score.p1 == MAX_SCORE || score.p2 == MAX_SCORE {
         return;
     }
 
     round_screen.single_mut().display = Display::Flex;
-    *round_score.single_mut() = if score.2 == Some(0) {
+    *round_score.single_mut() = if score.last_winner == Some(0) {
         BackgroundColor(P1_COLOR)
-    } else if score.2 == Some(1) {
+    } else if score.last_winner == Some(1) {
         BackgroundColor(P2_COLOR)
     } else {
         BackgroundColor(Color::WHITE)

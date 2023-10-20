@@ -22,11 +22,18 @@ impl Default for RoundEndTimer {
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
-pub struct Score(pub usize, pub usize, pub Option<usize>);
+pub struct Score {
+    pub p1: usize,
+    pub p2: usize,
+    pub last_winner: Option<usize>,
+}
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
-pub struct Rematch(pub bool, pub bool);
+pub struct Rematch {
+    pub p1: bool,
+    pub p2: bool,
+}
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]
@@ -156,19 +163,19 @@ pub fn adjust_score(
 ) {
     round_stats.rounds_played += 1;
     if players.iter().count() == 0 {
-        score.2 = None;
+        score.last_winner = None;
         return;
     }
 
     if players.single().handle == 0 {
-        score.0 += 1;
-        score.2 = Some(0);
+        score.p1 += 1;
+        score.last_winner = Some(0);
     } else {
-        score.1 += 1;
-        score.2 = Some(1);
+        score.p2 += 1;
+        score.last_winner = Some(1);
     }
 
-    if score.0 == MAX_SCORE || score.1 == MAX_SCORE {
+    if score.p1 == MAX_SCORE || score.p2 == MAX_SCORE {
         next_rollback_state.set(RollbackState::GameOver);
     }
 }
@@ -178,7 +185,7 @@ pub fn check_rematch(
     mut score: ResMut<Score>,
     mut next_rollback_state: ResMut<NextState<RollbackState>>,
 ) {
-    if !(rematch.0 && rematch.1) {
+    if !(rematch.p1 && rematch.p2) {
         return;
     }
 

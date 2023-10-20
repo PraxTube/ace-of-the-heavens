@@ -145,7 +145,7 @@ pub fn update_winner_text(
         font_size: 100.0,
         color: Color::WHITE,
     };
-    winner_text.single_mut().sections[0] = if score.0 == MAX_SCORE {
+    winner_text.single_mut().sections[0] = if score.p1 == MAX_SCORE {
         TextSection::new(
             "ORANGE ".to_string(),
             TextStyle {
@@ -153,7 +153,7 @@ pub fn update_winner_text(
                 ..text_style.clone()
             },
         )
-    } else if score.1 == MAX_SCORE {
+    } else if score.p2 == MAX_SCORE {
         TextSection::new(
             "BLUE ".to_string(),
             TextStyle {
@@ -175,10 +175,10 @@ pub fn update_rematch_text(
         return;
     }
 
-    if (rematch.0 && local_handle.0 == 0) || (rematch.1 && local_handle.0 == 1) {
+    if (rematch.p1 && local_handle.0 == 0) || (rematch.p2 && local_handle.0 == 1) {
         let mut text = rematch_text.single_mut();
         text.sections[0].value = "SEND REQUEST".to_string();
-    } else if (rematch.0 && local_handle.0 != 0) || (rematch.1 && local_handle.0 != 1) {
+    } else if (rematch.p1 && local_handle.0 != 0) || (rematch.p2 && local_handle.0 != 1) {
         let mut text = rematch_text.single_mut();
         text.sections[0].value = "PRESS R TO REMATCH\nENEMY WANTS REMATCH!".to_string();
     } else {

@@ -78,10 +78,10 @@ pub struct LocalPlayerHandle(pub usize);
 
 pub fn check_rematch_state(mut rematch: ResMut<Rematch>, inputs: Res<PlayerInputs<GgrsConfig>>) {
     if input::rematch(inputs[0].0) {
-        rematch.0 = true;
+        rematch.p1 = true;
     }
     if input::rematch(inputs[1].0) {
-        rematch.1 = true;
+        rematch.p2 = true;
     }
 }
 
