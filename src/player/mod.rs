@@ -109,17 +109,15 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<health::PlayerTookDamage>()
-        .add_systems(OnEnter(RollbackState::InRound), effect::activate_trails)
-        .add_systems(OnExit(RollbackState::InRound), effect::deactivate_trails)
+        .add_plugins(shooting::ShootingPlugin)
+        .add_systems(
+            OnExit(RollbackState::RoundStart),
+            effect::spawn_player_trails,
+        )
         .add_systems(
             OnExit(GameState::Matchmaking),
-            (effect::spawn_damage_effect_spawner, effect::spawn_trails),
+            effect::spawn_damage_effect_spawner,
         )
-        .add_systems(
-            Update,
-            effect::update_trails.run_if(in_state(GameState::InRollbackGame)),
-        )
-        .add_plugins(shooting::ShootingPlugin)
         .add_systems(
             GgrsSchedule,
             (
@@ -173,10 +171,14 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             GgrsSchedule,
-            (effect::spawn_damage_effect,)
+            (
+                effect::spawn_damage_effect,
+                effect::disable_trails,
+                effect::despawn_trails,
+            )
                 .chain()
                 .in_set(InGameSet::Effect)
-                .distributive_run_if(in_state(RollbackState::InRound)),
+                .distributive_run_if(not(in_state(RollbackState::Setup))),
         )
         .add_systems(
             GgrsSchedule,

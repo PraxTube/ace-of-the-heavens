@@ -1,16 +1,32 @@
+use std::time::Duration;
+
 use bevy::{core::FrameCount, prelude::*};
 use bevy_ggrs::AddRollbackCommandExtension;
 use bevy_hanabi::prelude::*;
 
 use super::{Player, P1_COLOR, P2_COLOR};
 
-use crate::{audio::RollbackSound, player::health::PlayerTookDamage, GameAssets};
+use crate::{
+    audio::RollbackSound, network::ggrs_config::GGRS_FPS, player::health::PlayerTookDamage,
+    GameAssets,
+};
 
-const TRAILL_OFFSET_LEFT: Vec3 = Vec3::new(0.0, 30.0, -1.0);
-const TRAILL_OFFSET_RIGHT: Vec3 = Vec3::new(0.0, -30.0, -1.0);
+const TRAIL_OFFSET_LEFT: Vec3 = Vec3::new(0.0, 30.0, -1.0);
+const TRAIL_OFFSET_RIGHT: Vec3 = Vec3::new(0.0, -30.0, -1.0);
 
 #[derive(Component)]
-pub struct Trail(usize, usize);
+pub struct Trail;
+
+#[derive(Component)]
+pub struct KillTimer(Timer);
+
+impl Default for KillTimer {
+    fn default() -> Self {
+        let mut timer = Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once);
+        timer.pause();
+        Self(timer)
+    }
+}
 
 #[derive(Component)]
 pub struct DamageEffectSpawner;
@@ -18,9 +34,8 @@ pub struct DamageEffectSpawner;
 pub fn spawn_trail_effect(
     commands: &mut Commands,
     effects: &mut ResMut<Assets<EffectAsset>>,
-    handle: usize,
-    side: usize,
-) {
+    offset: Vec3,
+) -> Entity {
     let mut color_gradient = Gradient::new();
     color_gradient.add_key(0.0, Vec4::new(1.0, 1.0, 1.0, 1.0));
     color_gradient.add_key(1.0, Vec4::new(0.7, 0.7, 0.7, 0.0));
@@ -49,7 +64,7 @@ pub fn spawn_trail_effect(
         speed: writer.lit(0.0).expr(),
     };
 
-    let spawner = Spawner::rate(50.0.into()).with_starts_active(false);
+    let spawner = Spawner::rate(50.0.into()).with_starts_active(true);
     let effect = effects.add(
         EffectAsset::new(50, spawner, writer.finish())
             .init(init_pos)
@@ -65,19 +80,28 @@ pub fn spawn_trail_effect(
             }),
     );
 
-    commands.spawn((
-        Trail(handle, side),
-        ParticleEffectBundle {
-            effect: ParticleEffect::new(effect),
-            ..default()
-        },
-    ));
+    commands
+        .spawn((
+            Trail,
+            KillTimer::default(),
+            ParticleEffectBundle {
+                effect: ParticleEffect::new(effect),
+                transform: Transform::from_translation(offset),
+                ..default()
+            },
+        ))
+        .id()
 }
 
-pub fn spawn_trails(mut commands: Commands, mut effects: ResMut<Assets<EffectAsset>>) {
-    for handle in 0..2 {
-        for side in 0..2 {
-            spawn_trail_effect(&mut commands, &mut effects, handle, side);
+pub fn spawn_player_trails(
+    mut commands: Commands,
+    mut effects: ResMut<Assets<EffectAsset>>,
+    players: Query<Entity, With<Player>>,
+) {
+    for entity in &players {
+        for offset in [TRAIL_OFFSET_LEFT, TRAIL_OFFSET_RIGHT] {
+            let trail_effect = spawn_trail_effect(&mut commands, &mut effects, offset);
+            commands.entity(entity).push_children(&[trail_effect]);
         }
     }
 }
@@ -197,36 +221,34 @@ pub fn spawn_damage_effect(
     }
 }
 
-pub fn update_trails(
-    mut trails: Query<(&mut Transform, &Trail), Without<Player>>,
-    players: Query<(&Transform, &Player), Without<Trail>>,
+pub fn disable_trails(
+    mut trails: Query<(&Parent, &mut EffectSpawner, &mut KillTimer), With<Trail>>,
+    parents: Query<&Transform>,
 ) {
-    for (mut trail_transofrm, trail) in &mut trails {
-        for (player_transform, player) in &players {
-            if player.handle != trail.0 {
-                continue;
-            }
-
-            let offset = if trail.1 == 0 {
-                TRAILL_OFFSET_LEFT
-            } else {
-                TRAILL_OFFSET_RIGHT
-            };
-
-            trail_transofrm.translation =
-                player_transform.translation + player_transform.rotation.mul_vec3(offset);
+    for (parent, mut trail, mut kill_timer) in &mut trails {
+        if parents.get(parent.get()).is_ok() {
+            continue;
         }
-    }
-}
+        if !trail.is_active() {
+            continue;
+        }
 
-pub fn activate_trails(mut trails: Query<&mut EffectSpawner, With<Trail>>) {
-    for mut trail in &mut trails {
-        trail.set_active(true);
-    }
-}
-
-pub fn deactivate_trails(mut trails: Query<&mut EffectSpawner, With<Trail>>) {
-    for mut trail in &mut trails {
+        info!("disabling rocket",);
         trail.set_active(false);
+        kill_timer.0.unpause();
+    }
+}
+
+pub fn despawn_trails(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut KillTimer), With<Trail>>,
+) {
+    for (entity, mut kill_timer) in &mut query {
+        kill_timer
+            .0
+            .tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
+        if kill_timer.0.finished() {
+            commands.entity(entity).despawn_recursive();
+        }
     }
 }

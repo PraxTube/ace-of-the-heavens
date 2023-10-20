@@ -3,6 +3,7 @@ use std::hash::{Hash, Hasher};
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
+use bevy_hanabi::EffectAsset;
 
 use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
@@ -10,10 +11,10 @@ use crate::input;
 use crate::map::CollisionEntity;
 use crate::misc::utils::quat_from_vec3;
 use crate::network::GgrsConfig;
-use crate::player::Player;
-use crate::player::PLAYER_RADIUS;
 use crate::GameAssets;
 
+use super::super::effect::spawn_trail_effect;
+use super::super::{Player, PLAYER_RADIUS};
 use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
@@ -66,6 +67,7 @@ fn spawn_rocket(
     commands: &mut Commands,
     assets: &Res<GameAssets>,
     frame: &Res<FrameCount>,
+    effects: &mut ResMut<Assets<EffectAsset>>,
     player: &Player,
     player_transform: &Transform,
     spawn_offset: Vec3,
@@ -100,6 +102,10 @@ fn spawn_rocket(
             volume: 0.5,
         })
         .add_rollback();
+    let trail_effect = spawn_trail_effect(commands, effects, Vec3::ZERO);
+    commands
+        .entity(rocket_entity)
+        .push_children(&[trail_effect]);
 }
 
 pub fn fire_rockets(
@@ -108,6 +114,7 @@ pub fn fire_rockets(
     frame: Res<FrameCount>,
     inputs: Res<PlayerInputs<GgrsConfig>>,
     mut players: Query<(&Transform, &Player, &mut RocketTimer)>,
+    mut effects: ResMut<Assets<EffectAsset>>,
 ) {
     for (player_transform, player, mut rocket_timer) in &mut players {
         let (input, _) = inputs[player.handle];
@@ -119,6 +126,7 @@ pub fn fire_rockets(
             &mut commands,
             &assets,
             &frame,
+            &mut effects,
             &player,
             player_transform,
             Vec3::default(),
@@ -178,6 +186,6 @@ pub fn destroy_rockets(
             rocket_transform.translation,
             rocket.handle,
         );
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

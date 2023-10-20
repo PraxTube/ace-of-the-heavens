@@ -14,12 +14,12 @@ use crate::GameAssets;
 use crate::RollbackState;
 
 pub const P1_TRANSFORM: Transform = Transform {
-    scale: Vec3::splat(1.75),
+    scale: Vec3::ONE,
     rotation: Quat::IDENTITY,
     translation: Vec3::new(-800.0, 0.0, 0.0),
 };
 pub const P2_TRANSFORM: Transform = Transform {
-    scale: Vec3::splat(1.75),
+    scale: Vec3::ONE,
     rotation: Quat::from_xyzw(0.0, 0.0, 1.0, 0.0),
     translation: Vec3::new(800.0, 0.0, 0.0),
 };
@@ -69,7 +69,7 @@ pub fn despawn_players(
     for (player_entity, mut player, collision_entity) in &mut players {
         if player.health <= 0 || collision_entity.disabled {
             player.health = 0;
-            commands.entity(player_entity).despawn_recursive();
+            commands.entity(player_entity).despawn();
             commands
                 .spawn(RollbackSound {
                     clip: assets.death_sound.clone(),
