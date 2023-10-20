@@ -113,7 +113,6 @@ pub fn wait_for_seed(
     }
 
     for seed in received_seeds {
-        info!("SEEEEEEEEEEEEEEEEEEEEEED: {}", seed.1);
         // Ready signal from peer
         if seed.1 == 0 {
             ready.remote_ready = true;

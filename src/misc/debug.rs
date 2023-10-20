@@ -2,13 +2,11 @@ use std::hash::{Hash, Hasher};
 
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use bevy_ggrs::{ggrs::GGRSEvent as GgrsEvent, Session};
 
 use crate::game_logic::Seeds;
-use crate::network::GgrsConfig;
 use crate::player::shooting::bullet::BulletTimer;
 use crate::player::Player;
-use crate::GameState;
+use crate::{GameState, RollbackState};
 
 #[derive(Reflect, Component, Default)]
 #[reflect(Hash)]
@@ -28,7 +26,9 @@ impl Plugin for AceDebugPlugin {
         app.add_systems(
             Update,
             (
-                print_events_system.run_if(in_state(GameState::InRollbackGame)),
+                debug_state_main_menu.run_if(
+                    in_state(GameState::MainMenu).and_then(not(in_state(RollbackState::Setup))),
+                ),
                 trigger_desync.run_if(in_state(GameState::InRollbackGame)),
                 print_mouse_transform.run_if(in_state(GameState::InRollbackGame)),
             ),
@@ -78,6 +78,10 @@ impl DebugTransform {
     }
 }
 
+fn debug_state_main_menu() {
+    error!("the rollbackstate is not in setup. This is most likely caused by rollingback nextstate calls");
+}
+
 pub fn trigger_desync(
     keyboard_input: Res<Input<KeyCode>>,
     mut bullet_timers: Query<&mut BulletTimer, With<Player>>,
@@ -125,22 +129,5 @@ pub fn print_mouse_transform(
             "Mouse World coords: X: {}, Y: {}",
             world_position.x, world_position.y
         );
-    }
-}
-
-pub fn print_events_system(mut session: ResMut<Session<GgrsConfig>>) {
-    match session.as_mut() {
-        Session::P2P(s) => {
-            for event in s.events() {
-                match event {
-                    GgrsEvent::Disconnected { .. } | GgrsEvent::NetworkInterrupted { .. } => {
-                        warn!("{event:?}")
-                    }
-                    GgrsEvent::DesyncDetected { .. } => error!("{event:?}"),
-                    _ => info!("{event:?}"),
-                }
-            }
-        }
-        _ => panic!("Expecting a P2P Session."),
     }
 }
