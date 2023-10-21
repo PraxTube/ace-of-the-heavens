@@ -1,8 +1,10 @@
 use std::time::Duration;
 
+use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
+use crate::audio::RollbackSound;
 use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::{GameAssets, RollbackState};
 
@@ -12,7 +14,7 @@ pub struct RoundStartTimer(Timer);
 
 impl Default for RoundStartTimer {
     fn default() -> Self {
-        RoundStartTimer(Timer::from_seconds(1.0, TimerMode::Repeating))
+        RoundStartTimer(Timer::from_seconds(1.5, TimerMode::Repeating))
     }
 }
 
@@ -62,7 +64,7 @@ pub fn spawn_round_start_screen(
         color: Color::WHITE,
     };
     let text_bundle = TextBundle::from_sections([TextSection::new(
-        "3".to_string(),
+        "PREPARE".to_string(),
         TextStyle {
             color: if local_handle.0 == 0 {
                 P1_COLOR
@@ -91,32 +93,47 @@ pub fn round_start_timeout(
     }
 }
 
+fn get_text_section(timer: &Res<RoundStartTimer>, text_section: &TextSection) -> TextSection {
+    let time = (timer.duration() - timer.elapsed()).as_secs_f32();
+    let (value, font_size) = if timer.just_finished() {
+        ("GO!", 200.0)
+    } else if time < timer.duration().as_secs_f32() / 3.0 {
+        ("SET", 100.0)
+    } else if time < timer.duration().as_secs_f32() * 2.0 / 3.0 {
+        ("READY", 100.0)
+    } else {
+        ("PREPARE", 100.0)
+    };
+    TextSection {
+        value: value.to_string(),
+        style: TextStyle {
+            font_size,
+            ..text_section.style.clone()
+        },
+    }
+}
+
 pub fn animate_round_start_screen(
     timer: Res<RoundStartTimer>,
     mut text: Query<&mut Text, With<RoundStartText>>,
 ) {
     let mut text = text.single_mut();
-
-    if timer.just_finished() {
-        text.sections[0].value = "GO!".to_string();
-        return;
-    }
-
-    let time = 1.0 - timer.elapsed().as_secs_f32();
-
-    let num = if time > 0.66 {
-        "PREPARE"
-    } else if time > 0.33 {
-        "READY"
-    } else {
-        "SET"
-    };
-
-    text.sections[0].value = num.to_string();
+    text.sections[0] = get_text_section(&timer, &text.sections[0]);
 }
 
-pub fn show_round_start_screen(mut screen: Query<&mut Style, With<RoundStartScreen>>) {
+pub fn show_round_start_screen(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    mut screen: Query<&mut Style, With<RoundStartScreen>>,
+) {
     screen.single_mut().display = Display::Flex;
+    commands.spawn(RollbackSound {
+        clip: assets.round_start_sound.clone(),
+        start_frame: frame.0 as usize,
+        volume: 0.35,
+        ..default()
+    });
 }
 
 pub fn hide_round_start_screen(

@@ -60,4 +60,7 @@ pub struct GameAssets {
 
     #[asset(path = "sounds/dodge.ogg")]
     pub dodge_sound: Handle<AudioSource>,
+
+    #[asset(path = "sounds/round-start-sound.ogg")]
+    pub round_start_sound: Handle<AudioSource>,
 }
