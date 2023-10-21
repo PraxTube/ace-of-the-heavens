@@ -68,7 +68,6 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
 }
 
 pub fn spawn_main_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
-    info!("spawn main menu");
     spawn_text(&mut commands, assets.font.clone());
 }
 
@@ -76,7 +75,6 @@ pub fn despawn_main_menu_screen(
     mut commands: Commands,
     game_over_screens: Query<Entity, With<MainMenuScreen>>,
 ) {
-    info!("despawn main menu");
     for screen_component in &game_over_screens {
         commands.entity(screen_component).despawn_recursive();
     }

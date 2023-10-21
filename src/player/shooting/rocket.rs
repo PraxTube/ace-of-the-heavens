@@ -13,7 +13,7 @@ use crate::misc::utils::quat_from_vec3;
 use crate::network::GgrsConfig;
 use crate::GameAssets;
 
-use super::super::effect::spawn_trail_effect;
+use super::super::effect::trail::spawn_trail_effect;
 use super::super::{Player, PLAYER_RADIUS};
 use super::rocket_explosion::spawn_rocket_explosion;
 

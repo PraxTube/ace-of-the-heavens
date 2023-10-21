@@ -13,7 +13,7 @@ use bevy_ggrs::*;
 use crate::game_logic::Rematch;
 use crate::input;
 use crate::network::GgrsConfig;
-use crate::{GameState, RollbackState};
+use crate::RollbackState;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
@@ -109,15 +109,7 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<health::PlayerTookDamage>()
-        .add_plugins(shooting::ShootingPlugin)
-        .add_systems(
-            OnExit(RollbackState::RoundStart),
-            effect::spawn_player_trails,
-        )
-        .add_systems(
-            OnExit(GameState::Matchmaking),
-            effect::spawn_damage_effect_spawner,
-        )
+        .add_plugins((shooting::ShootingPlugin, effect::EffectPlugin))
         .add_systems(
             GgrsSchedule,
             (
@@ -168,17 +160,6 @@ impl Plugin for PlayerPlugin {
                 .chain()
                 .in_set(InGameSet::Dodge)
                 .distributive_run_if(in_state(RollbackState::InRound)),
-        )
-        .add_systems(
-            GgrsSchedule,
-            (
-                effect::spawn_damage_effect,
-                effect::disable_trails,
-                effect::despawn_trails,
-            )
-                .chain()
-                .in_set(InGameSet::Effect)
-                .distributive_run_if(not(in_state(RollbackState::Setup))),
         )
         .add_systems(
             GgrsSchedule,
