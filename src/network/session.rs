@@ -6,6 +6,7 @@ use super::ggrs_config::PLAYER_COUNT;
 use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::game_logic::{SeedHandle, Seeds};
+use crate::network::ggrs_config::get_rtc_ice_server_config;
 use crate::player::LocalPlayerHandle;
 use crate::{GameState, RollbackState};
 
@@ -27,10 +28,11 @@ impl Default for Ready {
 }
 
 pub fn start_matchbox_socket(mut commands: Commands) {
-    let room_url = "ws://192.168.178.98:3536/";
+    let room_url = "ws://77.11.111.50:3536/";
     info!("connection to matchbox server: {}", room_url);
     commands.insert_resource(AceSocket::from(
         WebRtcSocket::builder(room_url)
+            .ice_server(get_rtc_ice_server_config())
             .add_ggrs_channel()
             .add_reliable_channel()
             .build(),

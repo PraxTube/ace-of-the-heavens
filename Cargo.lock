@@ -1061,8 +1061,7 @@ dependencies = [
 [[package]]
 name = "bevy_matchbox"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2d6ac04ae1f05c9cceabd9b8448dde956b20220732354932f1e2f58557b11c1"
+source = "git+https://github.com/Praxtube/matchbox?branch=v0.7.0patch#287dbedbc7f69f99ab06919dca89474e90d48da6"
 dependencies = [
  "bevy",
  "cfg-if 1.0.0",
@@ -3339,8 +3338,7 @@ dependencies = [
 [[package]]
 name = "matchbox_protocol"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b366d07aaa4f4badff98d54f6b9d928ee821fa486ee9e8f6929c7d411791e36b"
+source = "git+https://github.com/Praxtube/matchbox?branch=v0.7.0patch#287dbedbc7f69f99ab06919dca89474e90d48da6"
 dependencies = [
  "cfg-if 1.0.0",
  "derive_more",
@@ -3351,8 +3349,7 @@ dependencies = [
 [[package]]
 name = "matchbox_socket"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5172e69ba3d8a2101534bb23e90126c32326b0033669b962cca892c58b4fe58e"
+source = "git+https://github.com/Praxtube/matchbox?branch=v0.7.0patch#287dbedbc7f69f99ab06919dca89474e90d48da6"
 dependencies = [
  "async-compat",
  "async-trait",
