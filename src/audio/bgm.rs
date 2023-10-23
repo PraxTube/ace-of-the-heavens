@@ -72,17 +72,23 @@ pub fn check_bgm_stage(
         .add_rollback();
 }
 
-pub fn fade_out_game_over_bgm(mut query: Query<&mut FadedLoopSound>) {
+pub fn fade_out_game_over_bgm(mut query: Query<&mut FadedLoopSound, With<BgmStage>>) {
     if query.iter().count() != 1 {
         error!(
-            "there should be exactly one BGM playing at this point.\nHowever there are {} playing",
+            "there should be exactly one BGM playing at this point, however there are {} playing",
             query.iter().count()
         );
-        return;
     }
 
     for mut sound in &mut query {
         sound.fade_out = 3.5;
         sound.should_play = false;
+    }
+}
+
+pub fn fade_out_all_bgm(mut query: Query<&mut FadedLoopSound, With<BgmStage>>) {
+    for mut bgm in &mut query {
+        bgm.should_play = false;
+        bgm.fade_out = 5.0;
     }
 }

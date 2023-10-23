@@ -1,5 +1,7 @@
 mod bgm;
 
+pub use bgm::BgmStage;
+
 use std::time::Duration;
 
 use bevy::core::FrameCount;
@@ -9,7 +11,7 @@ use bevy_ggrs::GgrsSchedule;
 use bevy_kira_audio::prelude::{AudioPlugin, AudioSource, *};
 
 use crate::network::ggrs_config::GGRS_FPS;
-use crate::RollbackState;
+use crate::{GameState, RollbackState};
 
 const MAIN_VOLUME: f64 = 0.35;
 
@@ -207,14 +209,8 @@ impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AudioPlugin)
             .init_resource::<PlaybackStates>()
-            .add_systems(
-                Update,
-                (
-                    sync_rollback_sounds,
-                    update_looped_sounds,
-                    remove_looped_sounds,
-                ),
-            )
+            .add_systems(OnEnter(GameState::MainMenu), bgm::fade_out_all_bgm)
+            .add_systems(Update, (sync_rollback_sounds, update_looped_sounds))
             .add_systems(OnEnter(RollbackState::RoundStart), bgm::check_bgm_stage)
             .add_systems(
                 OnEnter(RollbackState::GameOver),
@@ -222,7 +218,9 @@ impl Plugin for GameAudioPlugin {
             )
             .add_systems(
                 GgrsSchedule,
-                remove_finished_sounds.after(apply_state_transition::<RollbackState>),
+                (remove_finished_sounds, remove_looped_sounds)
+                    .chain()
+                    .after(apply_state_transition::<RollbackState>),
             );
     }
 }

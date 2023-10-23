@@ -3,6 +3,7 @@ use bevy_ggrs::{GgrsSchedule, Session};
 use bevy_matchbox::prelude::PeerId;
 use chrono::Utc;
 
+use crate::audio::BgmStage;
 use crate::audio::PlaybackStates;
 use crate::map;
 use crate::network::ggrs_config::PLAYER_COUNT;
@@ -168,7 +169,10 @@ pub fn clear_world(
     }
 }
 
-pub fn purge_entities(mut commands: Commands, entities: Query<Entity, Without<Window>>) {
+pub fn purge_entities(
+    mut commands: Commands,
+    entities: Query<Entity, (Without<Window>, Without<BgmStage>)>,
+) {
     warn!("initiate the purge");
 
     for entity in &entities {
