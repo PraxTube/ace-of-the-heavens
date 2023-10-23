@@ -12,9 +12,18 @@ https://cainos.itch.io/pixel-art-top-down-basic
 
 https://ansimuz.itch.io/explosion-animations-pack
 
-### Sounds
+### Audio
+
+#### Sounds
 
 https://www.themotionmonkey.co.uk/free-resources/retro-arcade-sounds/
+
+#### Music
+
+https://pixabay.com/music/video-games-music-for-arcade-style-game-146875/
+
+NOTE: The music was not changed, only cut at specific times to create
+a proper loopback.
 
 ### Fonts
 

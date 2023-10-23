@@ -1,3 +1,5 @@
+mod bgm;
+
 use std::time::Duration;
 
 use bevy::core::FrameCount;
@@ -39,7 +41,7 @@ impl Default for RollbackSound {
     }
 }
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct FadedLoopSound {
     /// The actual sound playing, if any
@@ -52,6 +54,22 @@ pub struct FadedLoopSound {
     pub fade_out: f32,
     /// whether the sound effect should be playing or not
     pub should_play: bool,
+    pub despawn_on_silence: bool,
+    pub volume: f64,
+}
+
+impl Default for FadedLoopSound {
+    fn default() -> Self {
+        Self {
+            audio_instance: None,
+            clip: Handle::default(),
+            fade_in: 0.0,
+            fade_out: 0.0,
+            should_play: true,
+            despawn_on_silence: false,
+            volume: 1.0,
+        }
+    }
 }
 
 /// The "Actual" state.
@@ -159,6 +177,7 @@ fn update_looped_sounds(
                         .play(sound.clip.clone())
                         .looped()
                         .linear_fade_in(Duration::from_secs_f32(sound.fade_in))
+                        .with_volume(sound.volume)
                         .handle(),
                 );
             }
@@ -170,13 +189,37 @@ fn update_looped_sounds(
     }
 }
 
+fn remove_looped_sounds(mut commands: Commands, query: Query<(Entity, &FadedLoopSound)>) {
+    for (entity, sound) in &query {
+        if !sound.despawn_on_silence {
+            continue;
+        }
+
+        if !sound.should_play && sound.audio_instance.is_none() {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
 pub struct GameAudioPlugin;
 
 impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AudioPlugin)
             .init_resource::<PlaybackStates>()
-            .add_systems(Update, (sync_rollback_sounds, update_looped_sounds))
+            .add_systems(
+                Update,
+                (
+                    sync_rollback_sounds,
+                    update_looped_sounds,
+                    remove_looped_sounds,
+                ),
+            )
+            .add_systems(OnEnter(RollbackState::RoundStart), bgm::check_bgm_stage)
+            .add_systems(
+                OnEnter(RollbackState::GameOver),
+                bgm::fade_out_game_over_bgm,
+            )
             .add_systems(
                 GgrsSchedule,
                 remove_finished_sounds.after(apply_state_transition::<RollbackState>),

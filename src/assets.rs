@@ -60,12 +60,16 @@ pub struct GameAssets {
     pub damage_sound: Handle<AudioSource>,
     #[asset(path = "sounds/death.ogg")]
     pub death_sound: Handle<AudioSource>,
-
     #[asset(path = "sounds/dodge.ogg")]
     pub dodge_sound: Handle<AudioSource>,
 
     #[asset(path = "sounds/round-start-sound.ogg")]
     pub round_start_sound: Handle<AudioSource>,
+
+    #[asset(path = "sounds/bgm.ogg")]
+    pub bgm: Handle<AudioSource>,
+    #[asset(path = "sounds/bgm-match-point.ogg")]
+    pub bgm_match_point: Handle<AudioSource>,
 
     #[asset(path = "turn-credentials.toml")]
     pub turn_credentials: Handle<TurnCredentials>,
