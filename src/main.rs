@@ -2,6 +2,7 @@
 use bevy::prelude::*;
 use bevy::window::{PresentMode, Window};
 use bevy_asset_loader::prelude::*;
+use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
 use bevy_hanabi::HanabiPlugin;
@@ -90,6 +91,7 @@ fn main() {
         .add_plugins((
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
+            TomlAssetPlugin::<assets::TurnCredentials>::new(&["toml"]),
             HanabiPlugin,
             audio::GameAudioPlugin,
             game_logic::GameLogicPlugin,

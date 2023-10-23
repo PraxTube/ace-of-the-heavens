@@ -4,5 +4,4 @@
 /logs
 /footage
 .env
-
-turn-credentials/*
+turn-credentials.toml

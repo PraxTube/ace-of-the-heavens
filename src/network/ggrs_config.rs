@@ -1,9 +1,8 @@
-use std::fs::File;
-use std::io::Read;
-
 use bevy::log::error;
 use bevy_ggrs::ggrs::{Config, DesyncDetection, SessionBuilder};
 use bevy_matchbox::{matchbox_socket::RtcIceServerConfig, prelude::PeerId};
+
+use crate::assets::TurnCredentials;
 
 pub const GGRS_FPS: usize = 60;
 pub const PLAYER_COUNT: usize = 2;
@@ -34,32 +33,23 @@ impl GgrsConfig {
     }
 }
 
-fn fetch_turn_credentials() -> std::io::Result<(String, String)> {
-    let mut username_file = File::open("turn-credentials/username")?;
-    let mut password_file = File::open("turn-credentials/password")?;
-
-    // Read the contents of the 'username' file into a string
-    let mut username = String::new();
-    username_file.read_to_string(&mut username)?;
-
-    let mut password = String::new();
-    password_file.read_to_string(&mut password)?;
-
-    Ok((username, password))
-}
-
-pub fn get_rtc_ice_server_config() -> RtcIceServerConfig {
-    let (username, credential) = match fetch_turn_credentials() {
-        Ok((u, c)) => (
-            Some(u.trim_end_matches("\n").to_string()),
-            Some(c.trim_end_matches("\n").to_string()),
-        ),
-        Err(err) => {
-            error!("unable to fetch turn server credentials! This might lead to online multiplayer not working: {}", err);
+pub fn get_rtc_ice_server_config(turn_credentials: Option<&TurnCredentials>) -> RtcIceServerConfig {
+    let turn_credentials = match turn_credentials {
+        Some(tc) => tc,
+        None => {
+            error!("unable to fetch turn server credentials from assets! This might lead to online multiplayer not working");
             return RtcIceServerConfig::default();
         }
     };
-    print!("{:?}, {:?}", username, credential);
+
+    if turn_credentials.username == "Your Turn Username"
+        || turn_credentials.credential == "Your Turn Credential/Password"
+    {
+        error!(
+            "using dummy values for turn credentials: username: {}, credential: {}",
+            turn_credentials.username, turn_credentials.credential
+        );
+    }
 
     RtcIceServerConfig {
         urls: vec![
@@ -73,7 +63,7 @@ pub fn get_rtc_ice_server_config() -> RtcIceServerConfig {
             "turns:fr-turn3.xirsys.com:443?transport=tcp".to_string(),
             "turns:fr-turn3.xirsys.com:5349?transport=tcp".to_string(),
         ],
-        username,
-        credential,
+        username: Some(turn_credentials.username.clone()),
+        credential: Some(turn_credentials.credential.clone()),
     }
 }

@@ -5,10 +5,11 @@ use bevy_matchbox::matchbox_socket::WebRtcSocket;
 use super::ggrs_config::PLAYER_COUNT;
 use super::socket::AceSocket;
 use super::GgrsConfig;
+use crate::assets::TurnCredentials;
 use crate::game_logic::{SeedHandle, Seeds};
 use crate::network::ggrs_config::get_rtc_ice_server_config;
 use crate::player::LocalPlayerHandle;
-use crate::{GameState, RollbackState};
+use crate::{GameAssets, GameState, RollbackState};
 
 #[derive(Resource)]
 pub struct Ready {
@@ -27,12 +28,18 @@ impl Default for Ready {
     }
 }
 
-pub fn start_matchbox_socket(mut commands: Commands) {
+pub fn start_matchbox_socket(
+    mut commands: Commands,
+    credentials: Res<Assets<TurnCredentials>>,
+    assets: Res<GameAssets>,
+) {
     let room_url = "ws://77.11.111.50:3536/";
     info!("connection to matchbox server: {}", room_url);
+
+    let credentials = credentials.get(&assets.turn_credentials);
     commands.insert_resource(AceSocket::from(
         WebRtcSocket::builder(room_url)
-            .ice_server(get_rtc_ice_server_config())
+            .ice_server(get_rtc_ice_server_config(credentials))
             .add_ggrs_channel()
             .add_reliable_channel()
             .build(),

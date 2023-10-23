@@ -1,4 +1,7 @@
+use serde::Deserialize;
+
 use bevy::prelude::*;
+use bevy::reflect::{TypePath, TypeUuid};
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
@@ -63,4 +66,14 @@ pub struct GameAssets {
 
     #[asset(path = "sounds/round-start-sound.ogg")]
     pub round_start_sound: Handle<AudioSource>,
+
+    #[asset(path = "turn-credentials.toml")]
+    pub turn_credentials: Handle<TurnCredentials>,
+}
+
+#[derive(Clone, Deserialize, TypeUuid, TypePath, Default)]
+#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
+pub struct TurnCredentials {
+    pub username: String,
+    pub credential: String,
 }
