@@ -15,7 +15,7 @@ use crate::GameAssets;
 
 pub const BULLET_RADIUS: f32 = 1.0;
 const BULLET_MOVE_SPEED: f32 = 350.0 / 60.0;
-const DAMAGE: u32 = 100;
+const DAMAGE: u32 = 75;
 const BULLET_RELOAD_TIME: f32 = 0.1;
 const FIRE_HEAT: u32 = 80;
 
@@ -54,9 +54,9 @@ pub struct BulletTimer {
 
 impl BulletTimer {
     pub fn default() -> BulletTimer {
-        BulletTimer {
-            timer: Timer::from_seconds(BULLET_RELOAD_TIME, TimerMode::Repeating),
-        }
+        let mut timer = Timer::from_seconds(BULLET_RELOAD_TIME, TimerMode::Repeating);
+        timer.tick(timer.duration());
+        BulletTimer { timer }
     }
 }
 

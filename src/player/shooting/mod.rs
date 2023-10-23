@@ -14,6 +14,10 @@ pub struct ShootingPlugin;
 impl Plugin for ShootingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            OnExit(RollbackState::RoundStart),
+            rocket::spawn_player_wing_rockets,
+        )
+        .add_systems(
             GgrsSchedule,
             (
                 reloading::cooldown_heat,
@@ -22,6 +26,7 @@ impl Plugin for ShootingPlugin {
                 bullet::fire_bullets,
                 bullet::move_bullets,
                 rocket::fire_rockets,
+                rocket::toggle_visibility_dummy_rockets,
                 rocket::move_rockets,
                 rocket_explosion::check_explosion
                     .before(rocket_explosion::animate_rocket_explosions),
@@ -39,6 +44,7 @@ impl Plugin for ShootingPlugin {
                 bullet::destroy_bullets,
                 rocket::disable_rockets,
                 rocket::destroy_rockets,
+                rocket::despawn_dummy_rockets,
                 rocket_explosion::despawn_rocket_explosions
                     .after(rocket_explosion::animate_rocket_explosions),
             )

@@ -7,8 +7,8 @@ use super::super::Player;
 
 use crate::network::ggrs_config::GGRS_FPS;
 
-const TRAIL_OFFSET_LEFT: Vec3 = Vec3::new(0.0, 30.0, -1.0);
-const TRAIL_OFFSET_RIGHT: Vec3 = Vec3::new(0.0, -30.0, -1.0);
+const LEFT_TRAIL_OFFSET: Vec3 = Vec3::new(0.0, 30.0, -1.0);
+const RIGHT_TRAIL_OFFSET: Vec3 = Vec3::new(0.0, -30.0, -1.0);
 
 #[derive(Component)]
 pub struct Trail;
@@ -95,7 +95,7 @@ pub fn spawn_player_trails(
     players: Query<Entity, With<Player>>,
 ) {
     for entity in &players {
-        for offset in [TRAIL_OFFSET_LEFT, TRAIL_OFFSET_RIGHT] {
+        for offset in [LEFT_TRAIL_OFFSET, RIGHT_TRAIL_OFFSET] {
             let trail_effect = spawn_trail_effect(&mut commands, &mut effects, offset);
             commands.entity(entity).push_children(&[trail_effect]);
         }

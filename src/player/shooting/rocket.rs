@@ -19,7 +19,13 @@ use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
-const ROCKET_RELOAD_TIME: f32 = 0.2;
+const ROCKET_RELOAD_TIME: f32 = 3.0;
+
+const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(6.0, 20.0, -1.0);
+const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(6.0, -20.0, -1.0);
+
+#[derive(Component)]
+pub struct DummyRocket;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
@@ -51,9 +57,9 @@ pub struct RocketTimer {
 
 impl RocketTimer {
     pub fn default() -> RocketTimer {
-        RocketTimer {
-            timer: Timer::from_seconds(ROCKET_RELOAD_TIME, TimerMode::Repeating),
-        }
+        let mut timer = Timer::from_seconds(ROCKET_RELOAD_TIME, TimerMode::Repeating);
+        timer.tick(timer.duration());
+        RocketTimer { timer }
     }
 }
 
@@ -187,5 +193,77 @@ pub fn destroy_rockets(
             rocket.handle,
         );
         commands.entity(entity).despawn();
+    }
+}
+
+fn spawn_player_wing_rocket(
+    commands: &mut Commands,
+    player_entity: Entity,
+    texture: Handle<Image>,
+    offset: Vec3,
+) {
+    let dummy_rocket = commands
+        .spawn((
+            DummyRocket,
+            SpriteBundle {
+                transform: Transform::from_translation(offset),
+                texture,
+                ..default()
+            },
+        ))
+        .id();
+    commands
+        .entity(player_entity)
+        .push_children(&[dummy_rocket]);
+}
+
+pub fn spawn_player_wing_rockets(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    players: Query<Entity, With<Player>>,
+) {
+    for (i, player_entity) in players.iter().enumerate() {
+        let texture = if i == 0 {
+            assets.rocket1.clone()
+        } else {
+            assets.rocket2.clone()
+        };
+
+        for offset in [LEFT_WING_ROCKET_OFFSET, RIGHT_WING_ROCKET_OFFSET] {
+            spawn_player_wing_rocket(&mut commands, player_entity, texture.clone(), offset);
+        }
+    }
+}
+
+pub fn despawn_dummy_rockets(
+    mut commands: Commands,
+    mut rockets: Query<(Entity, &Parent), With<DummyRocket>>,
+    parents: Query<&Transform>,
+) {
+    for (entity, parent) in &mut rockets {
+        if parents.get(parent.get()).is_ok() {
+            continue;
+        }
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn toggle_visibility_dummy_rockets(
+    mut rockets: Query<&mut Visibility, With<DummyRocket>>,
+    players: Query<(&RocketTimer, &Children), With<Player>>,
+) {
+    for (rocket_timer, children) in &players {
+        for &child in children.iter() {
+            let mut visibility = match rockets.get_mut(child) {
+                Ok(r) => r,
+                Err(_) => continue,
+            };
+
+            if rocket_timer.timer.finished() {
+                *visibility = Visibility::Inherited;
+            } else {
+                *visibility = Visibility::Hidden;
+            }
+        }
     }
 }
