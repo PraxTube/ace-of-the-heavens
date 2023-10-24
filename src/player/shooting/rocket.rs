@@ -211,6 +211,7 @@ fn spawn_player_wing_rocket(
                 ..default()
             },
         ))
+        .add_rollback()
         .id();
     commands
         .entity(player_entity)

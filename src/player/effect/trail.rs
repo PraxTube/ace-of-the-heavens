@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_ggrs::AddRollbackCommandExtension;
 use bevy_hanabi::prelude::*;
 
 use crate::network::ggrs_config::GGRS_FPS;
@@ -84,6 +85,7 @@ pub fn spawn_trail_effect(
                 ..default()
             },
         ))
+        .add_rollback()
         .id()
 }
 
