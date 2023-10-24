@@ -33,7 +33,7 @@ pub fn start_matchbox_socket(
     credentials: Res<Assets<TurnCredentials>>,
     assets: Res<GameAssets>,
 ) {
-    let room_url = "ws://rancic.duckdns.org:3536/";
+    let room_url = "ws://145.14.157.74:3536/";
     info!("connection to matchbox server: {}", room_url);
 
     let credentials = credentials.get(&assets.turn_credentials);

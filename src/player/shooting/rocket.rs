@@ -218,33 +218,19 @@ fn spawn_player_wing_rocket(
 }
 
 pub fn spawn_player_wing_rockets(
-    mut commands: Commands,
-    assets: Res<GameAssets>,
-    players: Query<Entity, With<Player>>,
+    commands: &mut Commands,
+    assets: &Res<GameAssets>,
+    player: Entity,
+    handle: usize,
 ) {
-    for (i, player_entity) in players.iter().enumerate() {
-        let texture = if i == 0 {
-            assets.rocket1.clone()
-        } else {
-            assets.rocket2.clone()
-        };
+    let texture = if handle == 0 {
+        assets.rocket1.clone()
+    } else {
+        assets.rocket2.clone()
+    };
 
-        for offset in [LEFT_WING_ROCKET_OFFSET, RIGHT_WING_ROCKET_OFFSET] {
-            spawn_player_wing_rocket(&mut commands, player_entity, texture.clone(), offset);
-        }
-    }
-}
-
-pub fn despawn_dummy_rockets(
-    mut commands: Commands,
-    mut rockets: Query<(Entity, &Parent), With<DummyRocket>>,
-    parents: Query<&Transform>,
-) {
-    for (entity, parent) in &mut rockets {
-        if parents.get(parent.get()).is_ok() {
-            continue;
-        }
-        commands.entity(entity).despawn_recursive();
+    for offset in [LEFT_WING_ROCKET_OFFSET, RIGHT_WING_ROCKET_OFFSET] {
+        spawn_player_wing_rocket(commands, player, texture.clone(), offset);
     }
 }
 

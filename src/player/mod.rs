@@ -17,7 +17,7 @@ use crate::RollbackState;
 
 // Movement
 pub const MAX_SPEED: f32 = 400.0 / 60.0;
-pub const MIN_SPEED: f32 = 000.0 / 60.0;
+pub const MIN_SPEED: f32 = 200.0 / 60.0;
 pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision

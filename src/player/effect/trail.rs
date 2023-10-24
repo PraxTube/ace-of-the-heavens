@@ -3,8 +3,6 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
-use super::super::Player;
-
 use crate::network::ggrs_config::GGRS_FPS;
 
 const LEFT_TRAIL_OFFSET: Vec3 = Vec3::new(0.0, 30.0, -1.0);
@@ -90,15 +88,13 @@ pub fn spawn_trail_effect(
 }
 
 pub fn spawn_player_trails(
-    mut commands: Commands,
-    mut effects: ResMut<Assets<EffectAsset>>,
-    players: Query<Entity, With<Player>>,
+    commands: &mut Commands,
+    effects: &mut ResMut<Assets<EffectAsset>>,
+    player: Entity,
 ) {
-    for entity in &players {
-        for offset in [LEFT_TRAIL_OFFSET, RIGHT_TRAIL_OFFSET] {
-            let trail_effect = spawn_trail_effect(&mut commands, &mut effects, offset);
-            commands.entity(entity).push_children(&[trail_effect]);
-        }
+    for offset in [LEFT_TRAIL_OFFSET, RIGHT_TRAIL_OFFSET] {
+        let trail_effect = spawn_trail_effect(commands, effects, offset);
+        commands.entity(player).push_children(&[trail_effect]);
     }
 }
 

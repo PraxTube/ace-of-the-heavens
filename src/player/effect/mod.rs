@@ -12,10 +12,6 @@ pub struct EffectPlugin;
 impl Plugin for EffectPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnExit(RollbackState::RoundStart),
-            trail::spawn_player_trails,
-        )
-        .add_systems(
             OnExit(GameState::Matchmaking),
             damage::spawn_damage_effect_spawner,
         )

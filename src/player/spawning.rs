@@ -1,9 +1,12 @@
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
+use bevy_hanabi::EffectAsset;
 
 use super::dodge::DodgeTimer;
+use super::effect::trail::spawn_player_trails;
 use super::shooting::bullet::BulletTimer;
+use super::shooting::rocket::spawn_player_wing_rockets;
 use super::shooting::rocket::RocketTimer;
 use super::Player;
 
@@ -32,7 +35,7 @@ pub fn player_spawn_transform(handle: usize) -> Transform {
     }
 }
 
-fn spawn_player(commands: &mut Commands, texture: Handle<Image>, handle: usize) {
+fn spawn_player(commands: &mut Commands, texture: Handle<Image>, handle: usize) -> Entity {
     let transform = player_spawn_transform(handle);
     commands
         .spawn((
@@ -48,14 +51,21 @@ fn spawn_player(commands: &mut Commands, texture: Handle<Image>, handle: usize) 
                 ..default()
             },
         ))
-        .add_rollback();
+        .add_rollback()
+        .id()
 }
 
-pub fn spawn_players(mut commands: Commands, assets: Res<GameAssets>) {
+pub fn spawn_players(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    mut effects: ResMut<Assets<EffectAsset>>,
+) {
     let textures = [assets.player_1.clone(), assets.player_2.clone()];
 
     for (handle, texture) in textures.into_iter().enumerate() {
-        spawn_player(&mut commands, texture, handle);
+        let player = spawn_player(&mut commands, texture, handle);
+        spawn_player_wing_rockets(&mut commands, &assets, player, handle);
+        spawn_player_trails(&mut commands, &mut effects, player);
     }
 }
 
@@ -69,7 +79,7 @@ pub fn despawn_players(
     for (player_entity, mut player, collision_entity) in &mut players {
         if player.health <= 0 || collision_entity.disabled {
             player.health = 0;
-            commands.entity(player_entity).despawn();
+            commands.entity(player_entity).despawn_recursive();
             commands
                 .spawn(RollbackSound {
                     clip: assets.death_sound.clone(),

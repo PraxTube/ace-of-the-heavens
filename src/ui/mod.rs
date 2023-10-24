@@ -27,7 +27,7 @@ use seed_screen::spawn_seed_screen;
 use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
 use self::main_menu_screen::{despawn_main_menu_screen, play_game, spawn_main_menu_screen};
 
-pub const MAX_SCORE: usize = 2;
+pub const MAX_SCORE: usize = 5;
 
 pub struct AceUiPlugin;
 
