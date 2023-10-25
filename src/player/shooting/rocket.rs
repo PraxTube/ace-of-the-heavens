@@ -57,7 +57,7 @@ pub struct RocketTimer {
 
 impl RocketTimer {
     pub fn default() -> RocketTimer {
-        let mut timer = Timer::from_seconds(ROCKET_RELOAD_TIME, TimerMode::Repeating);
+        let mut timer = Timer::from_seconds(ROCKET_RELOAD_TIME, TimerMode::Once);
         timer.tick(timer.duration());
         RocketTimer { timer }
     }
@@ -236,15 +236,29 @@ pub fn spawn_player_wing_rockets(
 }
 
 pub fn toggle_visibility_dummy_rockets(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
     mut rockets: Query<&mut Visibility, With<DummyRocket>>,
-    players: Query<(&RocketTimer, &Children), With<Player>>,
+    players: Query<(&RocketTimer, &Children, &Player)>,
 ) {
-    for (rocket_timer, children) in &players {
+    for (rocket_timer, children, player) in &players {
         for &child in children.iter() {
             let mut visibility = match rockets.get_mut(child) {
                 Ok(r) => r,
                 Err(_) => continue,
             };
+
+            if rocket_timer.timer.just_finished() {
+                commands
+                    .spawn(RollbackSound {
+                        clip: assets.rocket_reload.clone(),
+                        start_frame: frame.0 as usize,
+                        sub_key: player.handle,
+                        volume: 0.35,
+                    })
+                    .add_rollback();
+            }
 
             if rocket_timer.timer.finished() {
                 *visibility = Visibility::Inherited;

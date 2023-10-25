@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 
 use crate::audio::RollbackSound;
+use crate::network::ggrs_config::GGRS_FPS;
 use crate::GameAssets;
 use crate::{input::dodge, misc::utils::quat_from_vec3, network::GgrsConfig};
 
@@ -14,15 +15,30 @@ use super::Player;
 const DODGE_COOLDOWN: f32 = 5.0;
 const DODGE_TIME: f32 = 0.5;
 
+const DODGE_REFRESH_TIME: f32 = 0.75;
+
 #[derive(Component, Reflect)]
 #[reflect(Hash)]
 pub struct DodgeTimer(Timer);
 
+#[derive(Component)]
+pub struct DodgeRefreshTimer {
+    timer: Timer,
+    handle: usize,
+}
+
 impl Default for DodgeTimer {
-    fn default() -> DodgeTimer {
+    fn default() -> Self {
         let mut timer = Timer::from_seconds(DODGE_COOLDOWN, TimerMode::Once);
         timer.set_elapsed(Duration::from_secs_f32(DODGE_COOLDOWN));
-        DodgeTimer(timer)
+        Self(timer)
+    }
+}
+
+impl DodgeRefreshTimer {
+    fn new(handle: usize) -> Self {
+        let timer = Timer::from_seconds(DODGE_REFRESH_TIME, TimerMode::Once);
+        Self { timer, handle }
     }
 }
 
@@ -41,18 +57,20 @@ pub fn initiate_dodge(
 ) {
     for (mut timer, mut player) in &mut timers {
         let (input, _) = inputs[player.handle];
-        if timer.0.finished() && dodge(input) {
-            player.dodging = true;
-            timer.0.reset();
-            commands
-                .spawn(RollbackSound {
-                    clip: assets.dodge_sound.clone(),
-                    start_frame: frame.0 as usize,
-                    sub_key: player.handle,
-                    volume: 0.35,
-                })
-                .add_rollback();
+        if !(timer.0.finished() && dodge(input)) {
+            continue;
         }
+
+        player.dodging = true;
+        timer.0.reset();
+        commands
+            .spawn(RollbackSound {
+                clip: assets.dodge_sound.clone(),
+                start_frame: frame.0 as usize,
+                sub_key: player.handle,
+                volume: 0.35,
+            })
+            .add_rollback();
     }
 }
 
@@ -68,12 +86,77 @@ pub fn animate_dodge(mut players: Query<(&mut Transform, &mut Player, &DodgeTime
     }
 }
 
-pub fn tick_dodge_timer(mut timers: Query<&mut DodgeTimer, With<Player>>) {
-    for mut timer in &mut timers {
-        if timer.0.finished() {
+pub fn tick_dodge_timer(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    mut timers: Query<(&mut DodgeTimer, &Player)>,
+    mut dodge_refresh_timers: Query<&mut DodgeRefreshTimer>,
+) {
+    for (mut timer, player) in &mut timers {
+        timer.0.tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
+        if !timer.0.just_finished() {
             continue;
         }
 
-        timer.0.tick(Duration::from_secs_f32(1.0 / 60.0));
+        for mut dodge_refresh_timer in &mut dodge_refresh_timers {
+            if dodge_refresh_timer.handle != player.handle {
+                continue;
+            }
+            if !dodge_refresh_timer.timer.finished() {
+                continue;
+            }
+            dodge_refresh_timer.timer.reset();
+
+            commands
+                .spawn(RollbackSound {
+                    clip: assets.dodge_refresh.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: player.handle,
+                    volume: 0.35,
+                })
+                .add_rollback();
+        }
+    }
+}
+
+pub fn spawn_plane_whites(
+    commands: &mut Commands,
+    assets: &Res<GameAssets>,
+    player: Entity,
+    handle: usize,
+) {
+    let plane_white = commands
+        .spawn((
+            DodgeRefreshTimer::new(handle),
+            SpriteBundle {
+                texture: assets.plane_white.clone(),
+                sprite: Sprite {
+                    color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .add_rollback()
+        .id();
+    commands.entity(player).push_children(&[plane_white]);
+}
+
+pub fn animate_dodge_refresh(mut query: Query<(&mut DodgeRefreshTimer, &mut Sprite)>) {
+    for (mut dodge_refresh_timer, mut sprite) in &mut query {
+        if dodge_refresh_timer.timer.finished() {
+            sprite.color.set_a(0.0);
+            continue;
+        }
+
+        sprite.color.set_a(
+            dodge_refresh_timer.timer.duration().as_secs_f32()
+                - dodge_refresh_timer.timer.elapsed().as_secs_f32(),
+        );
+
+        dodge_refresh_timer
+            .timer
+            .tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
     }
 }

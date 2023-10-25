@@ -11,6 +11,9 @@ pub struct GameAssets {
     pub player_1: Handle<Image>,
     #[asset(path = "plane2.png")]
     pub player_2: Handle<Image>,
+    #[asset(path = "plane_white.png")]
+    pub plane_white: Handle<Image>,
+
     #[asset(path = "bullet.png")]
     pub bullet: Handle<Image>,
     #[asset(path = "rocket1.png")]
@@ -53,6 +56,8 @@ pub struct GameAssets {
 
     #[asset(path = "sounds/rocket_shot.ogg")]
     pub rocket_shot: Handle<AudioSource>,
+    #[asset(path = "sounds/rocket_reload.ogg")]
+    pub rocket_reload: Handle<AudioSource>,
     #[asset(path = "sounds/explosion.ogg")]
     pub explosion_sound: Handle<AudioSource>,
 
@@ -62,6 +67,8 @@ pub struct GameAssets {
     pub death_sound: Handle<AudioSource>,
     #[asset(path = "sounds/dodge.ogg")]
     pub dodge_sound: Handle<AudioSource>,
+    #[asset(path = "sounds/dodge_refresh.ogg")]
+    pub dodge_refresh: Handle<AudioSource>,
 
     #[asset(path = "sounds/round-start-sound.ogg")]
     pub round_start_sound: Handle<AudioSource>,

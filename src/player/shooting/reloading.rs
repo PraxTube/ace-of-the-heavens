@@ -4,6 +4,7 @@ use bevy_ggrs::*;
 
 use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
+use crate::network::ggrs_config::GGRS_FPS;
 use crate::player::Player;
 use crate::GameAssets;
 
@@ -45,20 +46,16 @@ pub fn reload_bullets(mut players: Query<&mut BulletTimer, With<Player>>) {
         if !bullet_timer.timer.finished() {
             bullet_timer
                 .timer
-                // TODO use gloabal FPS from GGRSSchedule
-                .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
+                .tick(std::time::Duration::from_secs_f64(1.0 / GGRS_FPS as f64));
         }
     }
 }
 
 pub fn reload_rockets(mut players: Query<&mut RocketTimer, With<Player>>) {
     for mut rocket_timer in &mut players {
-        if !rocket_timer.timer.finished() {
-            rocket_timer
-                .timer
-                // TODO use gloabal FPS from GGRSSchedule
-                .tick(std::time::Duration::from_secs_f64(1.0 / 60.0));
-        }
+        rocket_timer
+            .timer
+            .tick(std::time::Duration::from_secs_f64(1.0 / GGRS_FPS as f64));
     }
 }
 

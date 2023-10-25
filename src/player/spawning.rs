@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 use bevy_hanabi::EffectAsset;
 
+use super::dodge::spawn_plane_whites;
 use super::dodge::DodgeTimer;
 use super::effect::trail::spawn_player_trails;
 use super::shooting::bullet::BulletTimer;
@@ -65,6 +66,7 @@ pub fn spawn_players(
     for (handle, texture) in textures.into_iter().enumerate() {
         let player = spawn_player(&mut commands, texture, handle);
         spawn_player_wing_rockets(&mut commands, &assets, player, handle);
+        spawn_plane_whites(&mut commands, &assets, player, handle);
         spawn_player_trails(&mut commands, &mut effects, player);
     }
 }
