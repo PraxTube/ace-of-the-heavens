@@ -6,6 +6,7 @@ use crate::{debug::DebugTransform, GameAssets};
 
 const OFFSET: Vec3 = Vec3::new(0.0, 0.0, -10.0);
 
+#[allow(dead_code)]
 pub fn spawn_wall_1_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {
     let transform = Transform::from_translation(spawn_position.extend(0.0) + OFFSET);
     commands
