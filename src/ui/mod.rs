@@ -5,6 +5,7 @@ pub mod round_over_screen;
 pub mod round_start_screen;
 pub mod scoreboard;
 pub mod seed_screen;
+pub mod session_stats_screen;
 
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -26,6 +27,7 @@ use seed_screen::spawn_seed_screen;
 
 use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
 use self::main_menu_screen::{despawn_main_menu_screen, play_game, spawn_main_menu_screen};
+use self::session_stats_screen::{spawn_stats_text, update_stats_text};
 
 pub const MAX_SCORE: usize = 5;
 
@@ -37,6 +39,7 @@ impl Plugin for AceUiPlugin {
             OnExit(GameState::Matchmaking),
             (despawn_networking_screen, spawn_seed_screen),
         )
+        .add_systems(OnEnter(GameState::InRollbackGame), spawn_stats_text)
         .add_systems(OnEnter(GameState::MainMenu), spawn_main_menu_screen)
         .add_systems(OnExit(GameState::MainMenu), despawn_main_menu_screen)
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
@@ -61,7 +64,13 @@ impl Plugin for AceUiPlugin {
             OnEnter(RollbackState::RoundEnd),
             (show_round_over_screen.after(adjust_score),),
         )
-        .add_systems(Update, play_game.run_if(in_state(GameState::MainMenu)))
+        .add_systems(
+            Update,
+            (
+                play_game.run_if(in_state(GameState::MainMenu)),
+                update_stats_text.run_if(in_state(GameState::InRollbackGame)),
+            ),
+        )
         .add_systems(
             GgrsSchedule,
             (

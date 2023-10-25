@@ -1,6 +1,7 @@
 pub mod ggrs_config;
 pub mod session;
 pub mod session_event;
+pub mod session_stats;
 pub mod socket;
 
 use bevy_ggrs::GgrsSchedule;
@@ -20,6 +21,8 @@ use session_event::{
 };
 use socket::AceSocket;
 
+use self::session_stats::{update_session_stats, SessionStats};
+
 pub struct AceNetworkPlugin;
 
 impl Plugin for AceNetworkPlugin {
@@ -33,10 +36,14 @@ impl Plugin for AceNetworkPlugin {
                     .run_if(resource_exists::<AceSocket>()),
                 check_ready_state.run_if(in_state(GameState::Matchmaking)),
                 handle_session_events.run_if(in_state(GameState::InRollbackGame)),
+                update_session_stats
+                    .run_if(in_state(GameState::InRollbackGame))
+                    .after(handle_session_events),
                 change_game_state.run_if(in_state(GameState::InRollbackGame)),
             ),
         )
         .init_resource::<Ready>()
+        .init_resource::<SessionStats>()
         .add_event::<SessionEvent>()
         .add_systems(OnEnter(GameState::Matchmaking), start_matchbox_socket)
         .add_systems(
