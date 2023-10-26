@@ -8,6 +8,9 @@ const ROW_GAP: f32 = 5.0;
 const COLUMN_GAP: f32 = 0.0;
 
 #[derive(Component)]
+pub struct RootStatsScreen;
+
+#[derive(Component)]
 pub struct StatsText;
 
 #[derive(Component)]
@@ -120,18 +123,22 @@ fn spawn_session_text_row(commands: &mut Commands, font: Handle<Font>, handle: u
 pub fn spawn_stats_text(mut commands: Commands, assets: Res<GameAssets>) {
     let font = assets.font.clone();
     let root_node = commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Vw(100.0),
-                height: Val::Vh(100.0),
-                flex_direction: FlexDirection::Column,
-                row_gap: Val::Vh(ROW_GAP),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
+        .spawn((
+            RootStatsScreen,
+            NodeBundle {
+                style: Style {
+                    width: Val::Vw(100.0),
+                    height: Val::Vh(100.0),
+                    flex_direction: FlexDirection::Column,
+                    row_gap: Val::Vh(ROW_GAP),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    display: Display::None,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        })
+        ))
         .id();
 
     let text = spawn_session_header_row(&mut commands, font.clone());
@@ -180,6 +187,20 @@ pub fn update_stats_text(
             text.sections[0].value = stats.network_stats[session_stats_row.handle]
                 .remote_frames_behind
                 .to_string();
+        }
+    }
+}
+
+pub fn toggle_stats_visibility(
+    keys: Res<Input<KeyCode>>,
+    mut query: Query<&mut Style, With<RootStatsScreen>>,
+) {
+    if keys.just_pressed(KeyCode::Tab) {
+        let mut style = query.single_mut();
+        if style.display == Display::None {
+            style.display = Display::Flex;
+        } else {
+            style.display = Display::None;
         }
     }
 }

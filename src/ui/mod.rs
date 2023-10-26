@@ -27,7 +27,7 @@ use seed_screen::spawn_seed_screen;
 
 use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
 use self::main_menu_screen::{despawn_main_menu_screen, play_game, spawn_main_menu_screen};
-use self::session_stats_screen::{spawn_stats_text, update_stats_text};
+use self::session_stats_screen::{spawn_stats_text, toggle_stats_visibility, update_stats_text};
 
 pub const MAX_SCORE: usize = 5;
 
@@ -69,6 +69,7 @@ impl Plugin for AceUiPlugin {
             (
                 play_game.run_if(in_state(GameState::MainMenu)),
                 update_stats_text.run_if(in_state(GameState::InRollbackGame)),
+                toggle_stats_visibility.run_if(in_state(GameState::InRollbackGame)),
             ),
         )
         .add_systems(
