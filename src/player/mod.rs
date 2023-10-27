@@ -12,6 +12,7 @@ use bevy_ggrs::*;
 
 use crate::game_logic::Rematch;
 use crate::input;
+use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::GgrsConfig;
 use crate::RollbackState;
 
@@ -36,7 +37,7 @@ pub const P2_COLOR: Color = Color::rgb(
     0xD9 as f32 / 255.0,
 );
 
-#[derive(Reflect)]
+#[derive(Reflect, Clone)]
 pub struct PlayerStats {
     pub max_speed: f32,
 }
@@ -47,6 +48,11 @@ impl Default for PlayerStats {
             max_speed: 400.0 / 60.0,
         }
     }
+}
+
+#[derive(Resource, Default)]
+pub struct PersistentPlayerStats {
+    pub stats: [PlayerStats; PLAYER_COUNT],
 }
 
 #[derive(Component, Reflect, Default)]
@@ -64,7 +70,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(handle: usize) -> Player {
+    pub fn new(handle: usize, stats: PlayerStats) -> Player {
         Player {
             handle,
             current_speed: MIN_SPEED,
@@ -72,7 +78,7 @@ impl Player {
             heat: 0,
             overheated: false,
             dodging: false,
-            stats: PlayerStats::default(),
+            stats,
         }
     }
 
@@ -124,6 +130,7 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<health::PlayerTookDamage>()
+        .init_resource::<PersistentPlayerStats>()
         .add_plugins((shooting::ShootingPlugin, effect::EffectPlugin))
         .add_systems(
             GgrsSchedule,

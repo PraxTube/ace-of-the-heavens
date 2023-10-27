@@ -8,29 +8,29 @@ use bevy_console::{
     AddConsoleCommand, ConsoleCommand, ConsoleConfiguration, ConsolePlugin, ToggleConsoleKey,
 };
 
-use crate::{network::socket::AceSocket, player::Player, GameState, RollbackState};
+use crate::{network::socket::AceSocket, player::PersistentPlayerStats, GameState, RollbackState};
 
 #[derive(Resource, Default)]
 pub struct CommandQueue {
-    early_queue: Vec<AceCommands>,
     queue: Vec<AceCommands>,
 }
 
-pub fn apply_commands(mut command_queque: ResMut<CommandQueue>, mut players: Query<&mut Player>) {
-    for command in command_queque.early_queue.drain(..) {
+pub fn apply_commands(
+    mut command_queque: ResMut<CommandQueue>,
+    mut stats: ResMut<PersistentPlayerStats>,
+) {
+    for command in command_queque.queue.drain(..) {
         match command {
             AceCommands::SetMaxSpeed(handle, value) => {
-                for mut player in &mut players {
-                    if player.handle == handle {
-                        player.stats.max_speed = value;
-                    }
+                if handle >= stats.stats.len() {
+                    return;
                 }
+
+                info!("applying command");
+                stats.stats[handle].max_speed = value;
             }
         }
     }
-
-    command_queque.early_queue = command_queque.queue.clone();
-    command_queque.queue = Vec::default();
 }
 
 pub fn receive_commands(mut socket: ResMut<AceSocket>, mut command_queque: ResMut<CommandQueue>) {
