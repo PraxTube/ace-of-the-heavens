@@ -72,7 +72,7 @@ pub fn wait_for_players(
 
         match player {
             PlayerType::Remote(peer_id) => {
-                socket.send_tcp_seed(peer_id, seed.0[0].seed);
+                socket.send_tcp_seed(peer_id, &seed.0[0].seed.to_string());
             }
             PlayerType::Local => {
                 commands.insert_resource(LocalPlayerHandle(i));
@@ -113,16 +113,16 @@ pub fn wait_for_seed(
 
     for seed in received_seeds {
         // Ready signal from peer
-        if seed.1 == 0 {
+        if seed.1 == "ready" {
             ready.remote_ready = true;
-            info!("peer is ready, received 0 seed");
+            info!("peer is ready, received ready message");
             continue;
         }
 
         // Normal seed
         seeds.0.push(SeedHandle {
             handle: Some(seed.0),
-            seed: seed.1,
+            seed: seed.1.parse::<u32>().expect("received seed is not a u32"),
         });
 
         ready.local_ready = true;
@@ -130,10 +130,10 @@ pub fn wait_for_seed(
         // The 0 seed should never be possible as a normal seed.
         for player in socket.players() {
             if let PlayerType::Remote(peer_id) = player {
-                socket.send_tcp_seed(peer_id, 0);
+                socket.send_tcp_seed(peer_id, "ready");
             };
         }
-        info!("we are ready, received peer seed and sent 0 seed");
+        info!("we are ready, received peer seed and sent ready message");
     }
 }
 

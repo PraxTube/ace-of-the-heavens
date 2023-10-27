@@ -1,5 +1,7 @@
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use bincode::{deserialize, serialize};
+
 use bevy::prelude::*;
 use bevy::tasks::IoTaskPool;
 use bevy_ggrs::ggrs;
@@ -9,15 +11,6 @@ use bevy_matchbox::prelude::{MultipleChannels, PeerId};
 
 #[derive(Resource, Debug, Clone)]
 pub struct AceSocket(pub Arc<RwLock<WebRtcSocket<MultipleChannels>>>);
-
-fn try_into_array(boxed_slice: Box<[u8]>) -> [u8; 4] {
-    if boxed_slice.len() != 4 {
-        panic!("the given box slice must contain exactly 4 bytes");
-    }
-    let mut array = [0; 4];
-    array.copy_from_slice(&boxed_slice);
-    array
-}
 
 impl ggrs::NonBlockingSocket<PeerId> for AceSocket {
     fn send_to(&mut self, msg: &ggrs::Message, addr: &PeerId) {
@@ -53,21 +46,21 @@ impl AceSocket {
     pub const GGRS_CHANNEL: usize = 0;
     pub const RELIABLE_CHANNEL: usize = 1;
 
-    pub fn send_tcp_seed(&mut self, peer: PeerId, seed: u32) {
-        let bytes = Box::new(seed.to_be_bytes());
+    pub fn send_tcp_seed(&mut self, peer: PeerId, message: &str) {
+        let bytes = serialize(message).expect("failed to serialize string");
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
-            .send(bytes, peer);
+            .send(bytes.clone().into(), peer);
     }
 
-    pub fn receive_tcp_seed(&mut self) -> Vec<(PeerId, u32)> {
+    pub fn receive_tcp_seed(&mut self) -> Vec<(PeerId, String)> {
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
             .receive()
             .into_iter()
             .map(|(id, packet)| {
-                let seed = u32::from_be_bytes(try_into_array(packet));
-                (id, seed)
+                let msg = deserialize(&packet).expect("failed to deserialize packet");
+                (id, msg)
             })
             .collect()
     }

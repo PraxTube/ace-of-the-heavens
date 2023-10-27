@@ -84,6 +84,7 @@ dependencies = [
  "bevy_kira_audio",
  "bevy_matchbox",
  "bevy_roll_safe",
+ "bincode",
  "chrono",
  "rand",
  "rand_xoshiro",
