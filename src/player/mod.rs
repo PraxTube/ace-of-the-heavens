@@ -16,7 +16,6 @@ use crate::network::GgrsConfig;
 use crate::RollbackState;
 
 // Movement
-pub const MAX_SPEED: f32 = 400.0 / 60.0;
 pub const MIN_SPEED: f32 = 000.0 / 60.0;
 pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
@@ -37,6 +36,19 @@ pub const P2_COLOR: Color = Color::rgb(
     0xD9 as f32 / 255.0,
 );
 
+#[derive(Reflect)]
+pub struct PlayerStats {
+    pub max_speed: f32,
+}
+
+impl Default for PlayerStats {
+    fn default() -> Self {
+        Self {
+            max_speed: 400.0 / 60.0,
+        }
+    }
+}
+
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
 pub struct Player {
@@ -47,6 +59,8 @@ pub struct Player {
     pub heat: u32,
     pub overheated: bool,
     pub dodging: bool,
+
+    pub stats: PlayerStats,
 }
 
 impl Player {
@@ -58,12 +72,13 @@ impl Player {
             heat: 0,
             overheated: false,
             dodging: false,
+            stats: PlayerStats::default(),
         }
     }
 
     pub fn speed_ratio(&self) -> u32 {
-        ((self.current_speed - MIN_SPEED).max(0.0) / (MAX_SPEED - MIN_SPEED).max(0.0) * 100.0)
-            as u32
+        ((self.current_speed - MIN_SPEED).max(0.0) / (self.stats.max_speed - MIN_SPEED).max(0.0)
+            * 100.0) as u32
     }
 }
 

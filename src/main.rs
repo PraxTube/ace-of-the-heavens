@@ -10,6 +10,7 @@ use bevy_roll_safe::prelude::*;
 
 mod assets;
 mod audio;
+mod console;
 mod game_logic;
 mod input;
 mod map;
@@ -97,6 +98,7 @@ fn main() {
             game_logic::GameLogicPlugin,
             network::AceNetworkPlugin,
             ui::AceUiPlugin,
+            console::AceConsolePlugin,
             map::MapPlugin,
             player::PlayerPlugin,
             debug::AceDebugPlugin,

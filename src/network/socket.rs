@@ -46,14 +46,14 @@ impl AceSocket {
     pub const GGRS_CHANNEL: usize = 0;
     pub const RELIABLE_CHANNEL: usize = 1;
 
-    pub fn send_tcp_seed(&mut self, peer: PeerId, message: &str) {
+    pub fn send_tcp_message(&mut self, peer: PeerId, message: &str) {
         let bytes = serialize(message).expect("failed to serialize string");
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
             .send(bytes.clone().into(), peer);
     }
 
-    pub fn receive_tcp_seed(&mut self) -> Vec<(PeerId, String)> {
+    pub fn receive_tcp_message(&mut self) -> Vec<(PeerId, String)> {
         self.inner_mut()
             .channel(Self::RELIABLE_CHANNEL)
             .receive()
