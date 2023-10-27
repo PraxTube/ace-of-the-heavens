@@ -133,7 +133,7 @@ pub fn fire_rockets(
             &assets,
             &frame,
             &mut effects,
-            &player,
+            player,
             player_transform,
             Vec3::default(),
         );

@@ -11,21 +11,11 @@ use crate::network::ggrs_config::get_rtc_ice_server_config;
 use crate::player::LocalPlayerHandle;
 use crate::{GameAssets, GameState, RollbackState};
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct Ready {
     connection_ready: bool,
     local_ready: bool,
     remote_ready: bool,
-}
-
-impl Default for Ready {
-    fn default() -> Self {
-        Self {
-            connection_ready: false,
-            local_ready: false,
-            remote_ready: false,
-        }
-    }
 }
 
 pub fn start_matchbox_socket(
@@ -117,7 +107,7 @@ pub fn wait_for_seed(
 
     let received_seeds = socket.receive_tcp_seed();
 
-    if received_seeds.len() == 0 {
+    if received_seeds.is_empty() {
         return;
     }
 
@@ -139,11 +129,8 @@ pub fn wait_for_seed(
         // Send the 0 seed as a confirmation that we are ready.
         // The 0 seed should never be possible as a normal seed.
         for player in socket.players() {
-            match player {
-                PlayerType::Remote(peer_id) => {
-                    socket.send_tcp_seed(peer_id, 0);
-                }
-                _ => {}
+            if let PlayerType::Remote(peer_id) = player {
+                socket.send_tcp_seed(peer_id, 0);
             };
         }
         info!("we are ready, received peer seed and sent 0 seed");

@@ -91,13 +91,10 @@ fn fill_health_bar(
 ) {
     for &child in children {
         let health_bar_fill = health_bar_fills.get_mut(child);
-        match health_bar_fill {
-            Ok(mut fill) => {
-                let x_fill = (100 * player_health / MAX_HEALTH).clamp(0, 100);
-                fill.0.scale = Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
-                fill.2.update(&fill.0);
-            }
-            Err(_) => {}
+        if let Ok(mut fill) = health_bar_fill {
+            let x_fill = (100 * player_health / MAX_HEALTH).clamp(0, 100);
+            fill.0.scale = Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
+            fill.2.update(&fill.0);
         }
     }
 }

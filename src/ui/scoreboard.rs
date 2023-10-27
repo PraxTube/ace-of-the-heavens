@@ -115,8 +115,8 @@ pub fn update_scoreboard(
     }
 
     let mut score_mask = [false; MAX_SCORE * 2];
-    for i in 0..score.p1 {
-        score_mask[i] = true;
+    for score in score_mask.iter_mut().take(score.p1) {
+        *score = true;
     }
 
     for i in 0..score.p2 {

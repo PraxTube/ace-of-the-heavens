@@ -12,15 +12,9 @@ pub struct Obstacle {
     global_pos: Vec2,
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 pub struct CollisionEntity {
     pub disabled: bool,
-}
-
-impl Default for CollisionEntity {
-    fn default() -> Self {
-        Self { disabled: false }
-    }
 }
 
 impl Obstacle {
@@ -44,9 +38,11 @@ fn collision(obstacle: &Obstacle, other_pos: Vec3) -> bool {
 }
 
 fn outside_of_borders(target_position: Vec3) -> bool {
-    if target_position.x < BORDER_MIN_X || target_position.x > BORDER_MAX_X {
-        return true;
-    } else if target_position.y < BORDER_MIN_Y || target_position.y > BORDER_MAX_Y {
+    if target_position.x < BORDER_MIN_X
+        || target_position.x > BORDER_MAX_X
+        || target_position.y < BORDER_MIN_Y
+        || target_position.y > BORDER_MAX_Y
+    {
         return true;
     }
     false

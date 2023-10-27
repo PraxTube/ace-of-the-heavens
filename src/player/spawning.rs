@@ -75,12 +75,11 @@ pub fn despawn_players(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
-    mut players: Query<(Entity, &mut Player, &CollisionEntity)>,
+    players: Query<(Entity, &Player, &CollisionEntity)>,
     mut next_state: ResMut<NextState<RollbackState>>,
 ) {
-    for (player_entity, mut player, collision_entity) in &mut players {
-        if player.health <= 0 || collision_entity.disabled {
-            player.health = 0;
+    for (player_entity, player, collision_entity) in &players {
+        if player.health == 0 || collision_entity.disabled {
             commands.entity(player_entity).despawn_recursive();
             commands
                 .spawn(RollbackSound {
