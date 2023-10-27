@@ -173,7 +173,7 @@ pub fn purge_entities(
     mut commands: Commands,
     entities: Query<Entity, (Without<Window>, Without<BgmStage>)>,
 ) {
-    warn!("initiate the purge");
+    info!("initiate the purge");
 
     for entity in &entities {
         // We use despawn instead of despawn_recursive because that would

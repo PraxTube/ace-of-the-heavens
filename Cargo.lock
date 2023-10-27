@@ -626,7 +626,6 @@ name = "bevy"
 version = "0.11.2"
 source = "git+https://github.com/johanhelsing/bevy?branch=reflect-states-0.11#fccd3f1ba45963fea0dc07c861c0b12c22527a60"
 dependencies = [
- "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -812,14 +811,6 @@ dependencies = [
  "bevy_time",
  "bevy_utils",
  "sysinfo",
-]
-
-[[package]]
-name = "bevy_dylib"
-version = "0.11.2"
-source = "git+https://github.com/johanhelsing/bevy?branch=reflect-states-0.11#fccd3f1ba45963fea0dc07c861c0b12c22527a60"
-dependencies = [
- "bevy_internal",
 ]
 
 [[package]]
