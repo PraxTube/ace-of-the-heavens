@@ -30,7 +30,8 @@ jobs:
           TURN_SERVER_USERNAME: ${{ secrets.TURN_SERVER_USERNAME }}
           TURN_SERVER_PASSWORD: ${{ secrets.TURN_SERVER_PASSWORD }}
         run: |
-          echo -e 'username = \"${TURN_SERVER_USERNAME}\"\npassword = \"${TURN_SERVER_PASSWORD}\"' > assets/turn-credentials.toml
+          echo "username = \"${TURN_SERVER_USERNAME}\" > assets/turn-credentials.toml"
+          echo "password = \"${TURN_SERVER_PASSWORD}\" >> assets/turn-credentials.toml"
 
       - name: Build
         run: |
@@ -79,8 +80,8 @@ jobs:
           TURN_SERVER_USERNAME: ${{ secrets.TURN_SERVER_USERNAME }}
           TURN_SERVER_PASSWORD: ${{ secrets.TURN_SERVER_PASSWORD }}
         run: |
-          echo username = "%TURN_SERVER_USERNAME%" > assets/turn-credentials.toml
-          echo password = "%TURN_SERVER_PASSWORD%" >> assets/turn-credentials.toml
+          echo username="%TURN_SERVER_USERNAME%" > assets/turn-credentials.toml
+          echo password="%TURN_SERVER_PASSWORD%" >> assets/turn-credentials.toml
 
       - name: Build
         run: |

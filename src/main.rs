@@ -1,6 +1,7 @@
 //use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::window::{PresentMode, Window};
+
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
