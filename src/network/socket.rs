@@ -1,5 +1,7 @@
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use bincode::{deserialize, serialize};
+
 use bevy::prelude::*;
 use bevy::tasks::IoTaskPool;
 use bevy_ggrs::ggrs;
@@ -19,6 +21,15 @@ fn try_into_array(boxed_slice: Box<[u8]>) -> [u8; 4] {
     array
 }
 
+fn message_to_bytes(message: &ggrs::Message) -> Result<Box<[u8]>, bincode::Error> {
+    let bytes = serialize(message)?;
+    Ok(bytes.into_boxed_slice())
+}
+
+fn bytes_to_message(bytes: &Box<[u8]>) -> Result<ggrs::Message, bincode::Error> {
+    deserialize(bytes)
+}
+
 impl ggrs::NonBlockingSocket<PeerId> for AceSocket {
     fn send_to(&mut self, msg: &ggrs::Message, addr: &PeerId) {
         self.0
@@ -26,16 +37,21 @@ impl ggrs::NonBlockingSocket<PeerId> for AceSocket {
             // if the lock is poisoned, we're already doomed, time to panic
             .expect("Failed to lock socket for sending!")
             .channel(Self::GGRS_CHANNEL)
-            .send_to(msg, addr);
+            .send(message_to_bytes(msg).unwrap(), addr.to_owned());
     }
 
     fn receive_all_messages(&mut self) -> Vec<(PeerId, ggrs::Message)> {
-        self.0
+        let received = self
+            .0
             .write()
             // if the lock is poisoned, we're already doomed, time to panic
             .expect("Failed to lock socket for receiving!")
             .channel(Self::GGRS_CHANNEL)
-            .receive_all_messages()
+            .receive();
+        received
+            .iter()
+            .map(|(id, bytes)| (id.to_owned(), bytes_to_message(bytes).unwrap()))
+            .collect()
     }
 }
 

@@ -27,6 +27,7 @@ impl GgrsConfig {
             .with_num_players(PLAYER_COUNT)
             .with_input_delay(INPUT_DELAY)
             .with_max_prediction_window(MAX_PREDICTION_FRAMES)
+            .expect("couldn't set max prediction frames")
             .with_max_frames_behind(MAX_FRAME_BEHIND)
             .expect("couldn't set max frames behind")
             .with_desync_detection_mode(DesyncDetection::On { interval: 10 })

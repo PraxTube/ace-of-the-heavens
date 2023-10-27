@@ -63,31 +63,29 @@ fn main() {
                 .build()
                 .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
         )
-        .add_ggrs_plugin(
-            GgrsPlugin::<GgrsConfig>::new()
-                .with_input_system(input::input)
-                .register_roll_state::<RollbackState>()
-                .register_rollback_resource::<game_logic::RoundEndTimer>()
-                .register_rollback_resource::<game_logic::Score>()
-                .register_rollback_resource::<game_logic::Rematch>()
-                .register_rollback_resource::<game_logic::RoundStats>()
-                .register_rollback_resource::<RoundStartTimer>()
-                .register_rollback_resource::<HideScreenTimer>()
-                .register_rollback_component::<Transform>()
-                .register_rollback_component::<Style>()
-                .register_rollback_component::<debug::DebugTransform>()
-                .register_rollback_component::<map::obstacle::CollisionEntity>()
-                .register_rollback_component::<player::Player>()
-                .register_rollback_component::<player::dodge::DodgeTimer>()
-                .register_rollback_component::<player::shooting::bullet::Bullet>()
-                .register_rollback_component::<player::shooting::bullet::BulletTimer>()
-                .register_rollback_component::<player::shooting::rocket::Rocket>()
-                .register_rollback_component::<player::shooting::rocket::RocketTimer>()
-                .register_rollback_component::<player::shooting::rocket_explosion::RocketExplosion>()
-                .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>()
-                .register_rollback_component::<audio::RollbackSound>(),
-        )
-        .add_roll_state::<RollbackState>(GgrsSchedule)
+        .add_plugins(GgrsPlugin::<GgrsConfig>::default())
+        // .rollback_state::<RollbackState>()
+        .rollback_resource_with_clone::<game_logic::RoundEndTimer>()
+        .rollback_resource_with_clone::<game_logic::Score>()
+        // .register_rollback_resource::<game_logic::Rematch>()
+        // .register_rollback_resource::<game_logic::RoundStats>()
+        // .register_rollback_resource::<RoundStartTimer>()
+        // .register_rollback_resource::<HideScreenTimer>()
+        // .register_rollback_component::<Transform>()
+        // .register_rollback_component::<Style>()
+        // .register_rollback_component::<debug::DebugTransform>()
+        // .register_rollback_component::<map::obstacle::CollisionEntity>()
+        // .register_rollback_component::<player::Player>()
+        // .register_rollback_component::<player::dodge::DodgeTimer>()
+        // .register_rollback_component::<player::shooting::bullet::Bullet>()
+        // .register_rollback_component::<player::shooting::bullet::BulletTimer>()
+        // .register_rollback_component::<player::shooting::rocket::Rocket>()
+        // .register_rollback_component::<player::shooting::rocket::RocketTimer>()
+        // .register_rollback_component::<player::shooting::rocket_explosion::RocketExplosion>()
+        // .register_rollback_component::<player::shooting::rocket_explosion::ExplosionAnimationTimer>(
+        // )
+        // .register_rollback_component::<audio::RollbackSound>()
+        // .add_roll_state::<RollbackState>(GgrsSchedule)
         .add_plugins((
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
@@ -104,10 +102,17 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundStartTimer>()
         .init_resource::<HideScreenTimer>()
+        // .add_systems(ReadInputs, input::input)
         .add_systems(
             Update,
-            input::quit.run_if(in_state(GameState::MainMenu)
-                .or_else(in_state(GameState::Matchmaking))
-                .or_else(in_state(GameState::InRollbackGame).and_then(in_state(RollbackState::GameOver)))))
+            input::quit.run_if(
+                in_state(GameState::MainMenu)
+                    .or_else(in_state(GameState::Matchmaking))
+                    .or_else(
+                        in_state(GameState::InRollbackGame)
+                            .and_then(in_state(RollbackState::GameOver)),
+                    ),
+            ),
+        )
         .run();
 }

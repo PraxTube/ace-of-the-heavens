@@ -15,7 +15,7 @@ use crate::ui::round_start_screen::{HideScreenTimer, RoundStartTimer};
 use crate::ui::MAX_SCORE;
 use crate::{GameState, RollbackState};
 
-#[derive(Resource, Reflect, Deref, DerefMut)]
+#[derive(Resource, Reflect, Deref, DerefMut, Clone)]
 #[reflect(Resource)]
 pub struct RoundEndTimer(Timer);
 
@@ -25,7 +25,7 @@ impl Default for RoundEndTimer {
     }
 }
 
-#[derive(Resource, Reflect, Default, Debug)]
+#[derive(Resource, Reflect, Default, Debug, Clone)]
 #[reflect(Resource)]
 pub struct Score {
     pub p1: usize,
