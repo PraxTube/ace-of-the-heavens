@@ -109,6 +109,7 @@ impl AceCommands {
                     }
                 }
             }
+            "dummy" => {}
             _ => {}
         }
         None
