@@ -43,6 +43,8 @@ pub struct GameAssets {
     pub score_full: Handle<Image>,
     #[asset(path = "ui/score-empty.png")]
     pub score_empty: Handle<Image>,
+    #[asset(path = "help-menu.png")]
+    pub help_menu: Handle<Image>,
 
     #[asset(path = "fonts/PressStart2P.ttf")]
     pub font: Handle<Font>,

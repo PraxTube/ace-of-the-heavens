@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{GameAssets, GameState};
 
+use super::MainMenuState;
+
 #[derive(Component)]
 pub struct MainMenuScreen;
 
@@ -25,6 +27,17 @@ fn spawn_play_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     };
     let text_bundle =
         TextBundle::from_sections([TextSection::new("PRESS P TO PLAY".to_string(), text_style)]);
+    commands.spawn(text_bundle).id()
+}
+
+fn spawn_help_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
+    let text_style = TextStyle {
+        font,
+        font_size: 35.0,
+        color: Color::WHITE,
+    };
+    let text_bundle =
+        TextBundle::from_sections([TextSection::new("PRESS H FOR HELP".to_string(), text_style)]);
     commands.spawn(text_bundle).id()
 }
 
@@ -61,10 +74,11 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .id();
     let title_text = spawn_title_text(commands, font.clone());
     let play_text = spawn_play_text(commands, font.clone());
+    let help_text = spawn_help_text(commands, font.clone());
     let quit_text = spawn_quit_text(commands, font.clone());
     commands
         .entity(text_root_node)
-        .push_children(&[title_text, play_text, quit_text]);
+        .push_children(&[title_text, play_text, help_text, quit_text]);
 }
 
 pub fn spawn_main_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
@@ -83,5 +97,11 @@ pub fn despawn_main_menu_screen(
 pub fn play_game(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<GameState>>) {
     if keys.pressed(KeyCode::P) {
         next_state.set(GameState::Matchmaking);
+    }
+}
+
+pub fn help_menu(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<MainMenuState>>) {
+    if keys.pressed(KeyCode::H) {
+        next_state.set(MainMenuState::HelpMenu);
     }
 }

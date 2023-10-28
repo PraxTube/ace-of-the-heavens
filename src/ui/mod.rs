@@ -1,4 +1,5 @@
 pub mod game_over_screen;
+pub mod help_menu_screen;
 pub mod main_menu_screen;
 pub mod networking_screen;
 pub mod round_over_screen;
@@ -26,10 +27,22 @@ use scoreboard::{spawn_scoreboard, update_scoreboard};
 use seed_screen::spawn_seed_screen;
 
 use self::game_over_screen::{hide_game_over_screen, show_game_over_screen, update_winner_text};
-use self::main_menu_screen::{despawn_main_menu_screen, play_game, spawn_main_menu_screen};
+use self::help_menu_screen::{
+    despawn_help_menu_screen, return_to_main, scroll_help_screen, spawn_help_menu_screen,
+};
+use self::main_menu_screen::{
+    despawn_main_menu_screen, help_menu, play_game, spawn_main_menu_screen,
+};
 use self::session_stats_screen::{spawn_stats_text, toggle_stats_visibility, update_stats_text};
 
 pub const MAX_SCORE: usize = 5;
+
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
+pub enum MainMenuState {
+    #[default]
+    MainMenu,
+    HelpMenu,
+}
 
 pub struct AceUiPlugin;
 
@@ -39,9 +52,18 @@ impl Plugin for AceUiPlugin {
             OnExit(GameState::Matchmaking),
             (despawn_networking_screen, spawn_seed_screen),
         )
+        .add_state::<MainMenuState>()
         .add_systems(OnEnter(GameState::InRollbackGame), spawn_stats_text)
         .add_systems(OnEnter(GameState::MainMenu), spawn_main_menu_screen)
         .add_systems(OnExit(GameState::MainMenu), despawn_main_menu_screen)
+        .add_systems(
+            OnEnter(MainMenuState::HelpMenu),
+            (spawn_help_menu_screen, despawn_main_menu_screen),
+        )
+        .add_systems(
+            OnExit(MainMenuState::HelpMenu),
+            (despawn_help_menu_screen, spawn_main_menu_screen),
+        )
         .add_systems(OnEnter(GameState::Matchmaking), spawn_networking_screen)
         .add_systems(
             OnExit(RollbackState::Setup),
@@ -67,7 +89,18 @@ impl Plugin for AceUiPlugin {
         .add_systems(
             Update,
             (
-                play_game.run_if(in_state(GameState::MainMenu)),
+                play_game.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::MainMenu)),
+                ),
+                help_menu.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::MainMenu)),
+                ),
+                return_to_main.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::HelpMenu)),
+                ),
+                scroll_help_screen.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::HelpMenu)),
+                ),
                 update_stats_text.run_if(in_state(GameState::InRollbackGame)),
                 toggle_stats_visibility.run_if(in_state(GameState::InRollbackGame)),
             ),
