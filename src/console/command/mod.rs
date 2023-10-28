@@ -1,6 +1,7 @@
 pub use commands::AceCommandPlugin;
 
 mod commands;
+mod player_nerf_stats;
 
 use std::fmt::Display;
 
@@ -12,12 +13,14 @@ use crate::{network::socket::AceSocket, player::PersistentPlayerStats};
 #[derive(Clone)]
 pub enum AceCommands {
     SetMaxSpeed(usize, f32),
+    Nerf(usize, usize),
 }
 
 impl Display for AceCommands {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::SetMaxSpeed(handle, value) => write!(f, "set-max-speed {} {}", handle, value),
+            Self::Nerf(handle, level) => write!(f, "nerf {} {}", handle, level),
         }
     }
 }
@@ -38,6 +41,13 @@ impl AceCommands {
                     }
                 }
             }
+            "nerf" => {
+                if let Ok(handle) = parts[1].parse() {
+                    if let Ok(level) = parts[2].parse() {
+                        return Some(AceCommands::Nerf(handle, level));
+                    }
+                }
+            }
             "dummy" => {}
             _ => {}
         }
@@ -52,12 +62,12 @@ pub fn apply_commands(
     for command in command_queque.queue.drain(..) {
         match command {
             AceCommands::SetMaxSpeed(handle, value) => {
-                if handle >= stats.stats.len() {
-                    return;
-                }
-
                 info!("applying command");
                 stats.stats[handle].max_speed = value;
+            }
+            AceCommands::Nerf(handle, level) => {
+                let nerfed_stats = player_nerf_stats::nerf_stats(level);
+                stats.stats[handle] = nerfed_stats;
             }
         }
     }
@@ -79,4 +89,12 @@ pub fn receive_commands(mut socket: ResMut<AceSocket>, mut command_queque: ResMu
             None => warn!("command message failed to pass to string"),
         }
     }
+}
+
+pub fn reset_commands(
+    mut command_queque: ResMut<CommandQueue>,
+    mut stats: ResMut<PersistentPlayerStats>,
+) {
+    *command_queque = CommandQueue::default();
+    *stats = PersistentPlayerStats::default();
 }

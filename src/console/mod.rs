@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_console::{ConsoleConfiguration, ConsolePlugin, ToggleConsoleKey};
 
 use crate::{GameState, RollbackState};
-use command::{apply_commands, receive_commands, AceCommandPlugin, AceCommands};
+use command::{apply_commands, receive_commands, reset_commands, AceCommandPlugin, AceCommands};
 
 #[derive(Resource, Default)]
 pub struct CommandQueue {
@@ -27,6 +27,7 @@ impl Plugin for AceConsolePlugin {
             ..default()
         })
         .init_resource::<CommandQueue>()
-        .add_systems(OnEnter(RollbackState::InRound), apply_commands);
+        .add_systems(OnEnter(RollbackState::InRound), apply_commands)
+        .add_systems(OnEnter(GameState::InRollbackGame), reset_commands);
     }
 }
