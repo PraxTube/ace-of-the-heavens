@@ -19,6 +19,7 @@ bevy = { version = "0.11.2"}
 bevy_hanabi = "0.7.0"
 bevy_kira_audio = "0.17.0"
 bevy_console = "0.8.0"
+noisy_bevy = "0.4.0"
 
 bevy_asset_loader = { version = "0.17.0", features = ["2d"] }
 bevy_common_assets = { version = "0.7.0", features = ["toml"]}

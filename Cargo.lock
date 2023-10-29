@@ -88,6 +88,7 @@ dependencies = [
  "bincode",
  "chrono",
  "clap",
+ "noisy_bevy",
  "open",
  "rand",
  "rand_xoshiro",
@@ -3842,6 +3843,15 @@ name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+
+[[package]]
+name = "noisy_bevy"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5764cd2689c1d998b3c79ab1b6c4dcb0faae31c407e652b4a87d11416eb4018c"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "nom"
