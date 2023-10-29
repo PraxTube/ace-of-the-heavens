@@ -20,7 +20,16 @@ pub struct HealthBar {
 pub struct HealthBarFill;
 
 #[derive(Event)]
-pub struct PlayerTookDamage(pub Transform, pub usize);
+pub struct PlayerTookDamage {
+    pub transform: Transform,
+    pub handle: usize,
+}
+
+impl PlayerTookDamage {
+    fn new(transform: Transform, handle: usize) -> Self {
+        Self { transform, handle }
+    }
+}
 
 pub fn damage_players(
     mut players: Query<(&Transform, &mut Player), Without<Bullet>>,
@@ -53,7 +62,7 @@ pub fn damage_players(
                 } else {
                     player.health -= bullet.damage;
                 }
-                ev_player_took_damge.send(PlayerTookDamage(*player_transform, player.handle));
+                ev_player_took_damge.send(PlayerTookDamage::new(*player_transform, player.handle));
                 collision_entity.disabled = true;
             }
         }

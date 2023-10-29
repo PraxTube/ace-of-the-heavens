@@ -19,6 +19,8 @@ impl Plugin for EffectPlugin {
             GgrsSchedule,
             (
                 damage::spawn_damage_effect,
+                damage::spawn_damage_effect_sound,
+                damage::add_damage_camera_shake,
                 trail::disable_trails,
                 trail::despawn_trails,
             )

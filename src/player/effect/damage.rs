@@ -4,7 +4,12 @@ use bevy_hanabi::prelude::*;
 
 use super::super::{P1_COLOR, P2_COLOR};
 
-use crate::{audio::RollbackSound, player::health::PlayerTookDamage, GameAssets};
+use crate::{
+    audio::RollbackSound,
+    camera::CameraShake,
+    player::{health::PlayerTookDamage, LocalPlayerHandle},
+    GameAssets,
+};
 
 #[derive(Component)]
 pub struct DamageEffectSpawner;
@@ -88,9 +93,6 @@ fn color_to_u32(color: Color) -> u32 {
 }
 
 pub fn spawn_damage_effect(
-    mut commands: Commands,
-    assets: Res<GameAssets>,
-    frame: Res<FrameCount>,
     mut ev_player_took_damage: EventReader<PlayerTookDamage>,
     mut spawner: Query<
         (
@@ -104,15 +106,24 @@ pub fn spawn_damage_effect(
     let (mut effect, mut spawner, mut transform) = spawner.single_mut();
 
     for ev in ev_player_took_damage.iter() {
-        let color = if ev.1 == 0 {
+        let color = if ev.handle == 0 {
             color_to_u32(P1_COLOR)
         } else {
             color_to_u32(P2_COLOR)
         };
-        transform.translation = ev.0.translation;
+        transform.translation = ev.transform.translation;
         effect.set_property("spawn_color", color.into());
         spawner.reset();
+    }
+}
 
+pub fn spawn_damage_effect_sound(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    mut ev_player_took_damage: EventReader<PlayerTookDamage>,
+) {
+    for _ in ev_player_took_damage.iter() {
         commands
             .spawn(RollbackSound {
                 clip: assets.damage_sound.clone(),
@@ -121,5 +132,18 @@ pub fn spawn_damage_effect(
                 ..default()
             })
             .add_rollback();
+    }
+}
+
+pub fn add_damage_camera_shake(
+    mut camera_shake: ResMut<CameraShake>,
+    mut ev_player_took_damage: EventReader<PlayerTookDamage>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
+    for ev in ev_player_took_damage.iter() {
+        // Local player took damage, time to shake it
+        if ev.handle == local_handle.0 {
+            camera_shake.add_trauma(0.15);
+        }
     }
 }
