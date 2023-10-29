@@ -1,3 +1,5 @@
+use open;
+
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
@@ -34,10 +36,22 @@ fn spawn_return_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     commands.spawn(text_bundle).id()
 }
 
-fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
+fn spawn_open_text(commands: &mut Commands, font: Handle<Font>, text: String) -> Entity {
     let text_style = TextStyle {
         font,
         font_size: 25.0,
+        color: Color::WHITE,
+    };
+    let mut text_bundle = TextBundle::from_sections([TextSection::new(text, text_style)]);
+    text_bundle.style.width = Val::Vw(65.0);
+    text_bundle.style.max_height = Val::Vh(35.0);
+    commands.spawn(text_bundle).id()
+}
+
+fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
+    let text_style = TextStyle {
+        font,
+        font_size: 20.0,
         color: Color::WHITE,
     };
     let text_bundle =
@@ -45,7 +59,7 @@ fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     commands.spawn(text_bundle).id()
 }
 
-fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
+fn spawn_text(commands: &mut Commands, font: Handle<Font>, open_text: String) {
     let text_root_node = commands
         .spawn((
             HelpMenuScreen,
@@ -68,35 +82,20 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .id();
     let title_text = spawn_title_text(commands, font.clone());
     let return_text = spawn_return_text(commands, font.clone());
+    let open_text = spawn_open_text(commands, font.clone(), open_text);
     let quit_text = spawn_quit_text(commands, font.clone());
     commands
         .entity(text_root_node)
-        .push_children(&[title_text, return_text, quit_text]);
-}
-
-fn spawn_content(commands: &mut Commands, assets: &Res<GameAssets>) {
-    commands.spawn((
-        HelpMenuScreen,
-        ImageBundle {
-            style: Style {
-                height: Val::Percent(400.0),
-                top: Val::Px(0.0),
-                aspect_ratio: Some(1.0),
-                ..default()
-            },
-            image: UiImage {
-                texture: assets.help_menu.clone(),
-                ..default()
-            },
-            z_index: ZIndex::Local(101),
-            ..default()
-        },
-    ));
+        .push_children(&[title_text, return_text, open_text, quit_text]);
 }
 
 pub fn spawn_help_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
-    spawn_text(&mut commands, assets.font.clone());
-    spawn_content(&mut commands, &assets);
+    let url = "http://rancic.org/aoth/help-menu/";
+    let text = match open::that(url) {
+        Ok(_) => "Opened webpage: ".to_string() + url,
+        Err(err) => "ERROR, failed to open: ".to_string() + url + &format!("\n\n{}", err),
+    };
+    spawn_text(&mut commands, assets.font.clone(), text);
 }
 
 pub fn despawn_help_menu_screen(
