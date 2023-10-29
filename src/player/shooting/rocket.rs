@@ -6,6 +6,7 @@ use bevy_ggrs::*;
 use bevy_hanabi::EffectAsset;
 
 use crate::audio::RollbackSound;
+use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::map::CollisionEntity;
@@ -178,6 +179,7 @@ pub fn destroy_rockets(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
+    mut camera_shake: ResMut<CameraShake>,
     rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
     for (entity, rocket, rocket_transform, collision_entity) in &rockets {
@@ -192,6 +194,7 @@ pub fn destroy_rockets(
             rocket_transform.translation,
             rocket.handle,
         );
+        camera_shake.add_trauma(0.5);
         commands.entity(entity).despawn();
     }
 }

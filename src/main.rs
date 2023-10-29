@@ -11,6 +11,7 @@ use bevy_roll_safe::prelude::*;
 
 mod assets;
 mod audio;
+mod camera;
 mod console;
 mod game_logic;
 mod input;
@@ -73,6 +74,7 @@ fn main() {
                 .register_rollback_resource::<game_logic::Score>()
                 .register_rollback_resource::<game_logic::Rematch>()
                 .register_rollback_resource::<game_logic::RoundStats>()
+                .register_rollback_resource::<camera::CameraShake>()
                 .register_rollback_resource::<RoundStartTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
                 .register_rollback_component::<Transform>()
@@ -98,6 +100,7 @@ fn main() {
             audio::GameAudioPlugin,
             game_logic::GameLogicPlugin,
             network::AceNetworkPlugin,
+            camera::AceCameraPlugin,
             ui::AceUiPlugin,
             console::AceConsolePlugin,
             map::MapPlugin,

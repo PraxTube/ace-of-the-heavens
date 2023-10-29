@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::prelude::*;
 use bevy_ggrs::{GgrsSchedule, Session};
 use bevy_matchbox::prelude::PeerId;
 use chrono::Utc;
@@ -72,13 +72,7 @@ impl Plugin for GameLogicPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameState::MainMenu),
-            (
-                purge_entities,
-                reset_resources,
-                purge_network_resources,
-                spawn_camera,
-            )
-                .chain(),
+            (purge_entities, reset_resources, purge_network_resources).chain(),
         )
         .add_systems(
             OnEnter(GameState::Matchmaking),
@@ -110,13 +104,6 @@ impl Plugin for GameLogicPlugin {
             ),
         );
     }
-}
-
-pub fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scaling_mode = ScalingMode::FixedVertical(1100.0);
-    camera.transform.translation = Vec3::new(0.0, 50.0, 0.0);
-    commands.spawn(camera);
 }
 
 pub fn round_end_timeout(
