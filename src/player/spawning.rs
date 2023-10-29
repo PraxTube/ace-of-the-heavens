@@ -9,11 +9,13 @@ use super::effect::trail::spawn_player_trails;
 use super::shooting::bullet::BulletTimer;
 use super::shooting::rocket::spawn_player_wing_rockets;
 use super::shooting::rocket::RocketTimer;
+use super::LocalPlayerHandle;
 use super::PersistentPlayerStats;
 use super::Player;
 use super::PlayerStats;
 
 use crate::audio::RollbackSound;
+use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
 use crate::map::CollisionEntity;
 use crate::GameAssets;
@@ -81,26 +83,53 @@ pub fn spawn_players(
 
 pub fn despawn_players(
     mut commands: Commands,
-    assets: Res<GameAssets>,
-    frame: Res<FrameCount>,
     players: Query<(Entity, &Player, &CollisionEntity)>,
     mut next_state: ResMut<NextState<RollbackState>>,
 ) {
     for (player_entity, player, collision_entity) in &players {
         if player.health == 0 || collision_entity.disabled {
             commands.entity(player_entity).despawn_recursive();
-            commands
-                .spawn(RollbackSound {
-                    clip: assets.death_sound.clone(),
-                    start_frame: frame.0 as usize,
-                    sub_key: player_entity.index() as usize,
-                    ..default()
-                })
-                .add_rollback();
         }
     }
 
     if players.iter().count() <= 1 {
         next_state.set(RollbackState::RoundEnd);
+    }
+}
+
+pub fn despawn_players_sound(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    players: Query<(&Player, &CollisionEntity)>,
+) {
+    for (player, collision_entity) in &players {
+        if player.health == 0 || collision_entity.disabled {
+            commands
+                .spawn(RollbackSound {
+                    clip: assets.death_sound.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: player.handle,
+                    ..default()
+                })
+                .add_rollback();
+        }
+    }
+}
+
+pub fn despawn_players_camera_shake(
+    mut camera_shake: ResMut<CameraShake>,
+    players: Query<(&Player, &CollisionEntity)>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
+    for (player, collision_entity) in &players {
+        if player.health == 0 || collision_entity.disabled {
+            let trauma = if player.handle == local_handle.0 {
+                1.0
+            } else {
+                0.5
+            };
+            camera_shake.add_trauma(trauma);
+        }
     }
 }

@@ -197,7 +197,11 @@ impl Plugin for PlayerPlugin {
         )
         .add_systems(
             GgrsSchedule,
-            (spawning::despawn_players,)
+            (
+                spawning::despawn_players_sound,
+                spawning::despawn_players_camera_shake,
+                spawning::despawn_players,
+            )
                 .chain()
                 .in_set(InGameSet::Spawning)
                 .distributive_run_if(in_state(RollbackState::InRound)),
