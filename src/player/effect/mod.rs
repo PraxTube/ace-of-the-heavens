@@ -1,3 +1,4 @@
+mod bullet;
 pub mod damage;
 pub mod trail;
 
@@ -13,7 +14,10 @@ impl Plugin for EffectPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(GameState::Matchmaking),
-            damage::spawn_damage_effect_spawner,
+            (
+                damage::spawn_damage_effect_spawner,
+                bullet::spawn_effect_spawner,
+            ),
         )
         .add_systems(
             GgrsSchedule,
@@ -21,6 +25,7 @@ impl Plugin for EffectPlugin {
                 damage::spawn_damage_effect,
                 damage::spawn_damage_effect_sound,
                 damage::add_damage_camera_shake,
+                bullet::spawn_collision_effect,
                 trail::disable_trails,
                 trail::despawn_trails,
             )

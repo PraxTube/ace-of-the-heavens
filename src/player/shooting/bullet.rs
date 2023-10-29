@@ -66,6 +66,11 @@ impl Hash for BulletTimer {
     }
 }
 
+#[derive(Event)]
+pub struct BulletCollided {
+    pub position: Vec3,
+}
+
 fn spawn_bullet(
     commands: &mut Commands,
     assets: &Res<GameAssets>,
@@ -153,10 +158,14 @@ pub fn move_bullets(mut bullets: Query<(&mut Transform, &Bullet, &mut DebugTrans
 
 pub fn destroy_bullets(
     mut commands: Commands,
-    bullets: Query<(Entity, &CollisionEntity), With<Bullet>>,
+    bullets: Query<(Entity, &Transform, &CollisionEntity), With<Bullet>>,
+    mut ev_bullet_collided: EventWriter<BulletCollided>,
 ) {
-    for (entity, collision_entity) in &bullets {
+    for (entity, transform, collision_entity) in &bullets {
         if collision_entity.disabled {
+            ev_bullet_collided.send(BulletCollided {
+                position: transform.translation,
+            });
             commands.entity(entity).despawn_recursive();
         }
     }
