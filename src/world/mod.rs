@@ -1,7 +1,10 @@
+pub mod map;
+
 mod clear;
 mod round;
 mod seed;
 
+pub use map::obstacle::CollisionEntity;
 pub use round::{
     adjust_score, check_rematch, round_end_timeout, Rematch, RoundEndTimer, RoundStats, Score,
     MAX_SCORE,
@@ -18,6 +21,7 @@ impl Plugin for GameLogicPlugin {
             seed::WorldSeedPlugin,
             clear::WorldClearPlugin,
             round::WorldRoundPlugin,
+            map::MapPlugin,
         ));
     }
 }

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_ggrs::Session;
 
+use super::map;
 use super::{RoundEndTimer, RoundStats, Score, Seeds};
 use crate::audio::{BgmStage, PlaybackStates};
-use crate::map;
 use crate::network::session::Ready;
 use crate::network::socket::AceSocket;
 use crate::network::GgrsConfig;

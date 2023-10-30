@@ -4,7 +4,7 @@ use bevy_ggrs::GgrsSchedule;
 use crate::player;
 use crate::RollbackState;
 
-pub const MAX_SCORE: usize = 2;
+pub const MAX_SCORE: usize = 5;
 
 #[derive(Resource, Reflect, Default, Debug)]
 #[reflect(Resource)]

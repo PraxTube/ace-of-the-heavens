@@ -7,10 +7,10 @@ use bevy_ggrs::*;
 use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::input;
-use crate::map::CollisionEntity;
 use crate::misc::utils::quat_from_vec3;
 use crate::network::GgrsConfig;
 use crate::player::Player;
+use crate::world::CollisionEntity;
 use crate::GameAssets;
 
 pub const BULLET_RADIUS: f32 = 1.0;

@@ -17,7 +17,7 @@ use super::PlayerStats;
 use crate::audio::RollbackSound;
 use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
-use crate::map::CollisionEntity;
+use crate::world::CollisionEntity;
 use crate::GameAssets;
 use crate::RollbackState;
 

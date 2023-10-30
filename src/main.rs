@@ -14,7 +14,6 @@ mod audio;
 mod camera;
 mod console;
 mod input;
-mod map;
 mod misc;
 mod network;
 mod player;
@@ -80,7 +79,7 @@ fn main() {
                 .register_rollback_component::<Transform>()
                 .register_rollback_component::<Style>()
                 .register_rollback_component::<debug::DebugTransform>()
-                .register_rollback_component::<map::obstacle::CollisionEntity>()
+                .register_rollback_component::<world::map::obstacle::CollisionEntity>()
                 .register_rollback_component::<player::Player>()
                 .register_rollback_component::<player::dodge::DodgeTimer>()
                 .register_rollback_component::<player::shooting::bullet::Bullet>()
@@ -103,7 +102,6 @@ fn main() {
             camera::AceCameraPlugin,
             ui::AceUiPlugin,
             console::AceConsolePlugin,
-            map::MapPlugin,
             player::PlayerPlugin,
             debug::AceDebugPlugin,
         ))

@@ -1,18 +1,17 @@
 pub mod obstacle;
-pub mod wall;
 
-pub use obstacle::CollisionEntity;
+mod wall;
 
-use bevy::prelude::*;
-use bevy_ggrs::GgrsSchedule;
 use rand::Rng;
 use rand_xoshiro::rand_core::SeedableRng;
 
+use bevy::prelude::*;
+use bevy_ggrs::GgrsSchedule;
+
+use super::{RoundStats, Seed};
 use crate::misc::GameRng;
 use crate::player::InGameSet;
-use crate::world::RoundStats;
-use crate::{world::Seed, GameAssets};
-use crate::{GameState, RollbackState};
+use crate::{GameAssets, GameState, RollbackState};
 use obstacle::disable_collision_entities;
 use wall::*;
 
@@ -33,7 +32,7 @@ impl Plugin for MapPlugin {
     }
 }
 
-pub fn spawn_background(
+fn spawn_background(
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     assets: Res<GameAssets>,
@@ -93,7 +92,7 @@ fn spawn_map_6(commands: &mut Commands, assets: Res<GameAssets>) {
     spawn_wall_2_2(commands, Vec2::new(-x_pos, -y_pos), &assets);
 }
 
-pub fn spawn_random_map(
+fn spawn_random_map(
     mut commands: Commands,
     assets: Res<GameAssets>,
     seed: Res<Seed>,
