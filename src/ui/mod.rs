@@ -11,8 +11,6 @@ mod session_stats_screen;
 
 use bevy::prelude::*;
 
-pub const MAX_SCORE: usize = 5;
-
 #[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
 pub enum MainMenuState {
     #[default]

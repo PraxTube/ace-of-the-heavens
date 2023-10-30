@@ -3,9 +3,9 @@ use std::hash::{Hash, Hasher};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use crate::game_logic::Seeds;
 use crate::player::shooting::bullet::BulletTimer;
 use crate::player::Player;
+use crate::world::Seeds;
 use crate::{GameState, RollbackState};
 
 #[derive(Reflect, Component, Default)]

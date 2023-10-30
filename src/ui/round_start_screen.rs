@@ -5,9 +5,9 @@ use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
 use crate::audio::RollbackSound;
-use crate::game_logic::{check_rematch, round_end_timeout};
 use crate::player::spawning::despawn_players;
 use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
+use crate::world::{check_rematch, round_end_timeout};
 use crate::{GameAssets, RollbackState};
 
 #[derive(Resource, Reflect, Deref, DerefMut)]

@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
 use super::round_start_screen::animate_round_start_screen;
-use super::MAX_SCORE;
-use crate::game_logic::{Rematch, Score};
 use crate::player::{check_rematch_state, LocalPlayerHandle, P1_COLOR, P2_COLOR};
+use crate::world::MAX_SCORE;
+use crate::world::{Rematch, Score};
 use crate::{GameAssets, RollbackState};
 
 #[derive(Component)]

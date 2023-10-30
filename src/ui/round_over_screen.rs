@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
-use crate::game_logic::{adjust_score, Score};
 use crate::player::{P1_COLOR, P2_COLOR};
+use crate::world::MAX_SCORE;
+use crate::world::{adjust_score, Score};
 use crate::{GameAssets, RollbackState};
-
-use super::MAX_SCORE;
 
 #[derive(Component)]
 struct RoundScreen;

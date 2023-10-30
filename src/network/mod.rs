@@ -10,9 +10,9 @@ pub use ggrs_config::GgrsConfig;
 use bevy::prelude::*;
 
 use crate::{
-    game_logic::{check_rematch, round_end_timeout},
     player::spawning::despawn_players,
     ui::round_start_screen::round_start_timeout,
+    world::{check_rematch, round_end_timeout},
     GameState, RollbackState,
 };
 use session::{check_ready_state, start_matchbox_socket, wait_for_players, wait_for_seed, Ready};

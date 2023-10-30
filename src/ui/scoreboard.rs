@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
-use super::MAX_SCORE;
-use crate::game_logic::{check_rematch, Score};
 use crate::player::{P1_COLOR, P2_COLOR};
+use crate::world::{check_rematch, Score, MAX_SCORE};
 use crate::{GameAssets, RollbackState};
 
 #[derive(Component)]

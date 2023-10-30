@@ -10,10 +10,10 @@ use std::hash::{Hash, Hasher};
 use bevy::prelude::*;
 use bevy_ggrs::*;
 
-use crate::game_logic::Rematch;
 use crate::input;
 use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::GgrsConfig;
+use crate::world::Rematch;
 use crate::RollbackState;
 
 // Movement

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game_logic::{determine_seed, Seeds};
+use crate::world::{determine_seed, Seeds};
 use crate::{GameAssets, GameState};
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>, seed: u32) -> Entity {

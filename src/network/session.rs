@@ -6,9 +6,9 @@ use super::ggrs_config::PLAYER_COUNT;
 use super::socket::AceSocket;
 use super::GgrsConfig;
 use crate::assets::TurnCredentials;
-use crate::game_logic::{SeedHandle, Seeds};
 use crate::network::ggrs_config::get_rtc_ice_server_config;
 use crate::player::LocalPlayerHandle;
+use crate::world::{SeedHandle, Seeds};
 use crate::{GameAssets, GameState, RollbackState};
 
 #[derive(Resource, Default)]

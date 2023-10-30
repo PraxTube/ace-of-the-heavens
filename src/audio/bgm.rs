@@ -2,8 +2,7 @@ use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
 use super::FadedLoopSound;
-use crate::game_logic::Score;
-use crate::ui::MAX_SCORE;
+use crate::world::{Score, MAX_SCORE};
 use crate::GameAssets;
 
 #[derive(Component)]

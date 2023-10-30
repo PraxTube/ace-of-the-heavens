@@ -13,13 +13,13 @@ mod assets;
 mod audio;
 mod camera;
 mod console;
-mod game_logic;
 mod input;
 mod map;
 mod misc;
 mod network;
 mod player;
 mod ui;
+mod world;
 
 use misc::debug;
 use network::GgrsConfig;
@@ -70,10 +70,10 @@ fn main() {
             GgrsPlugin::<GgrsConfig>::new()
                 .with_input_system(input::input)
                 .register_roll_state::<RollbackState>()
-                .register_rollback_resource::<game_logic::RoundEndTimer>()
-                .register_rollback_resource::<game_logic::Score>()
-                .register_rollback_resource::<game_logic::Rematch>()
-                .register_rollback_resource::<game_logic::RoundStats>()
+                .register_rollback_resource::<world::RoundEndTimer>()
+                .register_rollback_resource::<world::Score>()
+                .register_rollback_resource::<world::Rematch>()
+                .register_rollback_resource::<world::RoundStats>()
                 .register_rollback_resource::<camera::CameraShake>()
                 .register_rollback_resource::<RoundStartTimer>()
                 .register_rollback_resource::<HideScreenTimer>()
@@ -98,7 +98,7 @@ fn main() {
             TomlAssetPlugin::<assets::TurnCredentials>::new(&["toml"]),
             HanabiPlugin,
             audio::GameAudioPlugin,
-            game_logic::GameLogicPlugin,
+            world::GameLogicPlugin,
             network::AceNetworkPlugin,
             camera::AceCameraPlugin,
             ui::AceUiPlugin,

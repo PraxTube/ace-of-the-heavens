@@ -8,10 +8,10 @@ use bevy_ggrs::GgrsSchedule;
 use rand::Rng;
 use rand_xoshiro::rand_core::SeedableRng;
 
-use crate::game_logic::RoundStats;
 use crate::misc::GameRng;
 use crate::player::InGameSet;
-use crate::{game_logic::Seed, GameAssets};
+use crate::world::RoundStats;
+use crate::{world::Seed, GameAssets};
 use crate::{GameState, RollbackState};
 use obstacle::disable_collision_entities;
 use wall::*;
