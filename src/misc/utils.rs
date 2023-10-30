@@ -8,3 +8,6 @@ pub fn quat_from_vec3(direction: Vec3) -> Quat {
         Vec2::X.angle_between(direction.truncate()),
     )
 }
+
+#[derive(Component)]
+pub struct DeadSprite;

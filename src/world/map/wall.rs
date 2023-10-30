@@ -4,7 +4,7 @@ use bevy_ggrs::prelude::*;
 use super::obstacle::Obstacle;
 use crate::{debug::DebugTransform, GameAssets};
 
-const OFFSET: Vec3 = Vec3::new(0.0, 0.0, -10.0);
+const OFFSET: Vec3 = Vec3::new(0.0, 0.0, -100.0);
 
 #[allow(dead_code)]
 pub fn spawn_wall_1_1(commands: &mut Commands, spawn_position: Vec2, assets: &Res<GameAssets>) {

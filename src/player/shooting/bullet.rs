@@ -74,6 +74,7 @@ pub struct BulletCollided {
 #[derive(Event)]
 pub struct BulletFired {
     pub position: Vec3,
+    pub direction: Vec3,
 }
 
 fn spawn_bullet(
@@ -82,15 +83,23 @@ fn spawn_bullet(
     frame: &Res<FrameCount>,
     player: &Player,
     player_transform: &Transform,
-    spawn_offset: Vec3,
+    side_handle: usize,
     ev_bullet_fired: &mut EventWriter<BulletFired>,
 ) {
+    let dir = player_transform.rotation.mul_vec3(Vec3::X);
+    let (spawn_offset, direction) = if side_handle == 0 {
+        (LEFT_WING_BULLET_SPAWN, Vec3::new(-dir.y, dir.x, 0.0))
+    } else {
+        (RIGHT_WING_BULLET_SPAWN, Vec3::new(dir.y, -dir.x, 0.0))
+    };
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
     .with_rotation(quat_from_vec3(player_transform.local_x()));
+
     ev_bullet_fired.send(BulletFired {
         position: transform.translation,
+        direction,
     });
 
     let bullet_entity = commands
@@ -102,7 +111,7 @@ fn spawn_bullet(
                 transform,
                 texture: assets.bullet.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(10.0, 3.0)),
+                    custom_size: Some(Vec2::new(14.0, 5.0)),
                     ..default()
                 },
                 ..default()
@@ -143,7 +152,7 @@ pub fn fire_bullets(
             &frame,
             &player,
             player_transform,
-            LEFT_WING_BULLET_SPAWN,
+            0,
             &mut ev_bullet_fired,
         );
         spawn_bullet(
@@ -152,7 +161,7 @@ pub fn fire_bullets(
             &frame,
             &player,
             player_transform,
-            RIGHT_WING_BULLET_SPAWN,
+            1,
             &mut ev_bullet_fired,
         );
 

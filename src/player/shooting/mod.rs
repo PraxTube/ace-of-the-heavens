@@ -1,4 +1,5 @@
 pub mod bullet;
+mod bullet_casing;
 pub mod reloading;
 pub mod rocket;
 pub mod rocket_explosion;
@@ -7,13 +8,22 @@ use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
 use crate::player::InGameSet;
-use crate::RollbackState;
+use crate::{GameState, RollbackState};
 
 pub struct ShootingPlugin;
 
 impl Plugin for ShootingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
+            (
+                bullet_casing::spawn_bullet_casings,
+                bullet_casing::animate_bullet_casings,
+                bullet_casing::despawn_bullet_casing_component,
+            )
+                .run_if(in_state(GameState::InRollbackGame)),
+        )
+        .add_systems(
             GgrsSchedule,
             (
                 reloading::cooldown_heat,

@@ -4,6 +4,7 @@ use bevy_ggrs::Session;
 use super::map;
 use super::{RoundEndTimer, RoundStats, Score, Seeds};
 use crate::audio::{BgmStage, PlaybackStates};
+use crate::misc::DeadSprite;
 use crate::network::session::Ready;
 use crate::network::socket::AceSocket;
 use crate::network::GgrsConfig;
@@ -20,6 +21,7 @@ fn clear_world(
     health_bars: Query<Entity, With<player::health::HealthBar>>,
     reload_bars: Query<Entity, With<player::shooting::reloading::ReloadBar>>,
     obstacles: Query<Entity, With<map::obstacle::Obstacle>>,
+    dead_sprites: Query<Entity, With<DeadSprite>>,
 ) {
     for player in &players {
         commands.entity(player).despawn_recursive();
@@ -47,6 +49,10 @@ fn clear_world(
 
     for obstacle in &obstacles {
         commands.entity(obstacle).despawn_recursive();
+    }
+
+    for dead_sprite in &dead_sprites {
+        commands.entity(dead_sprite).despawn_recursive();
     }
 }
 
