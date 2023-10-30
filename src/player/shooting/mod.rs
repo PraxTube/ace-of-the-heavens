@@ -35,6 +35,7 @@ impl Plugin for ShootingPlugin {
                 .distributive_run_if(in_state(RollbackState::InRound)),
         )
         .add_event::<bullet::BulletCollided>()
+        .add_event::<bullet::BulletFired>()
         .add_systems(
             GgrsSchedule,
             (

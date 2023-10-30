@@ -20,6 +20,12 @@ impl Plugin for EffectPlugin {
             ),
         )
         .add_systems(
+            Update,
+            (bullet::despawn_muzzle_effect, bullet::spawn_muzzle_effect)
+                .chain()
+                .run_if(in_state(GameState::InRollbackGame)),
+        )
+        .add_systems(
             GgrsSchedule,
             (
                 damage::spawn_damage_effect,

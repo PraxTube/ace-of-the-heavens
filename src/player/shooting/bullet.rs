@@ -19,8 +19,8 @@ const DAMAGE: u32 = 75;
 const BULLET_RELOAD_TIME: f32 = 0.1;
 const FIRE_HEAT: u32 = 80;
 
-const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, 20.0, 0.0);
-const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(10.0, -20.0, 0.0);
+const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, 10.0, 0.0);
+const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, -10.0, 0.0);
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
@@ -71,6 +71,11 @@ pub struct BulletCollided {
     pub position: Vec3,
 }
 
+#[derive(Event)]
+pub struct BulletFired {
+    pub position: Vec3,
+}
+
 fn spawn_bullet(
     commands: &mut Commands,
     assets: &Res<GameAssets>,
@@ -78,11 +83,16 @@ fn spawn_bullet(
     player: &Player,
     player_transform: &Transform,
     spawn_offset: Vec3,
+    ev_bullet_fired: &mut EventWriter<BulletFired>,
 ) {
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
     .with_rotation(quat_from_vec3(player_transform.local_x()));
+    ev_bullet_fired.send(BulletFired {
+        position: transform.translation,
+    });
+
     let bullet_entity = commands
         .spawn((
             Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
@@ -116,6 +126,7 @@ pub fn fire_bullets(
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
     mut players: Query<(&Transform, &mut Player, &mut BulletTimer)>,
+    mut ev_bullet_fired: EventWriter<BulletFired>,
 ) {
     for (player_transform, mut player, mut bullet_timer) in &mut players {
         let (input, _) = inputs[player.handle];
@@ -133,6 +144,7 @@ pub fn fire_bullets(
             &player,
             player_transform,
             LEFT_WING_BULLET_SPAWN,
+            &mut ev_bullet_fired,
         );
         spawn_bullet(
             &mut commands,
@@ -141,6 +153,7 @@ pub fn fire_bullets(
             &player,
             player_transform,
             RIGHT_WING_BULLET_SPAWN,
+            &mut ev_bullet_fired,
         );
 
         player.heat += FIRE_HEAT;

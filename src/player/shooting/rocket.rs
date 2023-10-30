@@ -22,8 +22,8 @@ const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
 const ROCKET_RELOAD_TIME: f32 = 3.0;
 
-const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(6.0, 20.0, -1.0);
-const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(6.0, -20.0, -1.0);
+const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
+const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
 
 #[derive(Component)]
 pub struct DummyRocket;

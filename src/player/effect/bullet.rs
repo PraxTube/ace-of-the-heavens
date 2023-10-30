@@ -1,10 +1,16 @@
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
-use crate::player::shooting::bullet::BulletCollided;
+use crate::{
+    player::shooting::bullet::{BulletCollided, BulletFired},
+    GameAssets,
+};
 
 #[derive(Component)]
 pub struct CollisionEffectSpawner;
+
+#[derive(Component)]
+pub struct MuzzleEffect;
 
 pub fn spawn_effect_spawner(mut commands: Commands, mut effects: ResMut<Assets<EffectAsset>>) {
     let mut scale_gradient = Gradient::new();
@@ -66,13 +72,37 @@ pub fn spawn_effect_spawner(mut commands: Commands, mut effects: ResMut<Assets<E
 }
 
 pub fn spawn_collision_effect(
-    mut ev_bullet_collided: EventReader<BulletCollided>,
     mut spawner: Query<(&mut EffectSpawner, &mut Transform), With<CollisionEffectSpawner>>,
+    mut ev_bullet_collided: EventReader<BulletCollided>,
 ) {
     let (mut spawner, mut transform) = spawner.single_mut();
 
     for ev in ev_bullet_collided.iter() {
         transform.translation = ev.position;
         spawner.reset();
+    }
+}
+
+pub fn spawn_muzzle_effect(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    mut ev_bullet_fired: EventReader<BulletFired>,
+) {
+    let texture = assets.score_full.clone();
+    for ev in ev_bullet_fired.iter() {
+        commands.spawn((
+            MuzzleEffect,
+            SpriteBundle {
+                texture: texture.clone(),
+                transform: Transform::from_translation(ev.position),
+                ..default()
+            },
+        ));
+    }
+}
+
+pub fn despawn_muzzle_effect(mut commands: Commands, query: Query<Entity, With<MuzzleEffect>>) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
     }
 }
