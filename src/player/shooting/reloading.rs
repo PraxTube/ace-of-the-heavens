@@ -12,7 +12,7 @@ use super::bullet::BulletTimer;
 use super::rocket::RocketTimer;
 use crate::player::spawning::player_spawn_transform;
 
-const OVERHEAT: u32 = 1000;
+pub const OVERHEAT: u32 = 1000;
 const HEAT_COOLDOWN_DELTA: u32 = 12;
 const OVERHEAT_COOLDOWN_DELTA: u32 = 5;
 const RELOAD_BAR_COLOR: Color = Color::rgba(0.9, 0.9, 0.9, 0.6);

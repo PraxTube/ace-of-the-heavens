@@ -24,6 +24,7 @@ pub struct RollbackSound {
     /// differentiates several unique instances of the same sound playing at once.
     pub sub_key: usize,
     pub volume: f64,
+    pub playback_rate: f64,
 }
 
 impl RollbackSound {
@@ -39,6 +40,7 @@ impl Default for RollbackSound {
             start_frame: 0,
             sub_key: 0,
             volume: 1.0,
+            playback_rate: 1.0,
         }
     }
 }
@@ -120,6 +122,7 @@ fn sync_rollback_sounds(
                 let instance_handle = audio
                     .play(rollback_sound.clip.clone())
                     .with_volume(rollback_sound.volume * MAIN_VOLUME)
+                    .with_playback_rate(rollback_sound.playback_rate)
                     .handle();
                 current_state
                     .playing

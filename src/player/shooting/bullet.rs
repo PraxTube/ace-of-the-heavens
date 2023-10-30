@@ -13,11 +13,13 @@ use crate::player::Player;
 use crate::world::CollisionEntity;
 use crate::GameAssets;
 
+use super::reloading::OVERHEAT;
+
 pub const BULLET_RADIUS: f32 = 1.0;
 const BULLET_MOVE_SPEED: f32 = 350.0 / 60.0;
-const DAMAGE: u32 = 75;
+const DAMAGE: u32 = 30;
 const BULLET_RELOAD_TIME: f32 = 0.1;
-const FIRE_HEAT: u32 = 80;
+const FIRE_HEAT: u32 = 40;
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, 10.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, -10.0, 0.0);
@@ -119,12 +121,14 @@ fn spawn_bullet(
         ))
         .add_rollback()
         .id();
+    let playback_rate = 1.0 + (player.heat as f64 / OVERHEAT as f64).powi(3);
     commands
         .spawn(RollbackSound {
             clip: assets.bullet_shot.clone(),
             start_frame: frame.0 as usize,
             sub_key: (bullet_entity.index() + frame.0) as usize,
             volume: 0.4,
+            playback_rate,
         })
         .add_rollback();
 }

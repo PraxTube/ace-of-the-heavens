@@ -107,6 +107,7 @@ fn spawn_rocket(
             start_frame: frame.0 as usize,
             sub_key: (rocket_entity.index() + frame.0) as usize,
             volume: 0.5,
+            ..default()
         })
         .add_rollback();
     let trail_effect = spawn_trail_effect(commands, effects, Vec3::ZERO);
@@ -259,6 +260,7 @@ pub fn toggle_visibility_dummy_rockets(
                         start_frame: frame.0 as usize,
                         sub_key: player.handle,
                         volume: 0.35,
+                        ..default()
                     })
                     .add_rollback();
             }

@@ -69,6 +69,7 @@ pub fn initiate_dodge(
                 start_frame: frame.0 as usize,
                 sub_key: player.handle,
                 volume: 0.35,
+                ..default()
             })
             .add_rollback();
     }
@@ -114,6 +115,7 @@ pub fn tick_dodge_timer(
                     start_frame: frame.0 as usize,
                     sub_key: player.handle,
                     volume: 0.35,
+                    ..default()
                 })
                 .add_rollback();
         }
