@@ -1,19 +1,20 @@
 use bevy::prelude::*;
-use bevy_ggrs::AddRollbackCommandExtension;
+use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
+use super::round_start_screen::animate_round_start_screen;
 use super::MAX_SCORE;
 use crate::game_logic::{Rematch, Score};
-use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
-use crate::GameAssets;
+use crate::player::{check_rematch_state, LocalPlayerHandle, P1_COLOR, P2_COLOR};
+use crate::{GameAssets, RollbackState};
 
 #[derive(Component)]
-pub struct GameOverScreen;
+struct GameOverScreen;
 
 #[derive(Component)]
-pub struct RematchText;
+struct RematchText;
 
 #[derive(Component)]
-pub struct WinnerText;
+struct WinnerText;
 
 fn spawn_background(commands: &mut Commands, texture: Handle<Image>) {
     commands
@@ -118,24 +119,24 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .push_children(&[winner_text, rematch_text, quit_text]);
 }
 
-pub fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
     spawn_background(&mut commands, assets.white_pixel.clone());
     spawn_text(&mut commands, assets.font.clone());
 }
 
-pub fn show_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
+fn show_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
     for mut screen_component in &mut screen_components {
         screen_component.display = Display::Flex;
     }
 }
 
-pub fn hide_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
+fn hide_game_over_screen(mut screen_components: Query<&mut Style, With<GameOverScreen>>) {
     for mut screen_component in &mut screen_components {
         screen_component.display = Display::None;
     }
 }
 
-pub fn update_winner_text(
+fn update_winner_text(
     assets: Res<GameAssets>,
     mut winner_text: Query<&mut Text, With<WinnerText>>,
     score: Res<Score>,
@@ -166,7 +167,7 @@ pub fn update_winner_text(
     };
 }
 
-pub fn update_rematch_text(
+fn update_rematch_text(
     mut rematch_text: Query<&mut Text, With<RematchText>>,
     rematch: Res<Rematch>,
     local_handle: Res<LocalPlayerHandle>,
@@ -184,5 +185,26 @@ pub fn update_rematch_text(
     } else {
         let mut text = rematch_text.single_mut();
         text.sections[0].value = "PRESS R TO REMATCH".to_string();
+    }
+}
+
+pub struct GameOverUiPlugin;
+
+impl Plugin for GameOverUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            OnEnter(RollbackState::GameOver),
+            (show_game_over_screen, update_winner_text),
+        )
+        .add_systems(OnExit(RollbackState::Setup), (spawn_game_over_screen,))
+        .add_systems(OnExit(RollbackState::GameOver), hide_game_over_screen)
+        .add_systems(
+            GgrsSchedule,
+            update_rematch_text
+                .run_if(in_state(RollbackState::GameOver))
+                .after(animate_round_start_screen)
+                .after(check_rematch_state)
+                .after(apply_state_transition::<RollbackState>),
+        );
     }
 }

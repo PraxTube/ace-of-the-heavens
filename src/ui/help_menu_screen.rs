@@ -1,15 +1,12 @@
-use open;
+use open::that as open_url;
 
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 use super::MainMenuState;
-use crate::GameAssets;
-
-const SCROLL_STRENGTH: f32 = 100.0;
+use crate::{GameAssets, GameState};
 
 #[derive(Component)]
-pub struct HelpMenuScreen;
+struct HelpMenuScreen;
 
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
@@ -89,16 +86,16 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, open_text: String) {
         .push_children(&[title_text, return_text, open_text, quit_text]);
 }
 
-pub fn spawn_help_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_help_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
     let url = "http://rancic.org/aoth/help-menu/";
-    let text = match open::that(url) {
+    let text = match open_url(url) {
         Ok(_) => "Opened webpage: ".to_string() + url,
         Err(err) => "ERROR, failed to open: ".to_string() + url + &format!("\n\n{}", err),
     };
     spawn_text(&mut commands, assets.font.clone(), text);
 }
 
-pub fn despawn_help_menu_screen(
+fn despawn_help_menu_screen(
     mut commands: Commands,
     game_over_screens: Query<Entity, With<HelpMenuScreen>>,
 ) {
@@ -107,41 +104,22 @@ pub fn despawn_help_menu_screen(
     }
 }
 
-pub fn return_to_main(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<MainMenuState>>) {
+fn return_to_main(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<MainMenuState>>) {
     if keys.pressed(KeyCode::R) {
         next_state.set(MainMenuState::MainMenu);
     }
 }
 
-pub fn scroll_help_screen(
-    keys: Res<Input<KeyCode>>,
-    mut ev_scroll: EventReader<MouseWheel>,
-    mut query: Query<&mut Style, With<HelpMenuScreen>>,
-) {
-    let mut direction = 0.0;
-    if keys.just_pressed(KeyCode::J) || keys.just_pressed(KeyCode::Down) {
-        direction -= 1.0;
-    }
-    if keys.just_pressed(KeyCode::K) || keys.just_pressed(KeyCode::Up) {
-        direction += 1.0;
-    }
+pub struct HelpMenuUiPlugin;
 
-    for ev in ev_scroll.iter() {
-        match ev.unit {
-            MouseScrollUnit::Line => {
-                direction += ev.y;
-            }
-            MouseScrollUnit::Pixel => {
-                direction += ev.y;
-            }
-        }
-    }
-
-    if direction == 0.0 {
-        return;
-    }
-
-    for mut style in &mut query {
-        style.top = Val::try_add(&style.top, Val::Px(direction * SCROLL_STRENGTH)).unwrap();
+impl Plugin for HelpMenuUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            return_to_main
+                .run_if(in_state(GameState::MainMenu).and_then(in_state(MainMenuState::HelpMenu))),
+        )
+        .add_systems(OnEnter(MainMenuState::HelpMenu), spawn_help_menu_screen)
+        .add_systems(OnExit(MainMenuState::HelpMenu), despawn_help_menu_screen);
     }
 }

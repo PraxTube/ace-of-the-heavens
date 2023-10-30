@@ -1,13 +1,13 @@
 use bevy::prelude::*;
-use bevy_ggrs::AddRollbackCommandExtension;
+use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
 use super::MAX_SCORE;
-use crate::game_logic::Score;
+use crate::game_logic::{check_rematch, Score};
 use crate::player::{P1_COLOR, P2_COLOR};
-use crate::GameAssets;
+use crate::{GameAssets, RollbackState};
 
 #[derive(Component)]
-pub struct ScoreIcon {
+struct ScoreIcon {
     index: usize,
 }
 
@@ -56,11 +56,10 @@ fn spawn_score_circle(
         .id()
 }
 
-pub fn spawn_scoreboard(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_scoreboard(mut commands: Commands, assets: Res<GameAssets>) {
     let texture = assets.score_empty.clone();
     let font = assets.font.clone();
 
-    // root node
     let root_node = commands
         .spawn(NodeBundle {
             style: Style {
@@ -105,7 +104,7 @@ pub fn spawn_scoreboard(mut commands: Commands, assets: Res<GameAssets>) {
     commands.entity(root_node).push_children(&children);
 }
 
-pub fn update_scoreboard(
+fn update_scoreboard(
     score: Res<Score>,
     mut score_icons: Query<(&ScoreIcon, &mut UiImage)>,
     assets: Res<GameAssets>,
@@ -129,5 +128,20 @@ pub fn update_scoreboard(
         } else {
             ui_image.texture = assets.score_empty.clone();
         }
+    }
+}
+
+pub struct ScoreboardUiPlugin;
+
+impl Plugin for ScoreboardUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnExit(RollbackState::Setup), spawn_scoreboard)
+            .add_systems(
+                GgrsSchedule,
+                update_scoreboard
+                    .run_if(not(in_state(RollbackState::Setup)))
+                    .after(check_rematch)
+                    .after(apply_state_transition::<RollbackState>),
+            );
     }
 }

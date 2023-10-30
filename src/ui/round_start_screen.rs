@@ -2,9 +2,11 @@ use std::time::Duration;
 
 use bevy::core::FrameCount;
 use bevy::prelude::*;
-use bevy_ggrs::AddRollbackCommandExtension;
+use bevy_ggrs::{AddRollbackCommandExtension, GgrsSchedule};
 
 use crate::audio::RollbackSound;
+use crate::game_logic::{check_rematch, round_end_timeout};
+use crate::player::spawning::despawn_players;
 use crate::player::{LocalPlayerHandle, P1_COLOR, P2_COLOR};
 use crate::{GameAssets, RollbackState};
 
@@ -29,11 +31,11 @@ impl Default for HideScreenTimer {
 }
 
 #[derive(Component)]
-pub struct RoundStartScreen;
+struct RoundStartScreen;
 #[derive(Component)]
 pub struct RoundStartText;
 
-pub fn spawn_round_start_screen(
+fn spawn_round_start_screen(
     mut commands: Commands,
     assets: Res<GameAssets>,
     local_handle: Res<LocalPlayerHandle>,
@@ -121,7 +123,7 @@ pub fn animate_round_start_screen(
     text.sections[0] = get_text_section(&timer, &text.sections[0]);
 }
 
-pub fn show_round_start_screen(
+fn show_round_start_screen(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
@@ -136,7 +138,7 @@ pub fn show_round_start_screen(
     });
 }
 
-pub fn hide_round_start_screen(
+fn hide_round_start_screen(
     mut timer: ResMut<HideScreenTimer>,
     mut screen: Query<&mut Style, With<RoundStartScreen>>,
 ) {
@@ -150,5 +152,35 @@ pub fn hide_round_start_screen(
 
     if timer.just_finished() {
         screen.display = Display::None;
+    }
+}
+
+pub struct RoundStartUiPlugin;
+
+impl Plugin for RoundStartUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            GgrsSchedule,
+            (
+                animate_round_start_screen
+                    .run_if(in_state(RollbackState::RoundStart))
+                    .after(round_start_timeout),
+                hide_round_start_screen.run_if(in_state(RollbackState::InRound)),
+            )
+                .chain()
+                .after(apply_state_transition::<RollbackState>),
+        )
+        .add_systems(
+            GgrsSchedule,
+            round_start_timeout
+                .ambiguous_with(round_end_timeout)
+                .ambiguous_with(check_rematch)
+                .ambiguous_with(despawn_players)
+                .distributive_run_if(in_state(RollbackState::RoundStart))
+                .after(apply_state_transition::<RollbackState>),
+        )
+        .add_systems(OnExit(RollbackState::Setup), spawn_round_start_screen)
+        .add_systems(OnEnter(RollbackState::RoundStart), show_round_start_screen)
+        .add_systems(OnExit(RollbackState::RoundStart), hide_round_start_screen);
     }
 }

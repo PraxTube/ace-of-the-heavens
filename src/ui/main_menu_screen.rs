@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 
+use super::MainMenuState;
 use crate::{GameAssets, GameState};
 
-use super::MainMenuState;
-
 #[derive(Component)]
-pub struct MainMenuScreen;
+struct MainMenuScreen;
 
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
@@ -81,11 +80,11 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .push_children(&[title_text, play_text, help_text, quit_text]);
 }
 
-pub fn spawn_main_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_main_menu_screen(mut commands: Commands, assets: Res<GameAssets>) {
     spawn_text(&mut commands, assets.font.clone());
 }
 
-pub fn despawn_main_menu_screen(
+fn despawn_main_menu_screen(
     mut commands: Commands,
     game_over_screens: Query<Entity, With<MainMenuScreen>>,
 ) {
@@ -94,14 +93,36 @@ pub fn despawn_main_menu_screen(
     }
 }
 
-pub fn play_game(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<GameState>>) {
+fn play_game(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<GameState>>) {
     if keys.pressed(KeyCode::P) {
         next_state.set(GameState::Matchmaking);
     }
 }
 
-pub fn help_menu(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<MainMenuState>>) {
+fn help_menu(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<MainMenuState>>) {
     if keys.pressed(KeyCode::H) {
         next_state.set(MainMenuState::HelpMenu);
+    }
+}
+
+pub struct MainMenuUiPlugin;
+
+impl Plugin for MainMenuUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                play_game.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::MainMenu)),
+                ),
+                help_menu.run_if(
+                    in_state(GameState::MainMenu).and_then(in_state(MainMenuState::MainMenu)),
+                ),
+            ),
+        )
+        .add_systems(OnEnter(GameState::MainMenu), spawn_main_menu_screen)
+        .add_systems(OnExit(GameState::MainMenu), despawn_main_menu_screen)
+        .add_systems(OnExit(MainMenuState::HelpMenu), spawn_main_menu_screen)
+        .add_systems(OnEnter(MainMenuState::HelpMenu), despawn_main_menu_screen);
     }
 }

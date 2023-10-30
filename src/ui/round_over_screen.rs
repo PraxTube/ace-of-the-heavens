@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 
-use crate::game_logic::Score;
+use crate::game_logic::{adjust_score, Score};
 use crate::player::{P1_COLOR, P2_COLOR};
-use crate::GameAssets;
+use crate::{GameAssets, RollbackState};
 
 use super::MAX_SCORE;
 
 #[derive(Component)]
-pub struct RoundScreen;
+struct RoundScreen;
 
 #[derive(Component)]
-pub struct RoundScore;
+struct RoundScore;
 
-pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) {
     let root_node = commands
         .spawn((
             RoundScreen,
@@ -77,7 +77,7 @@ pub fn spawn_round_over_screen(mut commands: Commands, assets: Res<GameAssets>) 
         .push_children(&[background, score]);
 }
 
-pub fn show_round_over_screen(
+fn show_round_over_screen(
     mut round_screen: Query<&mut Style, With<RoundScreen>>,
     mut round_score: Query<&mut BackgroundColor, With<RoundScore>>,
     score: Res<Score>,
@@ -96,6 +96,19 @@ pub fn show_round_over_screen(
     };
 }
 
-pub fn hide_round_over_screen(mut round_screen: Query<&mut Style, With<RoundScreen>>) {
+fn hide_round_over_screen(mut round_screen: Query<&mut Style, With<RoundScreen>>) {
     round_screen.single_mut().display = Display::None;
+}
+
+pub struct RoundOverUiPlugin;
+
+impl Plugin for RoundOverUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnExit(RollbackState::Setup), spawn_round_over_screen)
+            .add_systems(
+                OnEnter(RollbackState::RoundEnd),
+                show_round_over_screen.after(adjust_score),
+            )
+            .add_systems(OnExit(RollbackState::RoundEnd), hide_round_over_screen);
+    }
 }

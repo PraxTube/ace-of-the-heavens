@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-use crate::GameAssets;
+use crate::{GameAssets, GameState};
 
 #[derive(Component)]
-pub struct NetworkingScreen;
+struct MatchmakingScreen;
 
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
@@ -33,7 +33,7 @@ fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
 fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
     let text_root_node = commands
         .spawn((
-            NetworkingScreen,
+            MatchmakingScreen,
             NodeBundle {
                 style: Style {
                     height: Val::Vh(100.0),
@@ -57,15 +57,24 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .push_children(&[title_text, quit_text]);
 }
 
-pub fn spawn_networking_screen(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_matchmaking_screen(mut commands: Commands, assets: Res<GameAssets>) {
     spawn_text(&mut commands, assets.font.clone());
 }
 
-pub fn despawn_networking_screen(
+fn despawn_matchmaking_screen(
     mut commands: Commands,
-    game_over_screens: Query<Entity, With<NetworkingScreen>>,
+    game_over_screens: Query<Entity, With<MatchmakingScreen>>,
 ) {
     for screen_component in &game_over_screens {
         commands.entity(screen_component).despawn_recursive();
+    }
+}
+
+pub struct MatchmakingUiPlugin;
+
+impl Plugin for MatchmakingUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::Matchmaking), spawn_matchmaking_screen)
+            .add_systems(OnExit(GameState::Matchmaking), despawn_matchmaking_screen);
     }
 }

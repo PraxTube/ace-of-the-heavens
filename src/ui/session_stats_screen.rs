@@ -2,25 +2,25 @@ use bevy::prelude::*;
 
 use crate::network::ggrs_config::PLAYER_COUNT;
 use crate::network::session_stats::SessionStats;
-use crate::GameAssets;
+use crate::{GameAssets, GameState};
 
 const ROW_GAP: f32 = 5.0;
 const COLUMN_GAP: f32 = 0.0;
 
 #[derive(Component)]
-pub struct RootStatsScreen;
+struct RootStatsScreen;
 
 #[derive(Component)]
-pub struct StatsText;
+struct StatsText;
 
 #[derive(Component)]
-pub struct SessionStatsRow {
-    pub handle: usize,
-    pub sql: Entity,
-    pub ping: Entity,
-    pub kbps: Entity,
-    pub lframes: Entity,
-    pub rframes: Entity,
+struct SessionStatsRow {
+    handle: usize,
+    sql: Entity,
+    ping: Entity,
+    kbps: Entity,
+    lframes: Entity,
+    rframes: Entity,
 }
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>, content: Option<&str>) -> Entity {
@@ -120,7 +120,7 @@ fn spawn_session_text_row(commands: &mut Commands, font: Handle<Font>, handle: u
     root_node
 }
 
-pub fn spawn_stats_text(mut commands: Commands, assets: Res<GameAssets>) {
+fn spawn_stats_text(mut commands: Commands, assets: Res<GameAssets>) {
     let font = assets.font.clone();
     let root_node = commands
         .spawn((
@@ -150,14 +150,7 @@ pub fn spawn_stats_text(mut commands: Commands, assets: Res<GameAssets>) {
     }
 }
 
-// let mut text_str = String::new();
-// // SQL, PING, Kb/s, LFrames, RFrames
-// for (i, n_stats) in stats.network_stats.iter().enumerate() {
-//     text_str += &format!("PLAYER {}, PING: {}\n", i, n_stats.ping);
-// }
-// text.sections[0].value = text_str;
-
-pub fn update_stats_text(
+fn update_stats_text(
     stats: Res<SessionStats>,
     row_stats: Query<&SessionStatsRow>,
     mut stats_text: Query<&mut Text, With<StatsText>>,
@@ -191,7 +184,7 @@ pub fn update_stats_text(
     }
 }
 
-pub fn toggle_stats_visibility(
+fn toggle_stats_visibility(
     keys: Res<Input<KeyCode>>,
     mut query: Query<&mut Style, With<RootStatsScreen>>,
 ) {
@@ -202,5 +195,20 @@ pub fn toggle_stats_visibility(
         } else {
             style.display = Display::None;
         }
+    }
+}
+
+pub struct SessionStatsPlugin;
+
+impl Plugin for SessionStatsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::InRollbackGame), spawn_stats_text)
+            .add_systems(
+                Update,
+                (
+                    update_stats_text.run_if(in_state(GameState::InRollbackGame)),
+                    toggle_stats_visibility.run_if(in_state(GameState::InRollbackGame)),
+                ),
+            );
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::game_logic::{determine_seed, Seeds};
-use crate::GameAssets;
+use crate::{GameAssets, GameState};
 
 fn spawn_text(commands: &mut Commands, font: Handle<Font>, seed: u32) -> Entity {
     commands
@@ -19,10 +19,9 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>, seed: u32) -> Entity 
         .id()
 }
 
-pub fn spawn_seed_screen(mut commands: Commands, assets: Res<GameAssets>, seeds: Res<Seeds>) {
+fn spawn_seed_screen(mut commands: Commands, assets: Res<GameAssets>, seeds: Res<Seeds>) {
     let font = assets.font.clone();
 
-    // root node
     let root_node = commands
         .spawn(NodeBundle {
             style: Style {
@@ -39,4 +38,12 @@ pub fn spawn_seed_screen(mut commands: Commands, assets: Res<GameAssets>, seeds:
 
     let text = spawn_text(&mut commands, font, determine_seed(&seeds));
     commands.entity(root_node).push_children(&[text]);
+}
+
+pub struct SeedUiPlugin;
+
+impl Plugin for SeedUiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnExit(GameState::Matchmaking), spawn_seed_screen);
+    }
 }
