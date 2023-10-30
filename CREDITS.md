@@ -18,6 +18,8 @@ https://ansimuz.itch.io/explosion-animations-pack
 
 https://www.themotionmonkey.co.uk/free-resources/retro-arcade-sounds/
 
+NOTE: Some sounds were changed slightly (for instance bass boosted).
+
 #### Music
 
 https://pixabay.com/music/video-games-music-for-arcade-style-game-146875/
