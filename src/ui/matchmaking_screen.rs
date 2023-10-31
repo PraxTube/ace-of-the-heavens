@@ -7,14 +7,15 @@ struct MatchmakingScreen;
 #[derive(Component)]
 struct MatchmakingText;
 
+const MESSAGE: &str = "WAITING FOR 1 OTHER PLAYER";
+
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
         font,
         font_size: 75.0,
         color: Color::WHITE,
     };
-    let text_bundle =
-        TextBundle::from_sections([TextSection::new("LOADING -".to_string(), text_style)]);
+    let text_bundle = TextBundle::from_sections([TextSection::new(MESSAGE, text_style)]);
     commands.spawn((MatchmakingText, text_bundle)).id()
 }
 
@@ -92,20 +93,20 @@ fn animate_matchmaking_screen(
     let new_text = if content.ends_with('-') {
         *forward = !*forward;
         if *forward {
-            "LOADING /"
+            MESSAGE.to_string() + " /"
         } else {
-            "LOADING \\"
+            MESSAGE.to_string() + " \\"
         }
     } else if content.ends_with('/') {
-        "LOADING -"
+        MESSAGE.to_string() + " -"
     } else if content.ends_with('\\') {
-        "LOADING |"
+        MESSAGE.to_string() + " |"
     } else {
         *forward = !*forward;
         if *forward {
-            "LOADING /"
+            MESSAGE.to_string() + " /"
         } else {
-            "LOADING \\"
+            MESSAGE.to_string() + " \\"
         }
     };
 

@@ -46,3 +46,21 @@ Contributions of any kind are welcome.
 [Credits](https://github.com/PraxTube/ace-of-the-heavens/blob/master/CREDITS.md).
 [License](https://github.com/PraxTube/ace-of-the-heavens/blob/master/LICENSE),
 applies to everything that doesn't already have a license.
+
+## Footage
+
+<p align="center">
+    <img src="docs/demo/corridor.gif" alt="animated" />
+</p>
+
+<p align="center">
+    <img src="docs/demo/rocket-kill.gif" alt="animated" />
+</p>
+
+<p align="center">
+    <img src="docs/demo/shoot-n-dodge.gif" alt="animated" />
+</p>
+
+<p align="center">
+    <img src="docs/demo/dodge.gif" alt="animated" />
+</p>
