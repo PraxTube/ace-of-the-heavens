@@ -214,6 +214,12 @@ impl Plugin for GameAudioPlugin {
             .init_resource::<PlaybackStates>()
             .add_systems(OnEnter(GameState::MainMenu), bgm::fade_out_all_bgm)
             .add_systems(Update, (sync_rollback_sounds, update_looped_sounds))
+            // Clear any sounds that are left over when re-entering to main menu
+            .add_systems(
+                Update,
+                (remove_finished_sounds, remove_looped_sounds)
+                    .run_if(in_state(GameState::MainMenu)),
+            )
             .add_systems(OnEnter(RollbackState::RoundStart), bgm::check_bgm_stage)
             .add_systems(
                 OnEnter(RollbackState::GameOver),
