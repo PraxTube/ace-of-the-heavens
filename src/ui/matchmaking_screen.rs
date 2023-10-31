@@ -4,6 +4,8 @@ use crate::{GameAssets, GameState};
 
 #[derive(Component)]
 struct MatchmakingScreen;
+#[derive(Component)]
+struct MatchmakingText;
 
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
@@ -11,12 +13,9 @@ fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
         font_size: 75.0,
         color: Color::WHITE,
     };
-    let text_bundle = TextBundle::from_sections([TextSection::new(
-        "WAITING FOR 1 OTHER PLAYER...".to_string(),
-        text_style,
-    )])
-    .with_text_alignment(TextAlignment::Center);
-    commands.spawn(text_bundle).id()
+    let text_bundle =
+        TextBundle::from_sections([TextSection::new("LOADING -".to_string(), text_style)]);
+    commands.spawn((MatchmakingText, text_bundle)).id()
 }
 
 fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
@@ -70,11 +69,58 @@ fn despawn_matchmaking_screen(
     }
 }
 
+fn animate_matchmaking_screen(
+    mut query: Query<&mut Text, With<MatchmakingText>>,
+    mut ticks: Local<f32>,
+    mut forward: Local<bool>,
+    time: Res<Time>,
+) {
+    let mut text = if let Ok(t) = query.get_single_mut() {
+        t
+    } else {
+        error!("there are multiple or none matchmaking texts, there should be exactly one");
+        return;
+    };
+
+    *ticks += time.delta_seconds();
+    if *ticks < 0.2 {
+        return;
+    }
+    *ticks = 0.0;
+
+    let content = &text.sections[0].value;
+    let new_text = if content.ends_with('-') {
+        *forward = !*forward;
+        if *forward {
+            "LOADING /"
+        } else {
+            "LOADING \\"
+        }
+    } else if content.ends_with('/') {
+        "LOADING -"
+    } else if content.ends_with('\\') {
+        "LOADING |"
+    } else {
+        *forward = !*forward;
+        if *forward {
+            "LOADING /"
+        } else {
+            "LOADING \\"
+        }
+    };
+
+    text.sections[0].value = new_text.to_string();
+}
+
 pub struct MatchmakingUiPlugin;
 
 impl Plugin for MatchmakingUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Matchmaking), spawn_matchmaking_screen)
-            .add_systems(OnExit(GameState::Matchmaking), despawn_matchmaking_screen);
+        app.add_systems(
+            Update,
+            animate_matchmaking_screen.run_if(in_state(GameState::Matchmaking)),
+        )
+        .add_systems(OnEnter(GameState::Matchmaking), spawn_matchmaking_screen)
+        .add_systems(OnExit(GameState::Matchmaking), despawn_matchmaking_screen);
     }
 }
