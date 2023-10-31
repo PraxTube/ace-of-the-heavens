@@ -3,7 +3,7 @@ use bevy_ggrs::AddRollbackCommandExtension;
 
 use crate::debug::DebugTransform;
 use crate::player::shooting::bullet::{Bullet, BULLET_RADIUS};
-use crate::player::{Player, MAX_HEALTH, PLAYER_RADIUS};
+use crate::player::{Player, PLAYER_RADIUS};
 use crate::world::CollisionEntity;
 
 use super::spawning::player_spawn_transform;
@@ -96,12 +96,12 @@ fn fill_health_bar(
         (Without<Player>, Without<HealthBar>),
     >,
     children: &Children,
-    player_health: u32,
+    player: &Player,
 ) {
     for &child in children {
         let health_bar_fill = health_bar_fills.get_mut(child);
         if let Ok(mut fill) = health_bar_fill {
-            let x_fill = (100 * player_health / MAX_HEALTH).clamp(0, 100);
+            let x_fill = (100 * player.health / player.stats.max_health).clamp(0, 100);
             fill.0.scale = Vec3::new(x_fill as f32 / 100.0, fill.0.scale.y, fill.0.scale.z);
             fill.2.update(&fill.0);
         }
@@ -127,7 +127,7 @@ pub fn fill_health_bars(
             }
 
             *health_bar_visibility = Visibility::Visible;
-            fill_health_bar(&mut health_bar_fills, children, player.health);
+            fill_health_bar(&mut health_bar_fills, children, player);
         }
     }
 }

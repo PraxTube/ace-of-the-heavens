@@ -17,7 +17,6 @@ use super::reloading::OVERHEAT;
 
 pub const BULLET_RADIUS: f32 = 1.0;
 const BULLET_MOVE_SPEED: f32 = 350.0 / 60.0;
-const DAMAGE: u32 = 30;
 const BULLET_RELOAD_TIME: f32 = 0.1;
 const FIRE_HEAT: u32 = 40;
 
@@ -33,10 +32,10 @@ pub struct Bullet {
 }
 
 impl Bullet {
-    fn new(player_speed: f32, extra_damage: u32, handle: usize) -> Bullet {
+    fn new(player_speed: f32, damage: u32, handle: usize) -> Bullet {
         Bullet {
             current_speed: BULLET_MOVE_SPEED + player_speed,
-            damage: DAMAGE + extra_damage,
+            damage,
             handle,
         }
     }
@@ -106,7 +105,11 @@ fn spawn_bullet(
 
     let bullet_entity = commands
         .spawn((
-            Bullet::new(player.current_speed, player.speed_ratio(), player.handle),
+            Bullet::new(
+                player.current_speed,
+                (player.stats.bullet_damage as f32 * player.speed_ratio()) as u32,
+                player.handle,
+            ),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {

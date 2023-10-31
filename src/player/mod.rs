@@ -22,9 +22,6 @@ pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
 pub const DELTA_STEERING: f32 = 3.5 / 60.0;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;
-// Health
-pub const MAX_HEALTH: u32 = 2000;
-// Spawning
 // Color
 pub const P1_COLOR: Color = Color::rgb(
     0xDF as f32 / 255.0,
@@ -40,12 +37,18 @@ pub const P2_COLOR: Color = Color::rgb(
 #[derive(Reflect, Clone)]
 pub struct PlayerStats {
     pub max_speed: f32,
+    pub max_health: u32,
+    pub bullet_damage: u32,
+    pub rocket_reload_time: f32,
 }
 
 impl Default for PlayerStats {
     fn default() -> Self {
         Self {
             max_speed: 400.0 / 60.0,
+            max_health: 2000,
+            bullet_damage: 30,
+            rocket_reload_time: 2.5,
         }
     }
 }
@@ -74,7 +77,7 @@ impl Player {
         Player {
             handle,
             current_speed: MIN_SPEED,
-            health: MAX_HEALTH,
+            health: stats.max_health,
             heat: 0,
             overheated: false,
             dodging: false,
@@ -82,9 +85,8 @@ impl Player {
         }
     }
 
-    pub fn speed_ratio(&self) -> u32 {
-        ((self.current_speed - MIN_SPEED).max(0.0) / (self.stats.max_speed - MIN_SPEED).max(0.0)
-            * 100.0) as u32
+    pub fn speed_ratio(&self) -> f32 {
+        1.0 + (self.current_speed - MIN_SPEED) / (self.stats.max_speed - MIN_SPEED)
     }
 }
 

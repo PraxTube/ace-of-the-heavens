@@ -20,7 +20,6 @@ use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
-const ROCKET_RELOAD_TIME: f32 = 2.5;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
@@ -57,8 +56,8 @@ pub struct RocketTimer {
 }
 
 impl RocketTimer {
-    pub fn default() -> RocketTimer {
-        let mut timer = Timer::from_seconds(ROCKET_RELOAD_TIME, TimerMode::Once);
+    pub fn new(duration: f32) -> RocketTimer {
+        let mut timer = Timer::from_seconds(duration, TimerMode::Once);
         timer.tick(timer.duration());
         RocketTimer { timer }
     }

@@ -49,9 +49,9 @@ fn spawn_player(
     let transform = player_spawn_transform(handle);
     commands
         .spawn((
-            Player::new(handle, stats),
+            Player::new(handle, stats.clone()),
             BulletTimer::default(),
-            RocketTimer::default(),
+            RocketTimer::new(stats.rocket_reload_time),
             DodgeTimer::default(),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
