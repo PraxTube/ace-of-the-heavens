@@ -20,17 +20,29 @@ is used as the Rust backend to facilitate this.
 - Some basic maps
 - Static camera with the same border dimensions on each map
 
+See [here](http://rancic.org/aoth/help-menu/)
+for more details.
+
 ## Future Plans
 
 - See if I am able to create an AI and add Singleplayer if it's possible
 - Add more maps
 - Add Android Support maybe (probably not though)
 
+See [here](https://github.com/PraxTube/ace-of-the-heavens/issues)
+for more details.
+
+## MacOS Builds
+
+I haven't been able to test if the macOS builds work, if you encounter any issues here please report them.
+
+## Development
+
+See [here](https://github.com/PraxTube/ace-of-the-heavens/tree/master/docs/DEVELOPMENT.md).
+Contributions of any kind are welcome.
+
 ## Appendix
 
 [Credits](https://github.com/PraxTube/ace-of-the-heavens/blob/master/CREDITS.md).
-
 [License](https://github.com/PraxTube/ace-of-the-heavens/blob/master/LICENSE),
 applies to everything that doesn't already have a license.
-
-Contributions of any kind are welcome.
