@@ -12,10 +12,10 @@ use crate::{input::dodge, misc::utils::quat_from_vec3, network::GgrsConfig};
 
 use super::Player;
 
-const DODGE_COOLDOWN: f32 = 5.0;
+const DODGE_COOLDOWN: f32 = 2.0;
 const DODGE_TIME: f32 = 0.5;
 
-const DODGE_REFRESH_TIME: f32 = 0.75;
+const DODGE_REFRESH_TIME: f32 = 0.50;
 
 #[derive(Component, Reflect)]
 #[reflect(Hash)]

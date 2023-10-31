@@ -1,6 +1,6 @@
 use chrono::Utc;
 
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::{prelude::*, render::camera::ScalingMode, window::WindowMode};
 use noisy_bevy::simplex_noise_2d_seeded;
 
 use crate::GameState;
@@ -16,7 +16,10 @@ impl Plugin for AceCameraPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
             Update,
-            camera_shake.run_if(in_state(GameState::InRollbackGame)),
+            (
+                toggle_full_screen,
+                camera_shake.run_if(in_state(GameState::InRollbackGame)),
+            ),
         )
         .init_resource::<CameraShake>()
         .add_systems(OnEnter(GameState::MainMenu), spawn_camera);
@@ -74,4 +77,22 @@ fn camera_shake(
     transform.rotation = Quat::IDENTITY + rotation_offset;
 
     shake.reduce_trauma(time.delta_seconds());
+}
+
+fn toggle_full_screen(mut window: Query<&mut Window>, keys: Res<Input<KeyCode>>) {
+    let mut window = match window.get_single_mut() {
+        Ok(w) => w,
+        Err(err) => {
+            error!("there is not exactly one window, {}", err);
+            return;
+        }
+    };
+
+    if keys.just_pressed(KeyCode::B) {
+        window.mode = if window.mode == WindowMode::Windowed {
+            WindowMode::Fullscreen
+        } else {
+            WindowMode::Windowed
+        }
+    }
 }
