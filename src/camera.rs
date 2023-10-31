@@ -1,6 +1,8 @@
 use chrono::Utc;
 
-use bevy::{prelude::*, render::camera::ScalingMode, window::WindowMode};
+use bevy::render::view::screenshot::ScreenshotManager;
+use bevy::window::{PrimaryWindow, WindowMode};
+use bevy::{prelude::*, render::camera::ScalingMode};
 use noisy_bevy::simplex_noise_2d_seeded;
 
 use crate::GameState;
@@ -18,6 +20,7 @@ impl Plugin for AceCameraPlugin {
             Update,
             (
                 toggle_full_screen,
+                take_screenshot,
                 camera_shake.run_if(in_state(GameState::InRollbackGame)),
             ),
         )
@@ -79,8 +82,11 @@ fn camera_shake(
     shake.reduce_trauma(time.delta_seconds());
 }
 
-fn toggle_full_screen(mut window: Query<&mut Window>, keys: Res<Input<KeyCode>>) {
-    let mut window = match window.get_single_mut() {
+fn toggle_full_screen(
+    mut main_window: Query<&mut Window, With<PrimaryWindow>>,
+    keys: Res<Input<KeyCode>>,
+) {
+    let mut window = match main_window.get_single_mut() {
         Ok(w) => w,
         Err(err) => {
             error!("there is not exactly one window, {}", err);
@@ -94,5 +100,23 @@ fn toggle_full_screen(mut window: Query<&mut Window>, keys: Res<Input<KeyCode>>)
         } else {
             WindowMode::Windowed
         }
+    }
+}
+
+fn take_screenshot(
+    keys: Res<Input<KeyCode>>,
+    main_window: Query<Entity, With<PrimaryWindow>>,
+    mut screenshot_manager: ResMut<ScreenshotManager>,
+    mut counter: Local<u32>,
+) {
+    if !keys.just_pressed(KeyCode::F12) {
+        return;
+    }
+
+    let path = format!("./screenshot-{}.png", *counter);
+    *counter += 1;
+    match screenshot_manager.save_screenshot_to_disk(main_window.single(), path) {
+        Ok(()) => {}
+        Err(err) => error!("failed to take screenshot, {}", err),
     }
 }
