@@ -1,6 +1,9 @@
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
 
+use rand::Rng;
+use rand_xoshiro::rand_core::SeedableRng;
+
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::*;
@@ -11,9 +14,10 @@ use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::misc::utils::quat_from_vec3;
+use crate::misc::GameRng;
 use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
-use crate::world::CollisionEntity;
+use crate::world::{CollisionEntity, Seed};
 use crate::GameAssets;
 
 use super::super::effect::trail::spawn_trail_effect;
@@ -23,7 +27,7 @@ use super::rocket_explosion::spawn_rocket_explosion;
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
 const ROCKET_START_TIME: f32 = 0.5;
-const ROCKET_PUSH_STRENGTH: f32 = 25.0;
+const ROCKET_PUSH_STRENGTH: f32 = 20.0;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
@@ -38,6 +42,7 @@ pub struct Rocket {
     current_speed: f32,
     start_timer: Timer,
     pub handle: usize,
+    iteration: u64,
 }
 
 impl Rocket {
@@ -47,6 +52,7 @@ impl Rocket {
             current_speed: player_speed,
             start_timer: Timer::from_seconds(ROCKET_START_TIME, TimerMode::Once),
             handle,
+            iteration: 0,
         }
     }
 }
@@ -172,6 +178,8 @@ pub fn move_rockets(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
+    seed: Res<Seed>,
+    mut iteration: Local<u64>,
     mut rockets: Query<(&mut Transform, &mut Rocket, &mut DebugTransform)>,
 ) {
     for (mut transform, mut rocket, mut debug_transform) in &mut rockets {
@@ -186,6 +194,12 @@ pub fn move_rockets(
         };
         let direction = transform.local_x();
         transform.translation += direction * speed;
+
+        if rocket.start_timer.finished() {
+            let mut rng = GameRng::seed_from_u64(seed.seed + *iteration);
+            *iteration += 1;
+            transform.rotate_z(rng.gen_range(-0.1..0.1));
+        }
 
         if !rocket.start_timer.finished() {
             let dir = transform.rotation.mul_vec3(Vec3::X);
