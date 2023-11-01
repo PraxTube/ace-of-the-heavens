@@ -1,7 +1,7 @@
-use crate::player::PlayerStats;
+use crate::player::{PlayerStats, MIN_SPEED};
 
 const MAX_NERF_STATS: PlayerStats = PlayerStats {
-    max_speed: 0.0,
+    max_speed: MIN_SPEED,
     max_health: 1,
     bullet_damage: 1,
     rocket_reload_time: 10.0,
