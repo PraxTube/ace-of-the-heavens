@@ -4,7 +4,10 @@ use bevy::prelude::*;
 use bevy_ggrs::AddRollbackCommandExtension;
 use bevy_hanabi::prelude::*;
 
-use crate::network::ggrs_config::GGRS_FPS;
+use crate::{
+    network::ggrs_config::GGRS_FPS,
+    player::{Player, MIN_SPEED},
+};
 
 const LEFT_TRAIL_OFFSET: Vec3 = Vec3::new(0.0, 30.0, -1.0);
 const RIGHT_TRAIL_OFFSET: Vec3 = Vec3::new(0.0, -30.0, -1.0);
@@ -108,7 +111,7 @@ pub fn disable_trails(
         if parents.get(parent.get()).is_ok() {
             continue;
         }
-        if !trail.is_active() {
+        if !kill_timer.0.paused() {
             continue;
         }
 
@@ -128,5 +131,19 @@ pub fn despawn_trails(
         if kill_timer.0.finished() {
             commands.entity(entity).despawn_recursive();
         }
+    }
+}
+
+pub fn toggle_plane_trail_visibilities(
+    mut trails: Query<(&Parent, &mut EffectSpawner), With<Trail>>,
+    players: Query<&Player>,
+) {
+    for (parent, mut trail) in &mut trails {
+        let player = match players.get(parent.get()) {
+            Ok(player) => player,
+            Err(_) => continue,
+        };
+
+        trail.set_active(player.current_speed != MIN_SPEED);
     }
 }

@@ -1,7 +1,5 @@
 **/all_sounds
 /target
 */tileset
-/logs
-/footage
 .env
 turn-credentials.toml

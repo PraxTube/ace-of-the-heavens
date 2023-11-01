@@ -36,7 +36,7 @@ pub fn accelerate_players(inputs: Res<PlayerInputs<GgrsConfig>>, mut players: Qu
         }
 
         let acceleration = if accelerate_direction > 0.0 {
-            DELTA_SPEED * 3.0
+            DELTA_SPEED
         } else {
             -DELTA_SPEED
         };

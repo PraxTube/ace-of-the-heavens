@@ -15,10 +15,11 @@ use crate::GameAssets;
 
 use super::reloading::OVERHEAT;
 
-pub const BULLET_RADIUS: f32 = 1.0;
-const BULLET_MOVE_SPEED: f32 = 350.0 / 60.0;
-const BULLET_RELOAD_TIME: f32 = 0.1;
-const FIRE_HEAT: u32 = 40;
+pub const BULLET_RADIUS: f32 = 3.0;
+pub const BULLET_SPRITE_SIZE: Vec2 = Vec2::new(20.0, 7.0);
+const BULLET_MOVE_SPEED: f32 = 450.0 / 60.0;
+const BULLET_RELOAD_TIME: f32 = 0.25;
+const FIRE_HEAT: u32 = 80;
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, 10.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, -10.0, 0.0);
@@ -116,7 +117,7 @@ fn spawn_bullet(
                 transform,
                 texture: assets.bullet.clone(),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(14.0, 5.0)),
+                    custom_size: Some(BULLET_SPRITE_SIZE),
                     ..default()
                 },
                 ..default()
@@ -124,7 +125,7 @@ fn spawn_bullet(
         ))
         .add_rollback()
         .id();
-    let playback_rate = 1.0 + (player.heat as f64 / OVERHEAT as f64).powi(3);
+    let playback_rate = 1.0 + (player.heat as f64 / OVERHEAT as f64).powi(3) * 0.5;
     commands
         .spawn(RollbackSound {
             clip: assets.bullet_shot.clone(),

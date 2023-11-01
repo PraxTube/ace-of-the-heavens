@@ -8,6 +8,7 @@ struct MatchmakingScreen;
 struct MatchmakingText;
 
 const MESSAGE: &str = "WAITING FOR 1 OTHER PLAYER";
+const LOADING_TICKER_TIME: f32 = 0.15;
 
 fn spawn_title_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
     let text_style = TextStyle {
@@ -84,7 +85,7 @@ fn animate_matchmaking_screen(
     };
 
     *ticks += time.delta_seconds();
-    if *ticks < 0.2 {
+    if *ticks < LOADING_TICKER_TIME {
         return;
     }
     *ticks = 0.0;

@@ -120,6 +120,9 @@ pub fn check_explosion(
         rocket_explosion.frame += 1;
 
         for (mut player, player_transform) in &mut players {
+            if player.handle == rocket_explosion.handle {
+                continue;
+            }
             if player.dodging {
                 continue;
             }

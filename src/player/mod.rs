@@ -11,15 +11,15 @@ use bevy::prelude::*;
 use bevy_ggrs::*;
 
 use crate::input;
-use crate::network::ggrs_config::PLAYER_COUNT;
+use crate::network::ggrs_config::{GGRS_FPS, PLAYER_COUNT};
 use crate::network::GgrsConfig;
 use crate::world::Rematch;
 use crate::RollbackState;
 
 // Movement
-pub const MIN_SPEED: f32 = 200.0 / 60.0;
-pub const DELTA_SPEED: f32 = 75.0 / 60.0 / 100.0;
-pub const DELTA_STEERING: f32 = 3.5 / 60.0;
+pub const MIN_SPEED: f32 = 200.0 / GGRS_FPS as f32;
+pub const DELTA_SPEED: f32 = 3.0 / GGRS_FPS as f32;
+pub const DELTA_STEERING: f32 = 3.5 / GGRS_FPS as f32;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;
 // Color
@@ -47,7 +47,7 @@ impl Default for PlayerStats {
         Self {
             max_speed: 400.0 / 60.0,
             max_health: 2000,
-            bullet_damage: 30,
+            bullet_damage: 40,
             rocket_reload_time: 2.5,
         }
     }

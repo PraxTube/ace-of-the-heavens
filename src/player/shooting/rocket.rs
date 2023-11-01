@@ -23,7 +23,7 @@ use super::rocket_explosion::spawn_rocket_explosion;
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
 const ROCKET_START_TIME: f32 = 0.5;
-const ROCKET_PUSH_STRENGTH: f32 = 25.0;
+const ROCKET_PUSH_STRENGTH: f32 = 20.0;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);

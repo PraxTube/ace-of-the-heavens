@@ -33,6 +33,7 @@ impl Plugin for EffectPlugin {
                 damage::add_damage_camera_shake,
                 bullet::spawn_collision_effect,
                 trail::disable_trails,
+                trail::toggle_plane_trail_visibilities,
                 trail::despawn_trails,
             )
                 .chain()
