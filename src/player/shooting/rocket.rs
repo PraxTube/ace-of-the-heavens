@@ -1,4 +1,5 @@
 use std::hash::{Hash, Hasher};
+use std::time::Duration;
 
 use bevy::core::FrameCount;
 use bevy::prelude::*;
@@ -10,6 +11,7 @@ use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::misc::utils::quat_from_vec3;
+use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
 use crate::world::CollisionEntity;
 use crate::GameAssets;
@@ -20,6 +22,8 @@ use super::rocket_explosion::spawn_rocket_explosion;
 
 const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
+const ROCKET_START_TIME: f32 = 0.5;
+const ROCKET_PUSH_STRENGTH: f32 = 25.0;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
@@ -30,14 +34,18 @@ pub struct DummyRocket;
 #[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
 pub struct Rocket {
+    left_side: bool,
     current_speed: f32,
+    start_timer: Timer,
     pub handle: usize,
 }
 
 impl Rocket {
-    fn new(player_speed: f32, handle: usize) -> Rocket {
+    fn new(left_side: bool, player_speed: f32, handle: usize) -> Rocket {
         Rocket {
-            current_speed: ROCKET_MOVE_SPEED + player_speed,
+            left_side,
+            current_speed: player_speed,
+            start_timer: Timer::from_seconds(ROCKET_START_TIME, TimerMode::Once),
             handle,
         }
     }
@@ -46,6 +54,11 @@ impl Rocket {
 impl Hash for Rocket {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.current_speed.to_bits().hash(state);
+        self.start_timer
+            .duration()
+            .as_secs_f32()
+            .to_bits()
+            .hash(state);
     }
 }
 
@@ -77,6 +90,7 @@ fn spawn_rocket(
     player: &Player,
     player_transform: &Transform,
     spawn_offset: Vec3,
+    left_side: bool,
 ) {
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
@@ -89,7 +103,7 @@ fn spawn_rocket(
     };
     let rocket_entity = commands
         .spawn((
-            Rocket::new(player.current_speed, player.handle),
+            Rocket::new(left_side, player.current_speed, player.handle),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {
@@ -102,7 +116,7 @@ fn spawn_rocket(
         .id();
     commands
         .spawn(RollbackSound {
-            clip: assets.rocket_shot.clone(),
+            clip: assets.rocket_spawn_sound.clone(),
             start_frame: frame.0 as usize,
             sub_key: (rocket_entity.index() + frame.0) as usize,
             volume: 0.5,
@@ -137,16 +151,64 @@ pub fn fire_rockets(
             player,
             player_transform,
             Vec3::default(),
+            true,
+        );
+        spawn_rocket(
+            &mut commands,
+            &assets,
+            &frame,
+            &mut effects,
+            player,
+            player_transform,
+            Vec3::default(),
+            false,
         );
 
         rocket_timer.timer.reset();
     }
 }
 
-pub fn move_rockets(mut rockets: Query<(&mut Transform, &Rocket, &mut DebugTransform)>) {
-    for (mut transform, rocket, mut debug_transform) in &mut rockets {
+pub fn move_rockets(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    frame: Res<FrameCount>,
+    mut rockets: Query<(&mut Transform, &mut Rocket, &mut DebugTransform)>,
+) {
+    for (mut transform, mut rocket, mut debug_transform) in &mut rockets {
+        rocket
+            .start_timer
+            .tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
+
+        let speed = if !rocket.start_timer.finished() {
+            rocket.current_speed
+        } else {
+            rocket.current_speed + ROCKET_MOVE_SPEED
+        };
         let direction = transform.local_x();
-        transform.translation += direction * rocket.current_speed;
+        transform.translation += direction * speed;
+
+        if !rocket.start_timer.finished() {
+            let dir = transform.rotation.mul_vec3(Vec3::X);
+            let sign = if rocket.left_side { 1.0 } else { -1.0 };
+            let dir = Vec3::new(-dir.y, dir.x, 0.0) * sign;
+            transform.translation += dir
+                * (rocket.start_timer.duration().as_secs_f32() - rocket.start_timer.elapsed_secs())
+                    .powi(2)
+                * ROCKET_PUSH_STRENGTH;
+        }
+
+        if rocket.start_timer.just_finished() {
+            commands
+                .spawn(RollbackSound {
+                    clip: assets.rocket_shot.clone(),
+                    start_frame: frame.0 as usize,
+                    sub_key: (if rocket.left_side { 0 } else { 1 } + frame.0) as usize,
+                    volume: 0.5,
+                    ..default()
+                })
+                .add_rollback();
+        }
+
         debug_transform.update(&transform);
     }
 }
