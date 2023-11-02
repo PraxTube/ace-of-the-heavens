@@ -32,15 +32,15 @@ impl RocketExplosion {
     }
 }
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect)]
 #[reflect(Hash)]
 pub struct ExplosionAnimationTimer {
     pub timer: Timer,
 }
 
-impl ExplosionAnimationTimer {
-    pub fn default() -> ExplosionAnimationTimer {
-        ExplosionAnimationTimer {
+impl Default for ExplosionAnimationTimer {
+    fn default() -> Self {
+        Self {
             timer: Timer::from_seconds(0.075, TimerMode::Repeating),
         }
     }
@@ -103,7 +103,7 @@ pub fn animate_rocket_explosions(
             if sprite.index == 7 {
                 rocket_explosion.disabled = true;
             } else {
-                sprite.index += 1
+                sprite.index += 1;
             }
         }
     }

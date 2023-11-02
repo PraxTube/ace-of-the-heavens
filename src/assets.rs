@@ -16,8 +16,9 @@ pub struct GameAssets {
     pub plane_white: Handle<Image>,
 
     // PROJECTILE
+    #[asset(texture_atlas(tile_size_x = 16.0, tile_size_y = 16.0, columns = 4, rows = 1))]
     #[asset(path = "projectiles/bullet.png")]
-    pub bullet: Handle<Image>,
+    pub bullet: Handle<TextureAtlas>,
     #[asset(path = "projectiles/rocket1.png")]
     pub rocket1: Handle<Image>,
     #[asset(path = "projectiles/rocket2.png")]

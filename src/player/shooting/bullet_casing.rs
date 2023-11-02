@@ -2,11 +2,12 @@ use rand::{self, Rng};
 
 use bevy::prelude::*;
 
-use super::bullet::{BulletFired, BULLET_SPRITE_SIZE};
+use super::bullet::BulletFired;
 use crate::{misc::DeadSprite, world::CollisionEntity, GameAssets};
 
 const TRANSLATION_STRENGTH: f32 = 300.0;
 const ROTATION_STRENGTH: f32 = 30.0;
+const SPRITE_SIZE: Vec2 = Vec2::new(30.0, 10.0);
 
 #[derive(Component)]
 pub struct BulletCasing {
@@ -49,7 +50,7 @@ pub fn spawn_bullet_casings(
                 transform: Transform::from_translation(ev.position - Vec3::new(0.0, 0.0, 10.0))
                     .with_rotation(Quat::from_rotation_z(rng.gen_range(-3.0..3.0))),
                 sprite: Sprite {
-                    custom_size: Some(BULLET_SPRITE_SIZE),
+                    custom_size: Some(SPRITE_SIZE),
                     color: Color::rgb(0.75, 0.6, 0.2),
                     ..default()
                 },

@@ -31,6 +31,7 @@ impl Plugin for ShootingPlugin {
                 reloading::reload_rockets,
                 bullet::fire_bullets,
                 bullet::move_bullets,
+                bullet::animate_bullets,
                 rocket::fire_rockets,
                 rocket::toggle_visibility_dummy_rockets,
                 rocket::move_rockets,

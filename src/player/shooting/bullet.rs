@@ -1,4 +1,5 @@
 use std::hash::{Hash, Hasher};
+use std::time::Duration;
 
 use bevy::core::FrameCount;
 use bevy::prelude::*;
@@ -8,6 +9,7 @@ use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::input;
 use crate::misc::utils::quat_from_vec3;
+use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
 use crate::player::Player;
 use crate::world::CollisionEntity;
@@ -16,7 +18,6 @@ use crate::GameAssets;
 use super::reloading::OVERHEAT;
 
 pub const BULLET_RADIUS: f32 = 3.0;
-pub const BULLET_SPRITE_SIZE: Vec2 = Vec2::new(20.0, 7.0);
 const BULLET_MOVE_SPEED: f32 = 450.0 / 60.0;
 const BULLET_RELOAD_TIME: f32 = 0.25;
 const FIRE_HEAT: u32 = 80;
@@ -68,6 +69,26 @@ impl Hash for BulletTimer {
     }
 }
 
+#[derive(Component, Reflect)]
+#[reflect(Hash)]
+pub struct BulletAnimationTimer {
+    pub timer: Timer,
+}
+
+impl Default for BulletAnimationTimer {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.075, TimerMode::Repeating),
+        }
+    }
+}
+
+impl Hash for BulletAnimationTimer {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.timer.duration().as_secs_f32().to_bits().hash(state);
+    }
+}
+
 #[derive(Event)]
 pub struct BulletCollided {
     pub position: Vec3,
@@ -97,7 +118,8 @@ fn spawn_bullet(
     let transform = Transform::from_translation(
         player_transform.translation + player_transform.rotation.mul_vec3(spawn_offset),
     )
-    .with_rotation(quat_from_vec3(player_transform.local_x()));
+    .with_rotation(quat_from_vec3(player_transform.local_x()))
+    .with_scale(Vec3::new(BULLET_RADIUS, BULLET_RADIUS, 1.0));
 
     ev_bullet_fired.send(BulletFired {
         position: transform.translation,
@@ -111,15 +133,12 @@ fn spawn_bullet(
                 (player.stats.bullet_damage as f32 * player.speed_ratio()) as u32,
                 player.handle,
             ),
+            BulletAnimationTimer::default(),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
-            SpriteBundle {
+            SpriteSheetBundle {
                 transform,
-                texture: assets.bullet.clone(),
-                sprite: Sprite {
-                    custom_size: Some(BULLET_SPRITE_SIZE),
-                    ..default()
-                },
+                texture_atlas: assets.bullet.clone(),
                 ..default()
             },
         ))
@@ -197,6 +216,21 @@ pub fn destroy_bullets(
                 position: transform.translation,
             });
             commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+pub fn animate_bullets(mut query: Query<(&mut BulletAnimationTimer, &mut TextureAtlasSprite)>) {
+    for (mut timer, mut sprite) in &mut query {
+        timer
+            .timer
+            .tick(Duration::from_secs_f32(1.0 / GGRS_FPS as f32));
+        if timer.timer.just_finished() {
+            if sprite.index == 3 {
+                sprite.index = 0;
+            } else {
+                sprite.index += 1;
+            }
         }
     }
 }

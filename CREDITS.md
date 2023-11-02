@@ -8,6 +8,12 @@
 
 https://cainos.itch.io/pixel-art-top-down-basic
 
+#### Bullet
+
+https://bdragon1727.itch.io/fire-pixel-bullet-16x16
+
+NOTE: Only a handful of sprites were used from this.
+
 #### Rocket Explosion
 
 https://ansimuz.itch.io/explosion-animations-pack
