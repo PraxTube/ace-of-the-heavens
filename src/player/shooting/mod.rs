@@ -34,6 +34,7 @@ impl Plugin for ShootingPlugin {
                 bullet::animate_bullets,
                 rocket::fire_rockets,
                 rocket::toggle_visibility_dummy_rockets,
+                rocket::update_rocket_targets,
                 rocket::move_rockets,
                 rocket_explosion::check_explosion
                     .before(rocket_explosion::animate_rocket_explosions),

@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
 
@@ -13,6 +14,7 @@ use crate::input;
 use crate::misc::utils::quat_from_vec3;
 use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
+use crate::world::map::obstacle::{ray_obstacle_collision, Obstacle};
 use crate::world::CollisionEntity;
 use crate::GameAssets;
 
@@ -24,6 +26,8 @@ const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
 const ROCKET_START_TIME: f32 = 0.5;
 const ROCKET_PUSH_STRENGTH: f32 = 20.0;
+const VISIBILITY_ANGLE: f32 = PI / 4.0;
+const DELTA_STEERING: f32 = 1.5 / GGRS_FPS as f32;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
@@ -37,6 +41,8 @@ pub struct Rocket {
     left_side: bool,
     current_speed: f32,
     start_timer: Timer,
+    // The target we are aiming at (if it is in sight)
+    target: Option<Vec3>,
     pub handle: usize,
 }
 
@@ -46,6 +52,7 @@ impl Rocket {
             left_side,
             current_speed: player_speed,
             start_timer: Timer::from_seconds(ROCKET_START_TIME, TimerMode::Once),
+            target: None,
             handle,
         }
     }
@@ -187,7 +194,18 @@ pub fn move_rockets(
         let direction = transform.local_x();
         transform.translation += direction * speed;
 
-        if !rocket.start_timer.finished() {
+        if rocket.start_timer.finished() && rocket.target.is_some() {
+            let dir = transform.rotation.mul_vec3(Vec3::X);
+            let target_dir = rocket.target.unwrap() - transform.translation;
+            let angle = dir.truncate().angle_between(target_dir.truncate());
+
+            if angle.abs() < DELTA_STEERING {
+                transform.rotation = quat_from_vec3(target_dir);
+            } else {
+                let sign = angle / angle.abs();
+                transform.rotate_z(sign * DELTA_STEERING);
+            }
+        } else {
             let dir = transform.rotation.mul_vec3(Vec3::X);
             let sign = if rocket.left_side { 1.0 } else { -1.0 };
             let dir = Vec3::new(-dir.y, dir.x, 0.0) * sign;
@@ -331,6 +349,46 @@ pub fn toggle_visibility_dummy_rockets(
             } else {
                 *visibility = Visibility::Hidden;
             }
+        }
+    }
+}
+
+pub fn update_rocket_targets(
+    mut rockets: Query<(&mut Rocket, &Transform)>,
+    players: Query<(&Player, &Transform)>,
+    obstacles: Query<&Obstacle>,
+) {
+    for (mut rocket, rocket_transform) in &mut rockets {
+        for (player, player_transform) in &players {
+            if player.handle == rocket.handle {
+                continue;
+            }
+
+            rocket.target = None;
+
+            if rocket_transform
+                .rotation
+                .mul_vec3(Vec3::X)
+                .truncate()
+                .angle_between(
+                    player_transform.translation.truncate()
+                        - rocket_transform.translation.truncate(),
+                )
+                .abs()
+                >= VISIBILITY_ANGLE
+            {
+                continue;
+            }
+
+            if ray_obstacle_collision(
+                rocket_transform.translation.truncate(),
+                player_transform.translation.truncate(),
+                &obstacles,
+            ) {
+                continue;
+            }
+
+            rocket.target = Some(player_transform.translation);
         }
     }
 }
