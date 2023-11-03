@@ -50,9 +50,9 @@ fn spawn_player(
     commands
         .spawn((
             Player::new(handle, stats.clone()),
-            BulletTimer::default(),
+            BulletTimer::new(stats.bullet_reload_time),
             RocketTimer::new(stats.rocket_reload_time),
-            DodgeTimer::default(),
+            DodgeTimer::new(stats.dodge_cooldown),
             CollisionEntity::default(),
             DebugTransform::new(&transform),
             SpriteBundle {

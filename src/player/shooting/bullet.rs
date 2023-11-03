@@ -19,8 +19,6 @@ use super::reloading::OVERHEAT;
 
 pub const BULLET_RADIUS: f32 = 3.0;
 const BULLET_MOVE_SPEED: f32 = 450.0 / 60.0;
-const BULLET_RELOAD_TIME: f32 = 0.25;
-const FIRE_HEAT: u32 = 80;
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, 10.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, -10.0, 0.0);
@@ -56,8 +54,8 @@ pub struct BulletTimer {
 }
 
 impl BulletTimer {
-    pub fn default() -> BulletTimer {
-        let mut timer = Timer::from_seconds(BULLET_RELOAD_TIME, TimerMode::Repeating);
+    pub fn new(reload_time: f32) -> BulletTimer {
+        let mut timer = Timer::from_seconds(reload_time, TimerMode::Repeating);
         timer.tick(timer.duration());
         BulletTimer { timer }
     }
@@ -194,7 +192,7 @@ pub fn fire_bullets(
             &mut ev_bullet_fired,
         );
 
-        player.heat += FIRE_HEAT;
+        player.heat += player.stats.bullet_heat;
         bullet_timer.timer.reset();
     }
 }

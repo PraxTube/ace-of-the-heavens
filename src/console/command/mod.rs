@@ -2,7 +2,7 @@ use chrono::Utc;
 pub use commands::AceCommandPlugin;
 
 mod commands;
-mod player_nerf_stats;
+mod player_stats;
 
 use std::fmt::Display;
 
@@ -17,12 +17,16 @@ const MIN_TIME_THRESHOLD: i64 = 1500;
 
 #[derive(Clone)]
 pub enum AceCommands {
+    Buff(usize, usize, i64),
     Nerf(usize, usize, i64),
 }
 
 impl Display for AceCommands {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Buff(handle, level, timestamp) => {
+                write!(f, "buff {} {} {}", handle, level, timestamp)
+            }
             Self::Nerf(handle, level, timestamp) => {
                 write!(f, "nerf {} {} {}", handle, level, timestamp)
             }
@@ -39,6 +43,15 @@ impl AceCommands {
         }
 
         match parts[0] {
+            "buff" => {
+                if let Ok(handle) = parts[1].parse() {
+                    if let Ok(level) = parts[2].parse() {
+                        if let Ok(timestamp) = parts[3].parse() {
+                            return Some(AceCommands::Buff(handle, level, timestamp));
+                        }
+                    }
+                }
+            }
             "nerf" => {
                 if let Ok(handle) = parts[1].parse() {
                     if let Ok(level) = parts[2].parse() {
@@ -62,6 +75,15 @@ pub fn apply_commands(
     let mut skipped_queue = Vec::<AceCommands>::default();
     for command in command_queque.queue.drain(..) {
         match command {
+            AceCommands::Buff(handle, level, timestamp) => {
+                if Utc::now().timestamp_millis() - timestamp < MIN_TIME_THRESHOLD {
+                    warn!("skipping this command as it was added too late");
+                    skipped_queue.push(AceCommands::Buff(handle, level, timestamp));
+                    continue;
+                }
+                let buffed_stats = player_stats::buff_stats(level);
+                stats.stats[handle] = buffed_stats;
+            }
             AceCommands::Nerf(handle, level, timestamp) => {
                 if Utc::now().timestamp_millis() - timestamp < MIN_TIME_THRESHOLD {
                     warn!("skipping this command as it was added too late");
@@ -69,7 +91,7 @@ pub fn apply_commands(
                     continue;
                 }
                 info!("applying nerf command");
-                let nerfed_stats = player_nerf_stats::nerf_stats(level);
+                let nerfed_stats = player_stats::nerf_stats(level);
                 stats.stats[handle] = nerfed_stats;
             }
         }

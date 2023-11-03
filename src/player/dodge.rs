@@ -12,12 +12,9 @@ use crate::{input::dodge, misc::utils::quat_from_vec3, network::GgrsConfig};
 
 use super::Player;
 
-const DODGE_COOLDOWN: f32 = 2.5;
-const DODGE_TIME: f32 = 0.5;
-
 const DODGE_REFRESH_TIME: f32 = 0.50;
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 #[reflect(Hash)]
 pub struct DodgeTimer(Timer);
 
@@ -27,10 +24,10 @@ pub struct DodgeRefreshTimer {
     handle: usize,
 }
 
-impl Default for DodgeTimer {
-    fn default() -> Self {
-        let mut timer = Timer::from_seconds(DODGE_COOLDOWN, TimerMode::Once);
-        timer.set_elapsed(Duration::from_secs_f32(DODGE_COOLDOWN));
+impl DodgeTimer {
+    pub fn new(cooldown: f32) -> Self {
+        let mut timer = Timer::from_seconds(cooldown, TimerMode::Once);
+        timer.set_elapsed(Duration::from_secs_f32(cooldown));
         Self(timer)
     }
 }
@@ -48,7 +45,7 @@ impl Hash for DodgeTimer {
     }
 }
 
-pub fn initiate_dodge(
+pub fn start_dodging(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
@@ -75,19 +72,19 @@ pub fn initiate_dodge(
     }
 }
 
-pub fn animate_dodge(mut players: Query<(&mut Transform, &mut Player, &DodgeTimer)>) {
+pub fn animate_dodges(mut players: Query<(&mut Transform, &mut Player, &DodgeTimer)>) {
     for (mut transform, mut player, timer) in &mut players {
-        if timer.0.elapsed_secs() > DODGE_TIME {
+        if timer.0.elapsed_secs() > player.stats.dodge_time {
             transform.rotation = quat_from_vec3(transform.local_x());
             player.dodging = false;
             continue;
         }
 
-        transform.rotate_local_x(2.0 * PI / DODGE_TIME / 60.0);
+        transform.rotate_local_x(2.0 * PI / player.stats.dodge_time / 60.0);
     }
 }
 
-pub fn tick_dodge_timer(
+pub fn tick_dodge_timers(
     mut commands: Commands,
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,

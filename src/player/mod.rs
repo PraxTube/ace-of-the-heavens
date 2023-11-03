@@ -39,7 +39,11 @@ pub struct PlayerStats {
     pub max_speed: f32,
     pub max_health: u32,
     pub bullet_damage: u32,
+    pub bullet_reload_time: f32,
+    pub bullet_heat: u32,
     pub rocket_reload_time: f32,
+    pub dodge_time: f32,
+    pub dodge_cooldown: f32,
 }
 
 impl Default for PlayerStats {
@@ -48,7 +52,11 @@ impl Default for PlayerStats {
             max_speed: 400.0 / 60.0,
             max_health: 2000,
             bullet_damage: 60,
+            bullet_reload_time: 0.25,
+            bullet_heat: 80,
             rocket_reload_time: 2.5,
+            dodge_time: 0.5,
+            dodge_cooldown: 2.5,
         }
     }
 }
@@ -177,9 +185,9 @@ impl Plugin for PlayerPlugin {
         .add_systems(
             GgrsSchedule,
             (
-                dodge::tick_dodge_timer,
-                dodge::initiate_dodge,
-                dodge::animate_dodge,
+                dodge::tick_dodge_timers,
+                dodge::start_dodging,
+                dodge::animate_dodges,
                 dodge::animate_dodge_refresh,
             )
                 .chain()
