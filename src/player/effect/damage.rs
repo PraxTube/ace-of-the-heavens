@@ -135,7 +135,7 @@ pub fn spawn_damage_effect_sound(
     }
 }
 
-pub fn add_damage_camera_shake(
+pub fn add_camera_shake_damage(
     mut camera_shake: ResMut<CameraShake>,
     mut ev_player_took_damage: EventReader<PlayerTookDamage>,
     local_handle: Res<LocalPlayerHandle>,

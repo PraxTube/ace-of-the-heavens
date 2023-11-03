@@ -47,7 +47,7 @@ impl Default for PlayerStats {
         Self {
             max_speed: 400.0 / 60.0,
             max_health: 2000,
-            bullet_damage: 40,
+            bullet_damage: 60,
             rocket_reload_time: 2.5,
         }
     }

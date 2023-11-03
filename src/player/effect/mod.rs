@@ -30,7 +30,8 @@ impl Plugin for EffectPlugin {
             (
                 damage::spawn_damage_effect,
                 damage::spawn_damage_effect_sound,
-                damage::add_damage_camera_shake,
+                damage::add_camera_shake_damage,
+                bullet::add_camera_shake_bullet_fired,
                 bullet::spawn_collision_effect,
                 trail::disable_trails,
                 trail::toggle_plane_trail_visibilities,

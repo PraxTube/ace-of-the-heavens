@@ -98,6 +98,7 @@ pub struct BulletCollided {
 pub struct BulletFired {
     pub position: Vec3,
     pub direction: Vec3,
+    pub handle: usize,
 }
 
 fn spawn_bullet(
@@ -124,6 +125,7 @@ fn spawn_bullet(
     ev_bullet_fired.send(BulletFired {
         position: transform.translation,
         direction,
+        handle: player.handle,
     });
 
     let bullet_entity = commands

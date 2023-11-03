@@ -2,7 +2,11 @@ use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
 
 use crate::{
-    player::shooting::bullet::{BulletCollided, BulletFired},
+    camera::CameraShake,
+    player::{
+        shooting::bullet::{BulletCollided, BulletFired},
+        LocalPlayerHandle,
+    },
     GameAssets,
 };
 
@@ -104,5 +108,17 @@ pub fn spawn_muzzle_effect(
 pub fn despawn_muzzle_effect(mut commands: Commands, query: Query<Entity, With<MuzzleEffect>>) {
     for entity in &query {
         commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn add_camera_shake_bullet_fired(
+    mut camera_shake: ResMut<CameraShake>,
+    local_handle: Res<LocalPlayerHandle>,
+    mut ev_bullet_fired: EventReader<BulletFired>,
+) {
+    for ev in ev_bullet_fired.iter() {
+        if ev.handle == local_handle.0 {
+            camera_shake.add_trauma_with_threshold(0.125, 0.3);
+        }
     }
 }
