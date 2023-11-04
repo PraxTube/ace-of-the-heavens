@@ -49,13 +49,7 @@ fn spawn_background(
     });
 }
 
-fn spawn_map_1(commands: &mut Commands, assets: Res<GameAssets>) {
-    spawn_wall_1_5(commands, Vec2::new(-550.0, 200.0), &assets);
-    spawn_wall_1_5(commands, Vec2::new(-550.0, -200.0), &assets);
-    spawn_wall_5_1(commands, Vec2::new(300.0, 250.0), &assets);
-    spawn_wall_5_1(commands, Vec2::new(300.0, -250.0), &assets);
-    spawn_wall_2_2(commands, Vec2::new(0.0, 0.0), &assets);
-}
+fn spawn_map_1(_commands: &mut Commands, _assets: Res<GameAssets>) {}
 
 fn spawn_map_2(commands: &mut Commands, assets: Res<GameAssets>) {
     spawn_wall_1_5(commands, Vec2::new(0.0, 0.0), &assets);
@@ -92,6 +86,27 @@ fn spawn_map_6(commands: &mut Commands, assets: Res<GameAssets>) {
     spawn_wall_2_2(commands, Vec2::new(-x_pos, -y_pos), &assets);
 }
 
+fn spawn_map_7(commands: &mut Commands, assets: Res<GameAssets>) {
+    spawn_wall_5_1(commands, Vec2::new(350.0, 250.0), &assets);
+    spawn_wall_5_1(commands, Vec2::new(-350.0, 250.0), &assets);
+    spawn_wall_2_2(commands, Vec2::new(0.0, 0.0), &assets);
+}
+
+fn spawn_map_8(commands: &mut Commands, assets: Res<GameAssets>) {
+    spawn_wall_1_1(commands, Vec2::new(0.0, 0.0), &assets);
+    spawn_wall_1_1(commands, Vec2::new(500.0, 200.0), &assets);
+    spawn_wall_1_1(commands, Vec2::new(-500.0, -200.0), &assets);
+}
+
+fn spawn_map_9(commands: &mut Commands, assets: Res<GameAssets>) {
+    spawn_wall_2_2(commands, Vec2::new(200.0, 100.0), &assets);
+    spawn_wall_2_2(commands, Vec2::new(-200.0, -100.0), &assets);
+}
+
+fn spawn_map_10(commands: &mut Commands, assets: Res<GameAssets>) {
+    spawn_wall_5_1(commands, Vec2::new(0.0, 0.0), &assets);
+}
+
 fn spawn_random_map(
     mut commands: Commands,
     assets: Res<GameAssets>,
@@ -99,7 +114,7 @@ fn spawn_random_map(
     round_stats: Res<RoundStats>,
 ) {
     let mut rng = GameRng::seed_from_u64(seed.seed + round_stats.rounds_played);
-    let index: usize = rng.gen_range(0..6);
+    let index: usize = rng.gen_range(0..10);
     match index {
         0 => spawn_map_1(&mut commands, assets),
         1 => spawn_map_2(&mut commands, assets),
@@ -107,6 +122,10 @@ fn spawn_random_map(
         3 => spawn_map_4(&mut commands, assets),
         4 => spawn_map_5(&mut commands, assets),
         5 => spawn_map_6(&mut commands, assets),
+        6 => spawn_map_7(&mut commands, assets),
+        7 => spawn_map_8(&mut commands, assets),
+        8 => spawn_map_9(&mut commands, assets),
+        9 => spawn_map_10(&mut commands, assets),
         _ => panic!("now map with this index exists, index: {}", index),
     }
 }
