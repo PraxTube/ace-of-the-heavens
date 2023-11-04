@@ -243,6 +243,9 @@ pub fn disable_rockets(
             if player.dodging {
                 continue;
             }
+            if !rocket.start_timer.finished() {
+                continue;
+            }
 
             let distance = Vec2::distance_squared(
                 player_transform.translation.truncate(),
