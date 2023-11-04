@@ -18,6 +18,13 @@ NOTE: Only a handful of sprites were used from this.
 
 https://ansimuz.itch.io/explosion-animations-pack
 
+#### Super Sonic Effect
+
+https://bdragon1727.itch.io/free-smoke-fx-pixel-2
+
+NOTE: Only a handful of sprites were used from this
+(and rotated to work easier with the game).
+
 ### Audio
 
 #### Sounds

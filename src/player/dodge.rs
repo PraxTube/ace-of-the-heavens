@@ -108,7 +108,7 @@ pub fn tick_dodge_timers(
 
             commands
                 .spawn(RollbackSound {
-                    clip: assets.dodge_refresh.clone(),
+                    clip: assets.dodge_refresh_sound.clone(),
                     start_frame: frame.0 as usize,
                     sub_key: player.handle,
                     volume: 0.35,

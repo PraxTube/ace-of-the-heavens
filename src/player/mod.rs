@@ -140,6 +140,7 @@ impl Plugin for PlayerPlugin {
             ),
         )
         .add_event::<health::PlayerTookDamage>()
+        .add_event::<movement::ReachedMaxSpeed>()
         .init_resource::<PersistentPlayerStats>()
         .add_plugins((shooting::ShootingPlugin, effect::EffectPlugin))
         .add_systems(

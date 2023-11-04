@@ -28,6 +28,9 @@ pub struct GameAssets {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 8, rows = 1))]
     #[asset(path = "gfx/explosion.png")]
     pub explosion: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 64.0, tile_size_y = 64.0, columns = 9, rows = 1))]
+    #[asset(path = "gfx/super_sonic.png")]
+    pub super_sonic: Handle<TextureAtlas>,
 
     // MAP
     #[asset(path = "map/background.png")]
@@ -75,7 +78,9 @@ pub struct GameAssets {
     #[asset(path = "sounds/dodge.ogg")]
     pub dodge_sound: Handle<AudioSource>,
     #[asset(path = "sounds/dodge_refresh.ogg")]
-    pub dodge_refresh: Handle<AudioSource>,
+    pub dodge_refresh_sound: Handle<AudioSource>,
+    #[asset(path = "sounds/super_sonic.ogg")]
+    pub super_sonic_sound: Handle<AudioSource>,
 
     #[asset(path = "sounds/round-start-sound.ogg")]
     pub round_start_sound: Handle<AudioSource>,

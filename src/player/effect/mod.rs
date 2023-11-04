@@ -1,6 +1,8 @@
-mod bullet;
 pub mod damage;
 pub mod trail;
+
+mod bullet;
+mod super_sonic;
 
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -22,6 +24,16 @@ impl Plugin for EffectPlugin {
         .add_systems(
             Update,
             (bullet::despawn_muzzle_effect, bullet::spawn_muzzle_effect)
+                .chain()
+                .run_if(in_state(GameState::InRollbackGame)),
+        )
+        .add_systems(
+            Update,
+            (
+                super_sonic::spawn_super_sonic_effects,
+                super_sonic::animate_super_sonic_effects,
+                super_sonic::despawn_super_sonic_effects,
+            )
                 .chain()
                 .run_if(in_state(GameState::InRollbackGame)),
         )

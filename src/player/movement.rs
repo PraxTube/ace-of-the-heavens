@@ -6,6 +6,12 @@ use crate::input;
 use crate::network::GgrsConfig;
 use crate::player::{Player, DELTA_SPEED, DELTA_STEERING, MIN_SPEED};
 
+#[derive(Event)]
+pub struct ReachedMaxSpeed {
+    pub position: Vec3,
+    pub direction: Vec3,
+}
+
 pub fn steer_players(
     inputs: Res<PlayerInputs<GgrsConfig>>,
     mut players: Query<(&mut Transform, &Player, &mut DebugTransform)>,
@@ -28,8 +34,12 @@ pub fn steer_players(
     }
 }
 
-pub fn accelerate_players(inputs: Res<PlayerInputs<GgrsConfig>>, mut players: Query<&mut Player>) {
-    for mut player in &mut players {
+pub fn accelerate_players(
+    inputs: Res<PlayerInputs<GgrsConfig>>,
+    mut players: Query<(&Transform, &mut Player)>,
+    mut ev_reached_max_speed: EventWriter<ReachedMaxSpeed>,
+) {
+    for (transform, mut player) in &mut players {
         let (input, _) = inputs[player.handle];
 
         let accelerate_direction = input::accelerate_direction(input);
@@ -44,10 +54,20 @@ pub fn accelerate_players(inputs: Res<PlayerInputs<GgrsConfig>>, mut players: Qu
             -DELTA_SPEED
         };
 
+        let sub_sonic = player.current_speed != player.stats.max_speed;
+
         player.current_speed += acceleration;
         player.current_speed = player
             .current_speed
             .clamp(MIN_SPEED, player.stats.max_speed);
+
+        // We just reached max speed this frame, send event
+        if sub_sonic && player.current_speed == player.stats.max_speed {
+            ev_reached_max_speed.send(ReachedMaxSpeed {
+                position: transform.translation,
+                direction: transform.rotation.mul_vec3(Vec3::X),
+            });
+        }
     }
 }
 
