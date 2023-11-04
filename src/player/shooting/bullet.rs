@@ -18,7 +18,7 @@ use crate::GameAssets;
 use super::reloading::OVERHEAT;
 
 pub const BULLET_RADIUS: f32 = 3.0;
-const BULLET_MOVE_SPEED: f32 = 450.0 / 60.0;
+const BULLET_MOVE_SPEED: f32 = 600.0 / GGRS_FPS as f32;
 
 const LEFT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, 10.0, 0.0);
 const RIGHT_WING_BULLET_SPAWN: Vec3 = Vec3::new(20.0, -10.0, 0.0);

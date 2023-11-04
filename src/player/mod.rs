@@ -18,7 +18,7 @@ use crate::RollbackState;
 
 // Movement
 pub const MIN_SPEED: f32 = 200.0 / GGRS_FPS as f32;
-pub const DELTA_SPEED: f32 = 3.0 / GGRS_FPS as f32;
+pub const DELTA_SPEED: f32 = 4.0 / GGRS_FPS as f32;
 pub const DELTA_STEERING: f32 = 3.5 / GGRS_FPS as f32;
 // Collision
 pub const PLAYER_RADIUS: f32 = 24.0;
@@ -51,7 +51,7 @@ impl Default for PlayerStats {
         Self {
             max_speed: 400.0 / 60.0,
             max_health: 2000,
-            bullet_damage: 60,
+            bullet_damage: 150,
             bullet_reload_time: 0.25,
             bullet_heat: 80,
             rocket_reload_time: 2.5,

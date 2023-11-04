@@ -19,7 +19,10 @@ pub fn steer_players(
             continue;
         }
 
-        let rotation = DELTA_STEERING * steer_direction;
+        let move_ratio =
+            1.0 - (player.current_speed - MIN_SPEED) / (player.stats.max_speed - MIN_SPEED);
+        let move_ratio = (1.0 + move_ratio * 0.22474487).powi(2);
+        let rotation = DELTA_STEERING * steer_direction * move_ratio;
         transform.rotate_z(rotation);
         debug_transform.update(&transform);
     }
