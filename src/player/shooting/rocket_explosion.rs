@@ -8,12 +8,7 @@ use bevy_ggrs::*;
 use crate::audio::RollbackSound;
 use crate::debug::DebugTransform;
 use crate::network::ggrs_config::GGRS_FPS;
-use crate::player::Player;
-use crate::player::PLAYER_RADIUS;
 use crate::GameAssets;
-
-const ROCKET_EXPLOSION_RADIUS: f32 = 100.0;
-const EXPLOSTION_FRAME_LIFE: usize = 1;
 
 #[derive(Component, Default, Reflect, Hash)]
 pub struct RocketExplosion {
@@ -104,35 +99,6 @@ pub fn animate_rocket_explosions(
                 rocket_explosion.disabled = true;
             } else {
                 sprite.index += 1;
-            }
-        }
-    }
-}
-
-pub fn check_explosion(
-    mut explosions: Query<(&mut RocketExplosion, &Transform)>,
-    mut players: Query<(&mut Player, &Transform)>,
-) {
-    for (mut rocket_explosion, rocket_transform) in &mut explosions {
-        if rocket_explosion.frame > EXPLOSTION_FRAME_LIFE {
-            continue;
-        }
-        rocket_explosion.frame += 1;
-
-        for (mut player, player_transform) in &mut players {
-            if player.handle == rocket_explosion.handle {
-                continue;
-            }
-            if player.dodging {
-                continue;
-            }
-
-            let distance = Vec2::distance_squared(
-                player_transform.translation.truncate(),
-                rocket_transform.translation.truncate(),
-            );
-            if distance < PLAYER_RADIUS.powi(2) + ROCKET_EXPLOSION_RADIUS.powi(2) {
-                player.health = 0;
             }
         }
     }

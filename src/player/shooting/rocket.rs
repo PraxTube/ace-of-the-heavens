@@ -14,6 +14,7 @@ use crate::input;
 use crate::misc::utils::quat_from_vec3;
 use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
+use crate::player::LocalPlayerHandle;
 use crate::world::map::obstacle::{ray_obstacle_collision, Obstacle};
 use crate::world::CollisionEntity;
 use crate::GameAssets;
@@ -26,8 +27,8 @@ const ROCKET_RADIUS: f32 = 1.5;
 const ROCKET_MOVE_SPEED: f32 = 700.0 / 60.0;
 const ROCKET_START_TIME: f32 = 0.5;
 const ROCKET_PUSH_STRENGTH: f32 = 20.0;
-const VISIBILITY_ANGLE: f32 = PI / 4.0;
-const DELTA_STEERING: f32 = 1.5 / GGRS_FPS as f32;
+const VISIBILITY_ANGLE: f32 = PI / 2.0;
+const DELTA_STEERING: f32 = 2.5 / GGRS_FPS as f32;
 
 const LEFT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, 22.0, -1.0);
 const RIGHT_WING_ROCKET_OFFSET: Vec3 = Vec3::new(8.0, -22.0, -1.0);
@@ -232,11 +233,13 @@ pub fn move_rockets(
 }
 
 pub fn disable_rockets(
-    players: Query<(&Transform, &Player)>,
+    mut players: Query<(&Transform, &mut Player)>,
     mut rockets: Query<(&mut CollisionEntity, &Rocket, &Transform)>,
+    mut camera_shake: ResMut<CameraShake>,
+    local_handle: Res<LocalPlayerHandle>,
 ) {
     for (mut collision_entity, rocket, rocket_transform) in &mut rockets {
-        for (player_transform, player) in &players {
+        for (player_transform, mut player) in &mut players {
             if player.handle == rocket.handle {
                 continue;
             }
@@ -252,6 +255,14 @@ pub fn disable_rockets(
                 rocket_transform.translation.truncate(),
             );
             if distance < PLAYER_RADIUS * PLAYER_RADIUS + ROCKET_RADIUS * ROCKET_RADIUS {
+                if player.health <= player.stats.max_health / 2 {
+                    player.health = 0;
+                } else {
+                    if player.handle == local_handle.0 {
+                        camera_shake.add_trauma(0.35);
+                    }
+                    player.health -= player.stats.max_health / 2;
+                }
                 collision_entity.disabled = true;
             }
         }

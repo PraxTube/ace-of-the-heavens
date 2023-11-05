@@ -21,7 +21,7 @@ pub const MIN_SPEED: f32 = 200.0 / GGRS_FPS as f32;
 pub const DELTA_SPEED: f32 = 4.0 / GGRS_FPS as f32;
 pub const DELTA_STEERING: f32 = 3.5 / GGRS_FPS as f32;
 // Collision
-pub const PLAYER_RADIUS: f32 = 24.0;
+pub const PLAYER_RADIUS: f32 = 35.0;
 // Color
 pub const P1_COLOR: Color = Color::rgb(
     0xDF as f32 / 255.0,
@@ -145,18 +145,9 @@ impl Plugin for PlayerPlugin {
         .add_plugins((shooting::ShootingPlugin, effect::EffectPlugin))
         .add_systems(
             GgrsSchedule,
-            (
-                check_rematch_state
-                    .run_if(in_state(RollbackState::GameOver))
-                    .after(apply_state_transition::<RollbackState>),
-                shooting::rocket_explosion::animate_rocket_explosions
-                    .run_if(
-                        in_state(RollbackState::RoundStart)
-                            .or_else(in_state(RollbackState::InRound))
-                            .or_else(in_state(RollbackState::RoundEnd)),
-                    )
-                    .after(apply_state_transition::<RollbackState>),
-            ),
+            check_rematch_state
+                .run_if(in_state(RollbackState::GameOver))
+                .after(apply_state_transition::<RollbackState>),
         )
         .configure_sets(
             GgrsSchedule,

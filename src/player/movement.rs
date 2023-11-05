@@ -25,10 +25,15 @@ pub fn steer_players(
             continue;
         }
 
+        let shooting_friction = if !player.overheated && input::fire(input) {
+            0.5
+        } else {
+            1.0
+        };
         let move_ratio =
             1.0 - (player.current_speed - MIN_SPEED) / (player.stats.max_speed - MIN_SPEED);
         let move_ratio = (1.0 + move_ratio * 0.22474487).powi(2);
-        let rotation = DELTA_STEERING * steer_direction * move_ratio;
+        let rotation = DELTA_STEERING * steer_direction * move_ratio * shooting_friction;
         transform.rotate_z(rotation);
         debug_transform.update(&transform);
     }

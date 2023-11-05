@@ -1,8 +1,9 @@
 pub mod bullet;
-mod bullet_casing;
 pub mod reloading;
 pub mod rocket;
 pub mod rocket_explosion;
+
+mod bullet_casing;
 
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -26,18 +27,25 @@ impl Plugin for ShootingPlugin {
         .add_systems(
             GgrsSchedule,
             (
+                bullet::animate_bullets,
+                rocket_explosion::animate_rocket_explosions,
+            )
+                .chain()
+                .run_if(not(in_state(RollbackState::Setup)))
+                .after(apply_state_transition::<RollbackState>),
+        )
+        .add_systems(
+            GgrsSchedule,
+            (
                 reloading::cooldown_heat,
                 reloading::reload_bullets,
                 reloading::reload_rockets,
                 bullet::fire_bullets,
                 bullet::move_bullets,
-                bullet::animate_bullets,
                 rocket::fire_rockets,
                 rocket::toggle_visibility_dummy_rockets,
                 rocket::update_rocket_targets,
                 rocket::move_rockets,
-                rocket_explosion::check_explosion
-                    .before(rocket_explosion::animate_rocket_explosions),
                 reloading::move_reload_bars,
                 reloading::tick_reload_bars,
                 reloading::color_reload_bars,
@@ -59,11 +67,7 @@ impl Plugin for ShootingPlugin {
             )
                 .chain()
                 .in_set(InGameSet::Last)
-                .distributive_run_if(
-                    in_state(RollbackState::RoundStart)
-                        .or_else(in_state(RollbackState::InRound))
-                        .or_else(in_state(RollbackState::RoundEnd)),
-                ),
+                .distributive_run_if(not(in_state(RollbackState::Setup))),
         );
     }
 }
