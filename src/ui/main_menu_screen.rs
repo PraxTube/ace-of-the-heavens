@@ -93,8 +93,21 @@ fn despawn_main_menu_screen(
     }
 }
 
-fn play_game(keys: Res<Input<KeyCode>>, mut next_state: ResMut<NextState<GameState>>) {
-    if keys.pressed(KeyCode::P) {
+fn play_game(
+    keys: Res<Input<KeyCode>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    gamepads: Res<Gamepads>,
+    button_inputs: Res<Input<GamepadButton>>,
+) {
+    let mut pressed = keys.pressed(KeyCode::P);
+    for gamepad in gamepads.iter() {
+        if button_inputs.pressed(GamepadButton::new(gamepad, GamepadButtonType::South))
+            || button_inputs.pressed(GamepadButton::new(gamepad, GamepadButtonType::North))
+        {
+            pressed = true;
+        }
+    }
+    if pressed {
         next_state.set(GameState::Matchmaking);
     }
 }

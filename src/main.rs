@@ -108,6 +108,7 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundStartTimer>()
         .init_resource::<HideScreenTimer>()
+        .add_systems(OnExit(GameState::AssetLoading), input::configure_gamepads)
         .add_systems(
             Update,
             input::quit.run_if(in_state(GameState::MainMenu)
