@@ -3,13 +3,11 @@ use bevy_ggrs::AddRollbackCommandExtension;
 use bevy_hanabi::prelude::*;
 
 use super::super::{P1_COLOR, P2_COLOR};
-
-use crate::{
-    audio::RollbackSound,
-    camera::CameraShake,
-    player::{health::PlayerTookDamage, LocalPlayerHandle},
-    GameAssets,
-};
+use crate::audio::RollbackSound;
+use crate::camera::CameraShake;
+use crate::input::GamepadRumble;
+use crate::player::{health::PlayerTookDamage, LocalPlayerHandle};
+use crate::GameAssets;
 
 #[derive(Component)]
 pub struct DamageEffectSpawner;
@@ -144,6 +142,19 @@ pub fn add_camera_shake_damage(
         // Local player took damage, time to shake it
         if ev.handle == local_handle.0 {
             camera_shake.add_trauma(0.15);
+        }
+    }
+}
+
+pub fn add_gamepad_rumble(
+    mut gamepad_rumble: ResMut<GamepadRumble>,
+    mut ev_player_took_damage: EventReader<PlayerTookDamage>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
+    for ev in ev_player_took_damage.iter() {
+        // Local player took damage, time to shake it
+        if ev.handle == local_handle.0 {
+            gamepad_rumble.add_rumble(0.15, 0.2);
         }
     }
 }

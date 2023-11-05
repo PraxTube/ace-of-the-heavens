@@ -99,6 +99,7 @@ fn main() {
             audio::GameAudioPlugin,
             world::GameLogicPlugin,
             network::AceNetworkPlugin,
+            input::AceInputPlugin,
             camera::AceCameraPlugin,
             ui::AceUiPlugin,
             console::AceConsolePlugin,
@@ -108,11 +109,5 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<RoundStartTimer>()
         .init_resource::<HideScreenTimer>()
-        .add_systems(OnExit(GameState::AssetLoading), input::configure_gamepads)
-        .add_systems(
-            Update,
-            input::quit.run_if(in_state(GameState::MainMenu)
-                .or_else(in_state(GameState::Matchmaking))
-                .or_else(in_state(GameState::InRollbackGame).and_then(in_state(RollbackState::GameOver)))))
         .run();
 }

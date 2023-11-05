@@ -10,7 +10,7 @@ use bevy_hanabi::EffectAsset;
 use crate::audio::RollbackSound;
 use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
-use crate::input;
+use crate::input::{self, GamepadRumble};
 use crate::misc::utils::quat_from_vec3;
 use crate::network::ggrs_config::GGRS_FPS;
 use crate::network::GgrsConfig;
@@ -41,9 +41,9 @@ pub struct DummyRocket;
 pub struct Rocket {
     left_side: bool,
     current_speed: f32,
-    start_timer: Timer,
     // The target we are aiming at (if it is in sight)
     target: Option<Vec3>,
+    pub start_timer: Timer,
     pub handle: usize,
 }
 
@@ -236,6 +236,7 @@ pub fn disable_rockets(
     mut players: Query<(&Transform, &mut Player)>,
     mut rockets: Query<(&mut CollisionEntity, &Rocket, &Transform)>,
     mut camera_shake: ResMut<CameraShake>,
+    mut gamepad_rumble: ResMut<GamepadRumble>,
     local_handle: Res<LocalPlayerHandle>,
 ) {
     for (mut collision_entity, rocket, rocket_transform) in &mut rockets {
@@ -260,6 +261,7 @@ pub fn disable_rockets(
                 } else {
                     if player.handle == local_handle.0 {
                         camera_shake.add_trauma(0.35);
+                        gamepad_rumble.add_rumble(0.5, 0.5);
                     }
                     player.health -= player.stats.max_health / 2;
                 }
@@ -274,6 +276,7 @@ pub fn destroy_rockets(
     assets: Res<GameAssets>,
     frame: Res<FrameCount>,
     mut camera_shake: ResMut<CameraShake>,
+    mut gamepad_rumble: ResMut<GamepadRumble>,
     rockets: Query<(Entity, &Rocket, &Transform, &CollisionEntity)>,
 ) {
     for (entity, rocket, rocket_transform, collision_entity) in &rockets {
@@ -289,6 +292,7 @@ pub fn destroy_rockets(
             rocket.handle,
         );
         camera_shake.add_trauma(0.5);
+        gamepad_rumble.add_rumble(0.3, 0.15);
         commands.entity(entity).despawn();
     }
 }

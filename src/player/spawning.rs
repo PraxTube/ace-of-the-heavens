@@ -17,6 +17,7 @@ use super::PlayerStats;
 use crate::audio::RollbackSound;
 use crate::camera::CameraShake;
 use crate::debug::DebugTransform;
+use crate::input::GamepadRumble;
 use crate::world::CollisionEntity;
 use crate::GameAssets;
 use crate::RollbackState;
@@ -130,6 +131,22 @@ pub fn despawn_players_camera_shake(
                 0.5
             };
             camera_shake.add_trauma(trauma);
+        }
+    }
+}
+
+pub fn despawn_players_gamepad_rumble(
+    mut gamepad_rumble: ResMut<GamepadRumble>,
+    players: Query<(&Player, &CollisionEntity)>,
+    local_handle: Res<LocalPlayerHandle>,
+) {
+    for (player, collision_entity) in &players {
+        if player.handle != local_handle.0 {
+            continue;
+        }
+
+        if player.health == 0 || collision_entity.disabled {
+            gamepad_rumble.add_rumble(0.8, 0.35);
         }
     }
 }

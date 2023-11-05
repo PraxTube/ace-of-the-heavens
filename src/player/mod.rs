@@ -202,6 +202,7 @@ impl Plugin for PlayerPlugin {
             (
                 spawning::despawn_players_sound,
                 spawning::despawn_players_camera_shake,
+                spawning::despawn_players_gamepad_rumble,
                 spawning::despawn_players,
             )
                 .chain()
