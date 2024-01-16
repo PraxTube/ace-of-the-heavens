@@ -6,7 +6,6 @@ use bevy_asset_loader::prelude::*;
 use bevy_common_assets::toml::TomlAssetPlugin;
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_ggrs::*;
-use bevy_hanabi::HanabiPlugin;
 use bevy_roll_safe::prelude::*;
 
 mod assets;
@@ -95,7 +94,6 @@ fn main() {
             //LogDiagnosticsPlugin::default(),
             //FrameTimeDiagnosticsPlugin::default(),
             TomlAssetPlugin::<assets::TurnCredentials>::new(&["toml"]),
-            HanabiPlugin,
             audio::GameAudioPlugin,
             world::GameLogicPlugin,
             network::AceNetworkPlugin,

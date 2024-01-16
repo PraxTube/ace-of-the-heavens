@@ -1,5 +1,4 @@
 pub mod damage;
-pub mod trail;
 
 mod bullet;
 mod rocket;
@@ -16,13 +15,6 @@ pub struct EffectPlugin;
 impl Plugin for EffectPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnExit(GameState::Matchmaking),
-            (
-                damage::spawn_damage_effect_spawner,
-                bullet::spawn_effect_spawner,
-            ),
-        )
-        .add_systems(
             Update,
             (bullet::despawn_muzzle_effect, bullet::spawn_muzzle_effect)
                 .chain()
@@ -45,14 +37,7 @@ impl Plugin for EffectPlugin {
         )
         .add_systems(
             GgrsSchedule,
-            (
-                damage::spawn_damage_effect,
-                damage::spawn_damage_effect_sound,
-                bullet::spawn_collision_effect,
-                trail::disable_trails,
-                trail::toggle_plane_trail_visibilities,
-                trail::despawn_trails,
-            )
+            (damage::spawn_damage_effect_sound,)
                 .chain()
                 .in_set(InGameSet::Effect)
                 .distributive_run_if(not(in_state(RollbackState::Setup))),
