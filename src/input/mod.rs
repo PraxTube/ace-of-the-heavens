@@ -40,13 +40,13 @@ pub fn input(
     if keys.any_pressed([KeyCode::Right, KeyCode::D, KeyCode::F]) {
         input |= INPUT_RIGHT;
     }
-    if keys.any_pressed([KeyCode::Space, KeyCode::Return]) {
+    if keys.any_pressed([KeyCode::Space]) {
         input |= INPUT_FIRE;
     }
-    if keys.any_pressed([KeyCode::E, KeyCode::L]) || mouse_buttons.pressed(MouseButton::Right) {
+    if keys.any_pressed([KeyCode::ShiftLeft, KeyCode::L]) {
         input |= INPUT_DODGE;
     }
-    if keys.any_pressed([KeyCode::Q, KeyCode::Semicolon])
+    if keys.any_pressed([KeyCode::E, KeyCode::Semicolon])
         || mouse_buttons.pressed(MouseButton::Left)
     {
         input |= INPUT_ROCKET;
