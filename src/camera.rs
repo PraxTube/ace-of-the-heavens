@@ -9,8 +9,8 @@ use crate::GameState;
 
 const CAMERA_POSITION: Vec3 = Vec3::new(0.0, 50.0, 0.0);
 const NOISE_STRENGTH: f32 = 10.0;
-const TRANSLATION_SHAKE_STRENGTH: f32 = 50.0;
-const ROTATION_SHAKE_STRENGTH: f32 = 2.0;
+const TRANSLATION_SHAKE_STRENGTH: f32 = 25.0;
+const ROTATION_SHAKE_STRENGTH: f32 = 1.0;
 
 pub struct AceCameraPlugin;
 
