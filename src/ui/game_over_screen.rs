@@ -78,17 +78,6 @@ fn spawn_rematch_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
         .id()
 }
 
-fn spawn_quit_text(commands: &mut Commands, font: Handle<Font>) -> Entity {
-    let text_style = TextStyle {
-        font,
-        font_size: 25.0,
-        color: Color::WHITE,
-    };
-    let text_bundle =
-        TextBundle::from_sections([TextSection::new("PRESS Q TO QUIT".to_string(), text_style)]);
-    commands.spawn(text_bundle).add_rollback().id()
-}
-
 fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
     let text_root_node = commands
         .spawn((
@@ -113,10 +102,9 @@ fn spawn_text(commands: &mut Commands, font: Handle<Font>) {
         .id();
     let winner_text = spawn_winner_text(commands, font.clone());
     let rematch_text = spawn_rematch_text(commands, font.clone());
-    let quit_text = spawn_quit_text(commands, font.clone());
     commands
         .entity(text_root_node)
-        .push_children(&[winner_text, rematch_text, quit_text]);
+        .push_children(&[winner_text, rematch_text]);
 }
 
 fn spawn_game_over_screen(mut commands: Commands, assets: Res<GameAssets>) {

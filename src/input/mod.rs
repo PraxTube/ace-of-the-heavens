@@ -2,10 +2,10 @@ pub mod gamepad;
 
 pub use gamepad::GamepadRumble;
 
-use bevy::{app::AppExit, input::gamepad::*, prelude::*};
+use bevy::{input::gamepad::*, prelude::*};
 use bevy_ggrs::*;
 
-use crate::{player::Player, GameState, RollbackState};
+use crate::{player::Player, GameState};
 
 pub const INPUT_FORWARD: u8 = 1 << 0;
 pub const INPUT_BACKWARD: u8 = 1 << 1;
@@ -105,42 +105,12 @@ pub fn rematch(input: u8) -> bool {
     input & INPUT_REMATCH != 0
 }
 
-pub fn quit(
-    mut exit: EventWriter<AppExit>,
-    keys: Res<Input<KeyCode>>,
-    gamepads: Res<Gamepads>,
-    button_inputs: Res<Input<GamepadButton>>,
-) {
-    let mut pressed = keys.pressed(KeyCode::Q);
-    for gamepad in gamepads.iter() {
-        if button_inputs.pressed(GamepadButton::new(gamepad, GamepadButtonType::East)) {
-            pressed = true;
-        }
-    }
-    if pressed {
-        exit.send(AppExit);
-    }
-}
-
 pub struct AceInputPlugin;
 
 impl Plugin for AceInputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                gamepad::rumble_gamepads,
-                quit.run_if(
-                    in_state(GameState::MainMenu)
-                        .or_else(in_state(GameState::Matchmaking))
-                        .or_else(
-                            in_state(GameState::InRollbackGame)
-                                .and_then(in_state(RollbackState::GameOver)),
-                        ),
-                ),
-            ),
-        )
-        .init_resource::<GamepadRumble>()
-        .add_systems(OnExit(GameState::AssetLoading), gamepad::configure_gamepads);
+        app.add_systems(Update, (gamepad::rumble_gamepads,))
+            .init_resource::<GamepadRumble>()
+            .add_systems(OnExit(GameState::AssetLoading), gamepad::configure_gamepads);
     }
 }
