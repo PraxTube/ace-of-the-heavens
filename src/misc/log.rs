@@ -1,3 +1,4 @@
+#[cfg(not(target_arch = "wasm32"))]
 #[macro_export]
 macro_rules! flog {
     ($path:expr, $($arg:tt)*) => {{

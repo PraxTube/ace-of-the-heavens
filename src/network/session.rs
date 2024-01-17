@@ -23,7 +23,7 @@ pub fn start_matchbox_socket(
     credentials: Res<Assets<TurnCredentials>>,
     assets: Res<GameAssets>,
 ) {
-    let room_url = format!("ws://rancic.org:3536/?next={}", PLAYER_COUNT);
+    let room_url = format!("wss://rancic.org/matchmaking?next={}", PLAYER_COUNT);
     info!("connection to matchbox server: {}", room_url);
 
     let credentials = credentials.get(&assets.turn_credentials);

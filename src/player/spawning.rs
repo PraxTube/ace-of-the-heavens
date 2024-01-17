@@ -1,11 +1,9 @@
 use bevy::core::FrameCount;
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
-use bevy_hanabi::EffectAsset;
 
 use super::dodge::spawn_plane_whites;
 use super::dodge::DodgeTimer;
-use super::effect::trail::spawn_player_trails;
 use super::shooting::bullet::BulletTimer;
 use super::shooting::rocket::spawn_player_wing_rockets;
 use super::shooting::rocket::RocketTimer;
@@ -69,7 +67,6 @@ fn spawn_player(
 pub fn spawn_players(
     mut commands: Commands,
     assets: Res<GameAssets>,
-    mut effects: ResMut<Assets<EffectAsset>>,
     stats: Res<PersistentPlayerStats>,
 ) {
     let textures = [assets.player_1.clone(), assets.player_2.clone()];
@@ -78,7 +75,6 @@ pub fn spawn_players(
         let player = spawn_player(&mut commands, texture, handle, stats.stats[handle].clone());
         spawn_player_wing_rockets(&mut commands, &assets, player, handle);
         spawn_plane_whites(&mut commands, &assets, player, handle);
-        spawn_player_trails(&mut commands, &mut effects, player);
     }
 }
 
