@@ -7,7 +7,7 @@ on:
 
 env:
   binary: ace-of-the-heavens
-  add_binaries_to_github_release: true
+  add_binaries_to_github_release: false
   itch_target: PraxTube/ace-of-the-heavens
 
 jobs:
